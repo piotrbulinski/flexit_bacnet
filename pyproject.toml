@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "BAC0==22.9.21"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flexit_bacnet"
+version = "1.0.0"
+authors = [
+  { name="Piotr Buliński" },
+]
+description = "Client BACnet library for Flexit Nordic series of air handling units."
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/piotrbulinski/flexit_bacnet"
+"Bug Tracker" = "https://github.com/piotrbulinski/flexit_bacnet/issues"
