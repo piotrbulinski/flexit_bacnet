@@ -1,0 +1,1958 @@
+# Outside air temperature (e.g. 11.90999984741211 degreesCelsius)
+OUTSIDE_AIR_TEMPERATURE = (('analogInput', 1), "R(1)'TOa")
+
+# Supply air temperature (e.g. 21.799999237060547 degreesCelsius)
+SUPPLY_AIR_TEMPERATURE = (('analogInput', 4), "R(1)'TSu")
+
+# Tacho, supply fan (e.g. 3108.0 revolutionsPerMinute)
+TACHO_SUPPLY_FAN = (('analogInput', 5), "R(1)'FanSuSpdFb")
+
+# Exhaust air temperature (e.g. 15.079999923706055 degreesCelsius)
+EXHAUST_AIR_TEMPERATURE = (('analogInput', 11), "R(1)'TEh")
+
+# Tacho, exhaust fan (e.g. 3068.0 revolutionsPerMinute)
+TACHO_EXHAUST_FAN = (('analogInput', 12), "R(1)'FanEhSpdFb")
+
+# Extract air temperature (e.g. 21.90999984741211 degreesCelsius)
+EXTRACT_AIR_TEMPERATURE = (('analogInput', 59), "R(1)'TEx")
+
+# Temperature, supply air after rotor (e.g. 0.0 degreesCelsius)
+TEMPERATURE_SUPPLY_AIR_AFTER_ROTOR = (('analogInput', 71), "R(1)'IOExtnDevEcul'TSuAfHExg")
+
+# Air flow, pressure exhaust fan (e.g. 0.0 pascals)
+AIR_FLOW_PRESSURE_EXHAUST_FAN = (('analogInput', 72), "R(1)'IOExtnDevEcul'DiffPFanEh")
+
+# Air flow, pressure supply fan (e.g. 0.0 pascals)
+AIR_FLOW_PRESSURE_SUPPLY_FAN = (('analogInput', 73), "R(1)'IOExtnDevEcul'DiffPFanSu")
+
+# Room temperature (e.g. 22.440000534057617 degreesCelsius)
+ROOM_TEMPERATURE = (('analogInput', 75), "R(1)'ROpUnDev'TR")
+
+# Air quality, input value (e.g. 0.0 partsPerMillion)
+AIR_QUALITY_INPUT_VALUE = (('analogInput', 77), "R(1)'IOExtnDevEcul'AQualRIn")
+
+# Extract air pressure (e.g. 0.0 pascals)
+EXTRACT_AIR_PRESSURE = (('analogInput', 78), "R(1)'PDuctDevQbm'PEx")
+
+# Supply air pressure (e.g. 0.0 pascals)
+SUPPLY_AIR_PRESSURE = (('analogInput', 79), "R(1)'PDuctDevQbm'PSu")
+
+# Maximum room temperature RF system (e.g. 0.0 degreesCelsius)
+MAXIMUM_ROOM_TEMPERATURE_RF_SYSTEM = (('analogInput', 80), "R(1)'FanNodeDev'TRMaxRfqs")
+
+# Maximum room air humidity RF system (e.g. 0.0 percent)
+MAXIMUM_ROOM_AIR_HUMIDITY_RF_SYSTEM = (('analogInput', 81), "R(1)'FanNodeDev'HuRMaxRfqs")
+
+# Maximum room air quality RF system (e.g. 0.0 partsPerMillion)
+MAXIMUM_ROOM_AIR_QUALITY_RF_SYSTEM = (('analogInput', 82), "R(1)'FanNodeDev'AQualRMaxRfqs")
+
+# Room temperature VMSH 1 (e.g. 0.0 degreesCelsius)
+ROOM_TEMPERATURE_VMSH_1 = (('analogInput', 83), "R(1)'ROpUnDevVmsh1'TRVmsh1")
+
+# Room air humidity VMSH 1 (e.g. 0.0 percent)
+ROOM_AIR_HUMIDITY_VMSH_1 = (('analogInput', 84), "R(1)'ROpUnDevVmsh1'HuRVmsh1")
+
+# Room dew point temperature VMSH 1 (e.g. 0.0 degreesCelsius)
+ROOM_DEW_POINT_TEMPERATURE_VMSH_1 = (('analogInput', 85), "R(1)'ROpUnDevVmsh1'TDwpRVmsh1")
+
+# Room temperature VMSH 2 (e.g. 0.0 degreesCelsius)
+ROOM_TEMPERATURE_VMSH_2 = (('analogInput', 86), "R(1)'ROpUnDevVmsh2'TRVmsh2")
+
+# Room air humidity VMSH 2 (e.g. 0.0 percent)
+ROOM_AIR_HUMIDITY_VMSH_2 = (('analogInput', 87), "R(1)'ROpUnDevVmsh2'HuRVmsh2")
+
+# Room dew point temperature VMSH 2 (e.g. 0.0 degreesCelsius)
+ROOM_DEW_POINT_TEMPERATURE_VMSH_2 = (('analogInput', 88), "R(1)'ROpUnDevVmsh2'TDwpRVmsh2")
+
+# Room temperature VMSH 3 (e.g. 0.0 degreesCelsius)
+ROOM_TEMPERATURE_VMSH_3 = (('analogInput', 89), "R(1)'ROpUnDevVmsh3'TRVmsh3")
+
+# Room air humidity VMSH 3 (e.g. 0.0 percent)
+ROOM_AIR_HUMIDITY_VMSH_3 = (('analogInput', 90), "R(1)'ROpUnDevVmsh3'HuRVmsh3")
+
+# Room dew point temperature VMSH 3 (e.g. 0.0 degreesCelsius)
+ROOM_DEW_POINT_TEMPERATURE_VMSH_3 = (('analogInput', 91), "R(1)'ROpUnDevVmsh3'TDwpRVmsh3")
+
+# Air quality, max value RF (e.g. 0.0 partsPerMillion)
+AIR_QUALITY_MAX_VALUE_RF = (('analogInput', 92), "R(1)'ROpUnDevVmsc'AQualRVmsc")
+
+# Inputs state VMC (e.g. 0.0 noUnits)
+INPUTS_STATE_VMC = (('analogInput', 93), "R(1)'IOExtnDevVmc'InStaVmc")
+
+# Rotating heat exchanger (e.g. 100.0 percent)
+ROTATING_HEAT_EXCHANGER = (('analogOutput', 0), "R(1)'RotHExgSpd")
+
+# Fan speed, supply air (e.g. 70.0 percent)
+FAN_SPEED_SUPPLY_AIR = (('analogOutput', 3), "R(1)'FanSuSpd")
+
+# Fan speed, exhaust air (e.g. 70.0 percent)
+FAN_SPEED_EXHAUST_AIR = (('analogOutput', 4), "R(1)'FanEhSpd")
+
+# Cooling, valve position (e.g. 0.0 percent)
+COOLING_VALVE_POSITION = (('analogOutput', 28), "R(1)'IOExtnDevEcul'CclVlvPos(1)")
+
+# Heating battery, electrical (e.g. 59.90284729003906 percent)
+HEATING_BATTERY_ELECTRICAL = (('analogOutput', 29), "R(1)'HclElPos")
+
+# Diagnostics for automation station (e.g. 2.0 noUnits)
+DIAGNOSTICS_FOR_AUTOMATION_STATION = (('analogValue', 0), "Infra'DiagAs")
+
+# Diagnostics for KNX PL-Link bus (e.g. 1.0 noUnits)
+DIAGNOSTICS_FOR_KNX_PL-LINK_BUS = (('analogValue', 3), "PlnkBus'DiagPlnkBus")
+
+# Result of room temperature (e.g. 22.440000534057617 degreesCelsius)
+RESULT_OF_ROOM_TEMPERATURE = (('analogValue', 5), "R(1)'RHvacCoo'TRCol'TRRs")
+
+# Alarm, code type A (e.g. 0.0 noUnits)
+ALARM_CODE_TYPE_A = (('analogValue', 8), "R(1)'RHvacCoo'AlmFnct'AalmCode")
+
+# Fire alarm, limit supply air (e.g. 72.0 degreesCelsius)
+FIRE_ALARM_LIMIT_SUPPLY_AIR = (('analogValue', 56), "R(1)'RHvacCoo'SftyCtl'TSuFireAlmLm")
+
+# Maint.alarm, max limit supply air (e.g. 60.0 degreesCelsius)
+MAINT.ALARM_MAX_LIMIT_SUPPLY_AIR = (('analogValue', 57), "R(1)'RHvacCoo'SftyCtl'TSuHiAlmLm")
+
+# Maint.alarm, min limit supply air (e.g. 0.0 degreesCelsius)
+MAINT.ALARM_MIN_LIMIT_SUPPLY_AIR = (('analogValue', 58), "R(1)'RHvacCoo'SftyCtl'TSuLoAlmLm")
+
+# Fire alarm, limit extract air (e.g. 72.0 degreesCelsius)
+FIRE_ALARM_LIMIT_EXTRACT_AIR = (('analogValue', 59), "R(1)'RHvacCoo'SftyCtl'TExFireAlmLm")
+
+# Present cooling setpoint for comfort (e.g. 24.5 degreesCelsius)
+PRESENT_COOLING_SETPOINT_FOR_COMFORT = (('analogValue', 69), "R(1)'RHvacCoo'TCtlC'PrSpCCmf")
+
+# Present cooling setpoint for pre-comfort (e.g. 26.0 degreesCelsius)
+PRESENT_COOLING_SETPOINT_FOR_PRE-COMFORT = (('analogValue', 70), "R(1)'RHvacCoo'TCtlC'PrSpCPcf")
+
+# Present cooling setpoint for economy (e.g. 30.0 degreesCelsius)
+PRESENT_COOLING_SETPOINT_FOR_ECONOMY = (('analogValue', 71), "R(1)'RHvacCoo'TCtlC'PrSpCEco")
+
+# Present cooling setpoint for protection (e.g. 32.0 degreesCelsius)
+PRESENT_COOLING_SETPOINT_FOR_PROTECTION = (('analogValue', 72), "R(1)'RHvacCoo'TCtlC'PrSpCPrt")
+
+# Present cooling setpoint (e.g. 26.0 degreesCelsius)
+PRESENT_COOLING_SETPOINT = (('analogValue', 73), "R(1)'RHvacCoo'TCtlC'PrSpC")
+
+# Cooling, setpoint end value shift (e.g. 40.0 degreesCelsius)
+COOLING_SETPOINT_END_VALUE_SHIFT = (('analogValue', 75), "R(1)'RHvacCoo'TCtlC'EndSpShftC")
+
+# Cooling, outdoor air limit for release (e.g. 20.0 degreesCelsius)
+COOLING_OUTDOOR_AIR_LIMIT_FOR_RELEASE = (('analogValue', 76), "R(1)'RHvacCoo'TCtlC'CLmCmf")
+
+# Cooling setpoint start value shift (e.g. 30.0 degreesCelsius)
+COOLING_SETPOINT_START_VALUE_SHIFT = (('analogValue', 78), "R(1)'RHvacCoo'TCtlC'SttSpShftC")
+
+# Cooling, setpoint for shift (e.g. 0.0 degreesKelvin)
+COOLING_SETPOINT_FOR_SHIFT = (('analogValue', 79), "R(1)'RHvacCoo'TCtlC'SpShftC")
+
+# Present heating setpoint for comfort (e.g. 23.5 degreesCelsius)
+PRESENT_HEATING_SETPOINT_FOR_COMFORT = (('analogValue', 96), "R(1)'RHvacCoo'TCtlH'PrSpHCmf")
+
+# Present heating setpoint for pre-comfort (e.g. 23.0 degreesCelsius)
+PRESENT_HEATING_SETPOINT_FOR_PRE-COMFORT = (('analogValue', 97), "R(1)'RHvacCoo'TCtlH'PrSpHPcf")
+
+# Present heating setpoint for economy (e.g. 23.0 degreesCelsius)
+PRESENT_HEATING_SETPOINT_FOR_ECONOMY = (('analogValue', 98), "R(1)'RHvacCoo'TCtlH'PrSpHEco")
+
+# Present heating setpoint for protection (e.g. 10.0 degreesCelsius)
+PRESENT_HEATING_SETPOINT_FOR_PROTECTION = (('analogValue', 99), "R(1)'RHvacCoo'TCtlH'PrSpHPrt")
+
+# Present heating setpoint (e.g. 23.0 degreesCelsius)
+PRESENT_HEATING_SETPOINT = (('analogValue', 100), "R(1)'RHvacCoo'TCtlH'PrSpH")
+
+# Heating, setpoint end value shift (e.g. -15.0 degreesCelsius)
+HEATING_SETPOINT_END_VALUE_SHIFT = (('analogValue', 102), "R(1)'RHvacCoo'TCtlH'EndSpShftH")
+
+# Heating limit comfort (e.g. 99.9000015258789 degreesCelsius)
+HEATING_LIMIT_COMFORT = (('analogValue', 103), "R(1)'RHvacCoo'TCtlH'HLmCmf")
+
+# Outs.air temp.limit to start correction (e.g. -5.0 degreesCelsius)
+OUTS.AIR_TEMP.LIMIT_TO_START_CORRECTION = (('analogValue', 104), "R(1)'RHvacCoo'TCtlH'TOaLmSttCorr")
+
+# Heating, setpoint start value shift (e.g. -5.0 degreesCelsius)
+HEATING_SETPOINT_START_VALUE_SHIFT = (('analogValue', 106), "R(1)'RHvacCoo'TCtlH'SttSpShftH")
+
+# Heating, setpoint for shift (e.g. 0.0 degreesKelvin)
+HEATING_SETPOINT_FOR_SHIFT = (('analogValue', 107), "R(1)'RHvacCoo'TCtlH'SpShftH")
+
+# Room temperature setpoint (e.g. 24.0 degreesCelsius)
+ROOM_TEMPERATURE_SETPOINT = (('analogValue', 126), "R(1)'RHvacCoo'SpTRDtr'SpTR")
+
+# Room temperature setpoint shift (e.g. 0.0 degreesKelvin)
+ROOM_TEMPERATURE_SETPOINT_SHIFT = (('analogValue', 127), "R(1)'RHvacCoo'SpTRDtr'SpTRShft")
+
+# Alarm, state code B (e.g. 0.0 noUnits)
+ALARM_STATE_CODE_B = (('analogValue', 130), "R(1)'RHvacCoo'MntnFnct'BalmCode")
+
+# Effective room temperature (e.g. 21.90999984741211 degreesCelsius)
+EFFECTIVE_ROOM_TEMPERATURE = (('analogValue', 131), "R(1)'HVAC'TREff")
+
+# Present setpoint supply temperature (e.g. 23.0 degreesCelsius)
+PRESENT_SETPOINT_SUPPLY_TEMPERATURE = (('analogValue', 132), "R(1)'HVAC'PrSpTSu")
+
+# Rotating heat exchanger, cooling Kp (e.g. 10.0 623)
+ROTATING_HEAT_EXCHANGER_COOLING_KP = (('analogValue', 134), "R(1)'HVAC'Erc'GainRotHxCtrC")
+
+# Rotating heat exchanger, heating Kp (e.g. 10.0 623)
+ROTATING_HEAT_EXCHANGER_HEATING_KP = (('analogValue', 135), "R(1)'HVAC'Erc'GainRotHxCtrH")
+
+# Cooling, dT B3-B4 start (e.g. 4.0 degreesKelvin)
+COOLING_DT_B3-B4_START = (('analogValue', 136), "R(1)'HVAC'Erc'DiffTRTOaMinC")
+
+# De-icing, humidity comp. Start (e.g. 80.0 percent)
+DE-ICING_HUMIDITY_COMP._START = (('analogValue', 140), "R(1)'HVAC'Erc'SstHuCmpDeic")
+
+# De-icing, humidity comp. End (e.g. 20.0 percent)
+DE-ICING_HUMIDITY_COMP._END = (('analogValue', 142), "R(1)'HVAC'Erc'EndHuCmpDeic")
+
+# Rotary heat exchanger heating request (e.g. 100.0 percent)
+ROTARY_HEAT_EXCHANGER_HEATING_REQUEST = (('analogValue', 144), "R(1)'HVAC'Erc'RotHExgHReq")
+
+# Rotary heat exchanger cooling request (e.g. 0.0 percent)
+ROTARY_HEAT_EXCHANGER_COOLING_REQUEST = (('analogValue', 145), "R(1)'HVAC'Erc'RotHExgCReq")
+
+# Rotating heat exchanger , min speed (e.g. 0.0 percent)
+ROTATING_HEAT_EXCHANGER__MIN_SPEED = (('analogValue', 147), "R(1)'HVAC'Erc'RotHExgSpdMin")
+
+# Rotating heat exchanger , max speed (e.g. 100.0 percent)
+ROTATING_HEAT_EXCHANGER__MAX_SPEED = (('analogValue', 148), "R(1)'HVAC'Erc'RotHExgSpdMax")
+
+# Switch-on point for air flow hold heat. (e.g. 4.0 percent)
+SWITCH-ON_POINT_FOR_AIR_FLOW_HOLD_HEAT. = (('analogValue', 189), "R(1)'HVAC'Hcl'SwiOnAirFlHldH")
+
+# Electric heater, nom. Power (e.g. 0.800000011920929 kilowatts)
+ELECTRIC_HEATER_NOM._POWER = (('analogValue', 190), "R(1)'HVAC'Hcl'NomElPwr")
+
+# Heating coil electric power (e.g. 0.47101864218711853 kilowatts)
+HEATING_COIL_ELECTRIC_POWER = (('analogValue', 194), "R(1)'HVAC'Hcl'HclElPwr")
+
+# Heating coil heating request minimum (e.g. 35.45454406738281 percent)
+HEATING_COIL_HEATING_REQUEST_MINIMUM = (('analogValue', 195), "R(1)'HVAC'Hcl'HclHReqMin")
+
+# Heating coil heating request (e.g. 59.09090805053711 percent)
+HEATING_COIL_HEATING_REQUEST = (('analogValue', 196), "R(1)'HVAC'Hcl'HclHReq")
+
+# Supply, heater, Kp zone 2 (e.g. 5.0 623)
+SUPPLY_HEATER_KP_ZONE_2 = (('analogValue', 197), "R(1)'HVAC'Hcl'GainHclTSuCtrH")
+
+# Air filter, operating time (e.g. 24.0 hours)
+AIR_FILTER_OPERATING_TIME = (('analogValue', 285), "R(1)'HVAC'AlmBdl'TiOpFil")
+
+# Air filter, time period for exchange (e.g. 4380.0 hours)
+AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE = (('analogValue', 286), "R(1)'HVAC'AlmBdl'TiOpFilRpc")
+
+# Diagnostics for Modbus (e.g. 0.0 noUnits)
+DIAGNOSTICS_FOR_MODBUS = (('analogValue', 296), "ModBus'DiagModBus")
+
+# Diagnostics for I/O bus (e.g. 3.0 noUnits)
+DIAGNOSTICS_FOR_I/O_BUS = (('analogValue', 297), "IOBus'DiagIOBus")
+
+# Present A-Alarm code (e.g. 0.0 noUnits)
+PRESENT_A-ALARM_CODE = (('analogValue', 1794), "R(1)'RHvacCoo'AlmFnct'PrAalmCode")
+
+# Diagnostics for ECUL (e.g. 8.0 noUnits)
+DIAGNOSTICS_FOR_ECUL = (('analogValue', 1796), "R(1)'IOExtnDevEcul'DiagEcul")
+
+# Time counter, FIRE (e.g. 0.0 hours)
+TIME_COUNTER_FIRE = (('analogValue', 1814), "R(1)'RHvacCoo'FplcVntOp'OphFplcVnt")
+
+# Time counter, cooker hood (e.g. 0.0 hours)
+TIME_COUNTER_COOKER_HOOD = (('analogValue', 1820), "R(1)'RHvacCoo'FhVntOp'OphFhVnt")
+
+# Air quality, present setpoint (e.g. 700.0 partsPerMillion)
+AIR_QUALITY_PRESENT_SETPOINT = (('analogValue', 1831), "R(1)'RHvacCoo'VntCtl'PrSpVnt")
+
+# Air quality, setpoint  HIGH (e.g. 1500.0 partsPerMillion)
+AIR_QUALITY_SETPOINT__HIGH = (('analogValue', 1832), "R(1)'RHvacCoo'VntCtl'SpAQualRCmf")
+
+# Air quality, setpoint  HOME (e.g. 700.0 partsPerMillion)
+AIR_QUALITY_SETPOINT__HOME = (('analogValue', 1833), "R(1)'RHvacCoo'VntCtl'SpAQualRPcf")
+
+# Air quality, setpoint  AWAY (e.g. 700.0 partsPerMillion)
+AIR_QUALITY_SETPOINT__AWAY = (('analogValue', 1834), "R(1)'RHvacCoo'VntCtl'SpAQualREco")
+
+# Linear, setpoint supply air HIGH (e.g. 100.0 percent)
+LINEAR_SETPOINT_SUPPLY_AIR_HIGH = (('analogValue', 1835), "R(1)'RHvacCoo'VntCtl'SpFanSuSpdHi")
+
+# Linear, setpoint supply air HOME (e.g. 70.0 percent)
+LINEAR_SETPOINT_SUPPLY_AIR_HOME = (('analogValue', 1836), "R(1)'RHvacCoo'VntCtl'SpFanSuSpdHome")
+
+# Linear, setpoint supply air AWAY (e.g. 50.0 percent)
+LINEAR_SETPOINT_SUPPLY_AIR_AWAY = (('analogValue', 1837), "R(1)'RHvacCoo'VntCtl'SpFanSuSpdAway")
+
+# Linear, setpoint supply air FIRE (e.g. 90.0 percent)
+LINEAR_SETPOINT_SUPPLY_AIR_FIRE = (('analogValue', 1838), "R(1)'RHvacCoo'VntCtl'SpFanSuSpdFplc")
+
+# Linear, setpoint supply air COOKER (e.g. 90.0 percent)
+LINEAR_SETPOINT_SUPPLY_AIR_COOKER = (('analogValue', 1839), "R(1)'RHvacCoo'VntCtl'SpFanSuSpdCkr")
+
+# Linear, setpoint exhaust air HIGH (e.g. 100.0 percent)
+LINEAR_SETPOINT_EXHAUST_AIR_HIGH = (('analogValue', 1840), "R(1)'RHvacCoo'VntCtl'SpFanEhSpdHi")
+
+# Linear, setpoint exhaust air HOME (e.g. 70.0 percent)
+LINEAR_SETPOINT_EXHAUST_AIR_HOME = (('analogValue', 1841), "R(1)'RHvacCoo'VntCtl'SpFanEhSpdHome")
+
+# Linear, setpoint exhaust air AWAY (e.g. 50.0 percent)
+LINEAR_SETPOINT_EXHAUST_AIR_AWAY = (('analogValue', 1842), "R(1)'RHvacCoo'VntCtl'SpFanEhSpdAway")
+
+# Linear, setpoint exhaust air FIRE (e.g. 50.0 percent)
+LINEAR_SETPOINT_EXHAUST_AIR_FIRE = (('analogValue', 1843), "R(1)'RHvacCoo'VntCtl'SpFanEhSpdFplc")
+
+# Linear, setpoint exhaust air COOKER (e.g. 50.0 percent)
+LINEAR_SETPOINT_EXHAUST_AIR_COOKER = (('analogValue', 1844), "R(1)'RHvacCoo'VntCtl'SpFanEhSpdCkr")
+
+# Gain for ventilation controller (e.g. 0.23000000417232513 625)
+GAIN_FOR_VENTILATION_CONTROLLER = (('analogValue', 1845), "R(1)'RHvacCoo'VntCtl'GainVntCtr")
+
+# Present B-Alarm code (e.g. 0.0 noUnits)
+PRESENT_B-ALARM_CODE = (('analogValue', 1846), "R(1)'RHvacCoo'MntnFnct'PrBalmCode")
+
+# Operating hours, total time (e.g. 8760.0 hours)
+OPERATING_HOURS_TOTAL_TIME = (('analogValue', 1847), "R(1)'HVAC'AlmBdl'OphDev")
+
+# De-icing, humidity comp. Delta (e.g. 1.5 degreesKelvin)
+DE-ICING_HUMIDITY_COMP._DELTA = (('analogValue', 1849), "R(1)'HVAC'Erc'DiffTHuCmpDeic")
+
+# Belt broken, delta B3-B6 (e.g. 4.0 degreesKelvin)
+BELT_BROKEN_DELTA_B3-B6 = (('analogValue', 1850), "R(1)'HVAC'Erc'DTRotHxBltFlt")
+
+# Time counter, op. time RMC (e.g. 8096.0 hours)
+TIME_COUNTER_OP._TIME_RMC = (('analogValue', 1851), "R(1)'HVAC'Erc'OphErc")
+
+# De-icing, rotor speed (e.g. 100.0 percent)
+DE-ICING_ROTOR_SPEED = (('analogValue', 1852), "R(1)'HVAC'Erc'RotHExgSpdDeic")
+
+# Air quality, present fan control (e.g. 0.0 percent)
+AIR_QUALITY_PRESENT_FAN_CONTROL = (('analogValue', 1869), "R(1)'HVAC'FanSu'FanVntReq")
+
+# Humidity, present fan control (e.g. 0.0 percent)
+HUMIDITY_PRESENT_FAN_CONTROL = (('analogValue', 1870), "R(1)'HVAC'FanSu'FanDhuReq")
+
+# De-icing, setpoint supply fan speed (e.g. 15.0 percent)
+DE-ICING_SETPOINT_SUPPLY_FAN_SPEED = (('analogValue', 1878), "R(1)'HVAC'FanSu'SpFanSuSpdDeic")
+
+# Time counter, op. time - El. heater (e.g. 4184.0 hours)
+TIME_COUNTER_OP._TIME_-_EL._HEATER = (('analogValue', 1879), "R(1)'HVAC'Hcl'OphHcl")
+
+# Time counter, STOP (e.g. 0.0 hours)
+TIME_COUNTER_STOP = (('analogValue', 1913), "R(1)'ROpModDtr'OphStop")
+
+# Time counter, AWAY (e.g. 0.0 hours)
+TIME_COUNTER_AWAY = (('analogValue', 1914), "R(1)'ROpModDtr'OphAway")
+
+# Time counter, HOME (e.g. 7760.0 hours)
+TIME_COUNTER_HOME = (('analogValue', 1915), "R(1)'ROpModDtr'OphHome")
+
+# Time counter, HIGH (e.g. 980.0 hours)
+TIME_COUNTER_HIGH = (('analogValue', 1916), "R(1)'ROpModDtr'OphHi")
+
+# Air quality, max value (e.g. 0.0 partsPerMillion)
+AIR_QUALITY_MAX_VALUE = (('analogValue', 1919), "R(1)'RHvacCoo'AQualRCol'AQualRRs")
+
+# Air temp., setpoint (e.g. 24.0 degreesCelsius)
+AIR_TEMP._SETPOINT = (('analogValue', 1920), "R(1)'RHvacCoo'TCtlH'SpTHrv")
+
+# Air temp., delta setpoint heating HOME (e.g. 1.0 degreesKelvin)
+AIR_TEMP._DELTA_SETPOINT_HEATING_HOME = (('analogValue', 1921), "R(1)'RHvacCoo'TCtlH'DSpHHome")
+
+# Supply, delta HOME (e.g. 1.0 degreesKelvin)
+SUPPLY_DELTA_HOME = (('analogValue', 1922), "R(1)'RHvacCoo'TCtlH'NzTHrv")
+
+# Air temp., delta setpoint cooling HOME (e.g. 2.0 degreesKelvin)
+AIR_TEMP._DELTA_SETPOINT_COOLING_HOME = (('analogValue', 1926), "R(1)'RHvacCoo'TCtlC'DSpCHome")
+
+# Free cooling, d B3-setpoint  start (e.g. 2.0 degreesKelvin)
+FREE_COOLING_D_B3-SETPOINT__START = (('analogValue', 1933), "R(1)'RHvacCoo'FreeCDtr'HysSpTR")
+
+# Outside air temp.limit (e.g. 14.0 degreesCelsius)
+OUTSIDE_AIR_TEMP.LIMIT = (('analogValue', 1934), "R(1)'RHvacCoo'FreeCDtr'TOaLm")
+
+# Free cooling, d B4-setpoint (e.g. 2.0 degreesKelvin)
+FREE_COOLING_D_B4-SETPOINT = (('analogValue', 1935), "R(1)'RHvacCoo'FreeCDtr'HysTOaLm")
+
+# Free cooling, dT B3-B4 start (e.g. 4.0 degreesKelvin)
+FREE_COOLING_DT_B3-B4_START = (('analogValue', 1936), "R(1)'RHvacCoo'FreeCDtr'DiffTRTOaSwiOn")
+
+# Free cooling, dT B3-B4 stop (e.g. 2.0 degreesKelvin)
+FREE_COOLING_DT_B3-B4_STOP = (('analogValue', 1937), "R(1)'RHvacCoo'FreeCDtr'DiffTRTOaSwiOf")
+
+# De-icing, setpoint fan start (e.g. 0.0 degreesCelsius)
+DE-ICING_SETPOINT_FAN_START = (('analogValue', 1938), "R(1)'HVAC'Erc'SpTDeicFan")
+
+# De-icing, setpoint rotor start (e.g. 0.0 degreesCelsius)
+DE-ICING_SETPOINT_ROTOR_START = (('analogValue', 1939), "R(1)'HVAC'Erc'SpTDeicHExg")
+
+# Heat exchanger, skip speed end (e.g. 0.0 percent)
+HEAT_EXCHANGER_SKIP_SPEED_END = (('analogValue', 1940), "R(1)'HVAC'Erc'RotHxSkipSpdHi")
+
+# Heat exchanger, skip speed start (e.g. 0.0 percent)
+HEAT_EXCHANGER_SKIP_SPEED_START = (('analogValue', 1941), "R(1)'HVAC'Erc'RotHxSkipSpdLo")
+
+# Heat exchanger, ramp down start (e.g. 0.0 degreesCelsius)
+HEAT_EXCHANGER_RAMP_DOWN_START = (('analogValue', 1942), "R(1)'HVAC'Erc'TDeicTiOffStt")
+
+# Heat exchanger, ramp down end (e.g. -9.0 degreesCelsius)
+HEAT_EXCHANGER_RAMP_DOWN_END = (('analogValue', 1943), "R(1)'HVAC'Erc'TDeicTiOffEnd")
+
+# Tacho, alarm limit fan speed (e.g. 100.0 revolutionsPerMinute)
+TACHO_ALARM_LIMIT_FAN_SPEED = (('analogValue', 1948), "R(1)'HVAC'FanSu'FanSpdFbFltLm")
+
+# De-icing, setpoint exhaust fan speed (e.g. 75.0 percent)
+DE-ICING_SETPOINT_EXHAUST_FAN_SPEED = (('analogValue', 1958), "R(1)'HVAC'FanEh'SpFanEhSpdDeic")
+
+# Supply air, setpoint for heating (e.g. 23.0 degreesCelsius)
+SUPPLY_AIR_SETPOINT_FOR_HEATING = (('analogValue', 1977), "R(1)'HVAC'Hcl'SpTSuHcl")
+
+# Belt broken, delta B3-B4 (e.g. 10.0 degreesKelvin)
+BELT_BROKEN_DELTA_B3-B4 = (('analogValue', 1978), "R(1)'HVAC'Erc'DiffTExTOaMin")
+
+# Diagnostics value (e.g. 0.0 noUnits)
+DIAGNOSTICS_VALUE = (('analogValue', 1983), "R(1)'HVAC'DiagVal")
+
+# Heating, present setpoint shift (e.g. 0.0 degreesKelvin)
+HEATING_PRESENT_SETPOINT_SHIFT = (('analogValue', 1984), "R(1)'RHvacCoo'TCtlH'PrSpShftH")
+
+# Air temp., setpoint AWAY (e.g. 17.0 degreesCelsius)
+AIR_TEMP._SETPOINT_AWAY = (('analogValue', 1985), "R(1)'RHvacCoo'TCtlH'SpTAway")
+
+# Supply, delta AWAY (e.g. 1.0 degreesKelvin)
+SUPPLY_DELTA_AWAY = (('analogValue', 1986), "R(1)'RHvacCoo'TCtlH'NzTAway")
+
+# Air temp., delta setpoint heating AWAY (e.g. 1.0 degreesKelvin)
+AIR_TEMP._DELTA_SETPOINT_HEATING_AWAY = (('analogValue', 1987), "R(1)'RHvacCoo'TCtlH'DSpHAway")
+
+# Cooling, present setpoint shift (e.g. 0.0 degreesKelvin)
+COOLING_PRESENT_SETPOINT_SHIFT = (('analogValue', 1991), "R(1)'RHvacCoo'TCtlC'PrSpShftC")
+
+# Air temp., delta setpoint cooling AWAY (e.g. 6.0 degreesKelvin)
+AIR_TEMP._DELTA_SETPOINT_COOLING_AWAY = (('analogValue', 1992), "R(1)'RHvacCoo'TCtlC'DSpCAway")
+
+# Air temp., setpoint HOME (e.g. 24.0 degreesCelsius)
+AIR_TEMP._SETPOINT_HOME = (('analogValue', 1994), "R(1)'RHvacCoo'TCtlH'SpTHome")
+
+# Heating coil position (e.g. 59.18095397949219 percent)
+HEATING_COIL_POSITION = (('analogValue', 1997), "R(1)'HVAC'HclPos")
+
+# Time for temporary rapid ventilation (e.g. 0.0 noUnits)
+TIME_FOR_TEMPORARY_RAPID_VENTILATION = (('analogValue', 2004), "R(1)'ROpUnDev'TiTmpRpdVnt")
+
+# Remaining time temporary ventilation op. (e.g. 0.0 noUnits)
+REMAINING_TIME_TEMPORARY_VENTILATION_OP. = (('analogValue', 2005), "R(1)'ROpUnDev'TiRmgTmpVntOp")
+
+# Pres.setp.temp.for room operator unit (e.g. 24.0 degreesCelsius)
+PRES.SETP.TEMP.FOR_ROOM_OPERATOR_UNIT = (('analogValue', 2006), "R(1)'ROpUnDev'PrSpTRu")
+
+# Time for temporary fireplace ventilation (e.g. 0.0 noUnits)
+TIME_FOR_TEMPORARY_FIREPLACE_VENTILATION = (('analogValue', 2007), "R(1)'ROpUnDev'TiTmpFplcVnt")
+
+# Rotating heat exchanger, efficiency (e.g. 68.29999542236328 percent)
+ROTATING_HEAT_EXCHANGER_EFFICIENCY = (('analogValue', 2023), "R(1)'HVAC'Erc'PrHExgEfcy")
+
+# Alarm, no of displayed alarms in list (e.g. 1.0 noUnits)
+ALARM_NO_OF_DISPLAYED_ALARMS_IN_LIST = (('analogValue', 2025), "R(1)'RHvacCoo'AlmBdl'FltListNum")
+
+# Alarm, no of alarms in list (e.g. 1.0 noUnits)
+ALARM_NO_OF_ALARMS_IN_LIST = (('analogValue', 2026), "R(1)'RHvacCoo'AlmBdl'FltCnt")
+
+# Alarm, error code (e.g. 1020.0 noUnits)
+ALARM_ERROR_CODE = (('analogValue', 2027), "R(1)'RHvacCoo'AlmBdl'DspyFltList")
+
+# Fault counter 1 (e.g. 0.0 noUnits)
+FAULT_COUNTER_1 = (('analogValue', 2028), "R(1)'RHvacCoo'AlmBdl'FltCnt1")
+
+# Forced ventilation, remaining time (e.g. 1.0 minutes)
+FORCED_VENTILATION_REMAINING_TIME = (('analogValue', 2031), "R(1)'RHvacCoo'RpdVntOp'TiRmgRpdVnt")
+
+# Speed FIRE, remaining time (e.g. 1.0 minutes)
+SPEED_FIRE_REMAINING_TIME = (('analogValue', 2038), "R(1)'RHvacCoo'FplcVntOp'TiRmgFplcVnt")
+
+# Fault code for room operator unit (e.g. 0.0 noUnits)
+FAULT_CODE_FOR_ROOM_OPERATOR_UNIT = (('analogValue', 2039), "R(1)'ROpUnDev'FltCodeRu")
+
+# Maintenance code for room operator unit (e.g. 0.0 noUnits)
+MAINTENANCE_CODE_FOR_ROOM_OPERATOR_UNIT = (('analogValue', 2040), "R(1)'ROpUnDev'MntnCodeRu")
+
+# Room air quality (e.g. 0.0 partsPerMillion)
+ROOM_AIR_QUALITY = (('analogValue', 2042), "R(1)'Modbus'AQualR(2)")
+
+# Diagnostics for QBM (e.g. 8.0 noUnits)
+DIAGNOSTICS_FOR_QBM = (('analogValue', 2053), "R(1)'PDuctDevQbm'DiagQbm")
+
+# Relative setpoint f.supply air fan speed (e.g. 70.0 percent)
+RELATIVE_SETPOINT_F.SUPPLY_AIR_FAN_SPEED = (('analogValue', 2064), "R(1)'HVAC'FanSu'SpFanSuSpdRel")
+
+# Free cooling, setpoint room (e.g. 22.0 degreesCelsius)
+FREE_COOLING_SETPOINT_ROOM = (('analogValue', 2071), "R(1)'RHvacCoo'TCtlH'SpTRFreeC")
+
+# Setp.supply air temp.rotary heat exch. (e.g. 23.5 degreesCelsius)
+SETP.SUPPLY_AIR_TEMP.ROTARY_HEAT_EXCH. = (('analogValue', 2076), "R(1)'HVAC'Erc'SpTSuRotHExg")
+
+# Diagnostics BRDG (e.g. 8.0 noUnits)
+DIAGNOSTICS_BRDG = (('analogValue', 2078), "R(1)'ComItfDevBrdg'DiagBrdg")
+
+# Diagnostics FAN node (e.g. 9.0 noUnits)
+DIAGNOSTICS_FAN_NODE = (('analogValue', 2080), "R(1)'FanNodeDev'DiagFanNode")
+
+# Time for tmp.op.mode outp.for RF system (e.g. 0.0 minutes)
+TIME_FOR_TMP.OP.MODE_OUTP.FOR_RF_SYSTEM = (('analogValue', 2081), "R(1)'FanNodeDev'TiTmpOpMOutRfq")
+
+# Diagnostics VMN 1 (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMN_1 = (('analogValue', 2082), "R(1)'PshBtnDevVmn1'DiagVmn1")
+
+# Diagnostics VMN 2 (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMN_2 = (('analogValue', 2083), "R(1)'PshBtnDevVmn2'DiagVmn2")
+
+# Diagnostics VMN 3 (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMN_3 = (('analogValue', 2084), "R(1)'PshBtnDevVmn3'DiagVmn3")
+
+# Diagnostics VMSH 1 (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMSH_1 = (('analogValue', 2085), "R(1)'ROpUnDevVmsh1'DiagVmsh1")
+
+# Diagnostics VMSH 2 (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMSH_2 = (('analogValue', 2086), "R(1)'ROpUnDevVmsh2'DiagVmsh2")
+
+# Diagnostics VMSH 3 (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMSH_3 = (('analogValue', 2087), "R(1)'ROpUnDevVmsh3'DiagVmsh3")
+
+# Diagnostics VMSC (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMSC = (('analogValue', 2088), "R(1)'ROpUnDevVmsc'DiagVmsc")
+
+# Diagnostics VMC (e.g. 8.0 noUnits)
+DIAGNOSTICS_VMC = (('analogValue', 2089), "R(1)'IOExtnDevVmc'DiagVmc")
+
+# Humidity, limit max value (e.g. 0.0 percent)
+HUMIDITY_LIMIT_MAX_VALUE = (('analogValue', 2090), "R(1)'RHvacCoo'HuRelMax")
+
+# Fan speed,  min (e.g. 30.0 percent)
+FAN_SPEED__MIN = (('analogValue', 2091), "R(1)'HVAC'FanSu'FanSpdMinRel")
+
+# Process val.1 for room air qual,on-board (e.g. 0.0 partsPerMillion)
+PROCESS_VAL.1_FOR_ROOM_AIR_QUAL,ON-BOARD = (('analogValue', 2098), "R(1)'PrpyExtdCnf'AQualROnbPrcv1(OnbIO)")
+
+# Process val.2 for room air qual,on-board (e.g. 0.0 partsPerMillion)
+PROCESS_VAL.2_FOR_ROOM_AIR_QUAL,ON-BOARD = (('analogValue', 2099), "R(1)'PrpyExtdCnf'AQualROnbPrcv2(OnbIO)")
+
+# Signal val.1 for room air qual.,on-board (e.g. 0.0 volts)
+SIGNAL_VAL.1_FOR_ROOM_AIR_QUAL.,ON-BOARD = (('analogValue', 2100), "R(1)'PrpyExtdCnf'AQualROnbSigv1(OnbIO)")
+
+# Signal val.2 for room air qual.,on-board (e.g. 0.0 volts)
+SIGNAL_VAL.2_FOR_ROOM_AIR_QUAL.,ON-BOARD = (('analogValue', 2101), "R(1)'PrpyExtdCnf'AQualROnbSigv2(OnbIO)")
+
+# Process val.1 for room air quality, ECU (e.g. 0.0 partsPerMillion)
+PROCESS_VAL.1_FOR_ROOM_AIR_QUALITY_ECU = (('analogValue', 2102), "R(1)'PrpyExtdCnf'AQualREcuPrcv1(Ecu)")
+
+# Process val.2 for room air quality, ECU (e.g. 2000.0 partsPerMillion)
+PROCESS_VAL.2_FOR_ROOM_AIR_QUALITY_ECU = (('analogValue', 2103), "R(1)'PrpyExtdCnf'AQualREcuPrcv2(Ecu)")
+
+# Signal value 1 for room air quality, ECU (e.g. 0.0 millivolts)
+SIGNAL_VALUE_1_FOR_ROOM_AIR_QUALITY_ECU = (('analogValue', 2104), "R(1)'PrpyExtdCnf'AQualREcuSigv1(Ecu)")
+
+# Signal value 2 for room air quality, ECU (e.g. 10000.0 millivolts)
+SIGNAL_VALUE_2_FOR_ROOM_AIR_QUALITY_ECU = (('analogValue', 2105), "R(1)'PrpyExtdCnf'AQualREcuSigv2(Ecu)")
+
+# Process val.1 for rel.humidity extr.air (e.g. 0.0 percentRelativeHumidity)
+PROCESS_VAL.1_FOR_REL.HUMIDITY_EXTR.AIR = (('analogValue', 2106), "R(1)'PrpyExtdCnf'HuRelExPrcv1")
+
+# Process val.2 for rel.humidity extr.air (e.g. 0.0 percentRelativeHumidity)
+PROCESS_VAL.2_FOR_REL.HUMIDITY_EXTR.AIR = (('analogValue', 2107), "R(1)'PrpyExtdCnf'HuRelExPrcv2")
+
+# Signal value 1 for rel.humidity extr.air (e.g. 0.0 volts)
+SIGNAL_VALUE_1_FOR_REL.HUMIDITY_EXTR.AIR = (('analogValue', 2108), "R(1)'PrpyExtdCnf'HuRelExSigv1")
+
+# Signal value 2 for rel.humidity extr.air (e.g. 0.0 volts)
+SIGNAL_VALUE_2_FOR_REL.HUMIDITY_EXTR.AIR = (('analogValue', 2109), "R(1)'PrpyExtdCnf'HuRelExSigv2")
+
+# Actual configuration of control funct.1 (e.g. 441.0 noUnits)
+ACTUAL_CONFIGURATION_OF_CONTROL_FUNCT.1 = (('analogValue', 2113), "R(1)'RHvacCoo'ActlCnfCtl1")
+
+# Actual configuration of control funct.2 (e.g. 1213.0 noUnits)
+ACTUAL_CONFIGURATION_OF_CONTROL_FUNCT.2 = (('analogValue', 2114), "R(1)'HVAC'ActlCnfCtl2")
+
+# Actual configuration of control funct.3 (e.g. 2001.0 noUnits)
+ACTUAL_CONFIGURATION_OF_CONTROL_FUNCT.3 = (('analogValue', 2115), "R(1)'HVAC'ActlCnfCtl3")
+
+# Actual hardware configuration 1 (e.g. 205.0 noUnits)
+ACTUAL_HARDWARE_CONFIGURATION_1 = (('analogValue', 2118), "R(1)'HdwCnf'ActlHdwCnf1")
+
+# Actual hardware configuration 2 (e.g. 203.0 noUnits)
+ACTUAL_HARDWARE_CONFIGURATION_2 = (('analogValue', 2119), "R(1)'HdwCnf'ActlHdwCnf2")
+
+# Actual hardware configuration 3 (e.g. 104.0 noUnits)
+ACTUAL_HARDWARE_CONFIGURATION_3 = (('analogValue', 2120), "R(1)'HdwCnf'ActlHdwCnf3")
+
+# Actual hardware configuration 4 (e.g. 1212.0 noUnits)
+ACTUAL_HARDWARE_CONFIGURATION_4 = (('analogValue', 2121), "R(1)'HdwCnf'ActlHdwCnf4")
+
+# Actual hardware configuration 5 (e.g. 111.0 noUnits)
+ACTUAL_HARDWARE_CONFIGURATION_5 = (('analogValue', 2122), "R(1)'HdwCnf'ActlHdwCnf5")
+
+# Operating mode input from RF system (e.g. 0.0 noUnits)
+OPERATING_MODE_INPUT_FROM_RF_SYSTEM = (('analogValue', 2125), "R(1)'FanNodeDev'OpModInRfqs")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2197), "R(1)'AlmHdl'Alm1001'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2198), "R(1)'AlmHdl'Alm1002'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2199), "R(1)'AlmHdl'Alm1003'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2200), "R(1)'AlmHdl'Alm1004'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2201), "R(1)'AlmHdl'Alm1005'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2202), "R(1)'AlmHdl'Alm1006'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2203), "R(1)'AlmHdl'Alm1007'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2204), "R(1)'AlmHdl'Alm1008'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2205), "R(1)'AlmHdl'Alm1009'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2206), "R(1)'AlmHdl'Alm1010'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2207), "R(1)'AlmHdl'Alm1011'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2208), "R(1)'AlmHdl'Alm1020'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2209), "R(1)'AlmHdl'Alm1032'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2210), "R(1)'AlmHdl'Alm1033'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2211), "R(1)'AlmHdl'Alm1034'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2212), "R(1)'AlmHdl'Alm1035'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2213), "R(1)'AlmHdl'Alm1040'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2214), "R(1)'AlmHdl'Alm2001'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2215), "R(1)'AlmHdl'Alm2002'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2216), "R(1)'AlmHdl'Alm2003'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2217), "R(1)'AlmHdl'Alm2004'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2218), "R(1)'AlmHdl'Alm2005'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2219), "R(1)'AlmHdl'Alm2007'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2220), "R(1)'AlmHdl'Alm2010'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2221), "R(1)'AlmHdl'Alm3001'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2222), "R(1)'AlmHdl'Alm3002'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2223), "R(1)'AlmHdl'Alm3003'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2224), "R(1)'AlmHdl'Alm3004'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2225), "R(1)'AlmHdl'Alm3006'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2226), "R(1)'AlmHdl'Alm3007'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2227), "R(1)'AlmHdl'Alm2008'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2228), "R(1)'AlmHdl'Alm2009'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2229), "R(1)'AlmHdl'Alm2011'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2230), "R(1)'AlmHdl'Alm2014'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2232), "R(1)'AlmHdl'Alm2016'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2233), "R(1)'AlmHdl'Alm9001'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2234), "R(1)'AlmHdl'Alm9002'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2235), "R(1)'AlmHdl'Alm9003'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2236), "R(1)'AlmHdl'Alm9004'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2237), "R(1)'AlmHdl'Alm9005'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2238), "R(1)'AlmHdl'Alm9006'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2239), "R(1)'AlmHdl'Alm9007'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2240), "R(1)'AlmHdl'Alm9008'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2241), "R(1)'AlmHdl'Alm9009'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2242), "R(1)'AlmHdl'Alm9010'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2243), "R(1)'AlmHdl'Alm9011'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2244), "R(1)'AlmHdl'Alm9012'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2245), "R(1)'AlmHdl'Alm9013'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2246), "R(1)'AlmHdl'Alm9014'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2247), "R(1)'AlmHdl'Alm9015'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2248), "R(1)'AlmHdl'Alm9016'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2249), "R(1)'AlmHdl'Alm9017'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2250), "R(1)'AlmHdl'Alm9018'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2251), "R(1)'AlmHdl'Alm9019'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2252), "R(1)'AlmHdl'Alm9020'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2253), "R(1)'AlmHdl'Alm9021'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2254), "R(1)'AlmHdl'Alm9022'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2255), "R(1)'AlmHdl'Alm9023'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2256), "R(1)'AlmHdl'Alm9024'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2257), "R(1)'AlmHdl'Alm9025'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2258), "R(1)'AlmHdl'Alm9026'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2259), "R(1)'AlmHdl'Alm9027'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2260), "R(1)'AlmHdl'Alm9028'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2261), "R(1)'AlmHdl'Alm1022'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2262), "R(1)'AlmHdl'Alm1023'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2263), "R(1)'AlmHdl'Alm1024'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2264), "R(1)'AlmHdl'Alm1025'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2265), "R(1)'AlmHdl'Alm1026'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2266), "R(1)'AlmHdl'Alm1027'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2267), "R(1)'AlmHdl'Alm1028'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2268), "R(1)'AlmHdl'Alm1029'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2269), "R(1)'AlmHdl'Alm1030'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2270), "R(1)'AlmHdl'Alm1036'AlmCode")
+
+# State 1 (e.g. 0.0 noUnits)
+STATE_1 = (('analogValue', 2275), "R(1)'HdwCnf'Sta1")
+
+# State 2 (e.g. 0.0 noUnits)
+STATE_2 = (('analogValue', 2276), "R(1)'HdwCnf'Sta2")
+
+# State 3 (e.g. 0.0 noUnits)
+STATE_3 = (('analogValue', 2277), "R(1)'HdwCnf'Sta3")
+
+# State 4 (e.g. 0.0 noUnits)
+STATE_4 = (('analogValue', 2278), "R(1)'HdwCnf'Sta4")
+
+# State 5 (e.g. 0.0 noUnits)
+STATE_5 = (('analogValue', 2279), "R(1)'HdwCnf'Sta5")
+
+# State 6 (e.g. 0.0 noUnits)
+STATE_6 = (('analogValue', 2280), "R(1)'HdwCnf'Sta6")
+
+# State 7 (e.g. 0.0 noUnits)
+STATE_7 = (('analogValue', 2281), "R(1)'HdwCnf'Sta7")
+
+# State 8 (e.g. 0.0 noUnits)
+STATE_8 = (('analogValue', 2282), "R(1)'HdwCnf'Sta8")
+
+# State 9 (e.g. 0.0 noUnits)
+STATE_9 = (('analogValue', 2283), "R(1)'HdwCnf'Sta9")
+
+# State 10 (e.g. 0.0 noUnits)
+STATE_10 = (('analogValue', 2284), "R(1)'HdwCnf'Sta10")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2285), "R(1)'AlmHdl'Alm2013'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2289), "R(1)'AlmHdl'Alm2018'AlmCode")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2290), "R(1)'AlmHdl'Alm2019'AlmCode")
+
+# Rotating heat exchanger speed feedback (e.g. 96.22673034667969 noUnits)
+ROTATING_HEAT_EXCHANGER_SPEED_FEEDBACK = (('analogValue', 2293), "R(1)'HVAC'Erc'RotHExgSpdFb")
+
+# Motor failure count (e.g. 0.0 noUnits)
+MOTOR_FAILURE_COUNT = (('analogValue', 2294), "R(1)'HVAC'Erc'RotHExgFailCnt")
+
+# Alarm code (e.g. 0.0 noUnits)
+ALARM_CODE = (('analogValue', 2297), "R(1)'AlmHdl'Alm1039'AlmCode")
+
+# Monitor BA to DAQ value (e.g. 180.0 noUnits)
+MONITOR_BA_TO_DAQ_VALUE = (('analogValue', 2299), "RotHExgSpdcmdRPM")
+
+# Monitor host MCU HAL speed value (e.g. 102.0 noUnits)
+MONITOR_HOST_MCU_HAL_SPEED_VALUE = (('analogValue', 2300), "RotHExgSpdABIRPM")
+
+# Monitor host MCU and motor MCU communication count (e.g. 30427.0 noUnits)
+MONITOR_HOST_MCU_AND_MOTOR_MCU_COMMUNICATION_COUNT = (('analogValue', 2301), "RotHExgSpdCOMUpCnt")
+
+# Monitor motor short loop state (e.g. 0.0 noUnits)
+MONITOR_MOTOR_SHORT_LOOP_STATE = (('analogValue', 2302), "RotHExgShortLoopState")
+
+# Monitor DRV8305 register 1 (e.g. 0.0 noUnits)
+MONITOR_DRV8305_REGISTER_1 = (('analogValue', 2303), "RotHExg8305R1")
+
+# Monitor DRV8305 register 2 (e.g. 0.0 noUnits)
+MONITOR_DRV8305_REGISTER_2 = (('analogValue', 2304), "RotHExg8305R2")
+
+# Monitor DRV8305 register 3 (e.g. 0.0 noUnits)
+MONITOR_DRV8305_REGISTER_3 = (('analogValue', 2305), "RotHExg8305R3")
+
+# Monitor DRV8305 register 4 (e.g. 0.0 noUnits)
+MONITOR_DRV8305_REGISTER_4 = (('analogValue', 2306), "RotHExg8305R4")
+
+# Monitor Motor MCU running time (e.g. 91221.0 noUnits)
+MONITOR_MOTOR_MCU_RUNNING_TIME = (('analogValue', 2307), "RotHExgFWRnTm")
+
+# Fume hood ventilation input (e.g. inactive None)
+FUME_HOOD_VENTILATION_INPUT = (('binaryInput', 23), "R(1)'FhVntIn")
+
+# Speed AWAY activate DI (e.g. inactive None)
+SPEED_AWAY_ACTIVATE_DI = (('binaryInput', 31), "R(1)'Away")
+
+# Fire thermostat, state (e.g. inactive None)
+FIRE_THERMOSTAT_STATE = (('binaryInput', 33), "R(1)'HclOvrTDet")
+
+# Speed HIGH activate DI (e.g. inactive None)
+SPEED_HIGH_ACTIVATE_DI = (('binaryInput', 82), "R(1)'High")
+
+# Damper, outside air (e.g. active None)
+DAMPER_OUTSIDE_AIR = (('binaryOutput', 18), "R(1)'DmpOaCmd")
+
+# Alarm, common output (e.g. inactive None)
+ALARM_COMMON_OUTPUT = (('binaryOutput', 20), "R(1)'CmnAlmIndOut")
+
+# Cooling, pump state (e.g. inactive None)
+COOLING_PUMP_STATE = (('binaryOutput', 71), "R(1)'IOExtnDevEcul'CclPuCmd(1)")
+
+# Fire alarm (e.g. inactive None)
+FIRE_ALARM = (('binaryValue', 11), "R(1)'RHvacCoo'SftyCtl'FireAlm")
+
+# Forced ventilation (e.g. inactive None)
+FORCED_VENTILATION = (('binaryValue', 15), "R(1)'RHvacCoo'RpdVntOp'RpdVntOp")
+
+# Enable linear outside temp.compensation (e.g. inactive None)
+ENABLE_LINEAR_OUTSIDE_TEMP.COMPENSATION = (('binaryValue', 16), "R(1)'RHvacCoo'TCtlH'EnLinTOaCmp")
+
+# Cool down request (e.g. inactive None)
+COOL_DOWN_REQUEST = (('binaryValue', 17), "R(1)'RHvacCoo'PltModDtr'CoolDwnReq")
+
+# Warm-up request (e.g. inactive None)
+WARM-UP_REQUEST = (('binaryValue', 18), "R(1)'RHvacCoo'PltModDtr'WarmUpReq")
+
+# Rotating heat exchanger , demand mode (e.g. inactive None)
+ROTATING_HEAT_EXCHANGER__DEMAND_MODE = (('binaryValue', 22), "R(1)'HVAC'Erc'HExgEcmSta")
+
+# Rotary heat exchanger available f.heat. (e.g. active None)
+ROTARY_HEAT_EXCHANGER_AVAILABLE_F.HEAT. = (('binaryValue', 25), "R(1)'HVAC'Erc'RotHExgAvlH")
+
+# Rotary heat exchanger available f.cool. (e.g. inactive None)
+ROTARY_HEAT_EXCHANGER_AVAILABLE_F.COOL. = (('binaryValue', 26), "R(1)'HVAC'Erc'RotHExgAvlC")
+
+# Heating coil available for heating (e.g. active None)
+HEATING_COIL_AVAILABLE_FOR_HEATING = (('binaryValue', 38), "R(1)'HVAC'Hcl'HclAvlH")
+
+# HOME/AWAY button status (e.g. active None)
+HOME/AWAY_BUTTON_STATUS = (('binaryValue', 50), "R(1)'ROpModDtr'CmfBtn")
+
+# Device mode (e.g. active None)
+DEVICE_MODE = (('binaryValue', 62), "R(1)'IOExtnDevEcul'DevMod")
+
+# Maintenance, activate (e.g. inactive None)
+MAINTENANCE_ACTIVATE = (('binaryValue', 395), "R(1)'HVAC'MntnCmd")
+
+# Fireplace, state DI (e.g. inactive None)
+FIREPLACE_STATE_DI = (('binaryValue', 400), "R(1)'RHvacCoo'FplcVntOp'FplcVnt")
+
+# Cooker hood, activate (e.g. inactive None)
+COOKER_HOOD_ACTIVATE = (('binaryValue', 402), "R(1)'RHvacCoo'FhVntOp'FhVnt")
+
+# Cacade control, sensor selection (e.g. active None)
+CACADE_CONTROL_SENSOR_SELECTION = (('binaryValue', 403), "R(1)'RHvacCoo'EnTExCtl")
+
+# De-icing, rotor active (e.g. inactive None)
+DE-ICING_ROTOR_ACTIVE = (('binaryValue', 404), "R(1)'HVAC'Erc'DeicReqHExg")
+
+# De-icing, fan active (e.g. inactive None)
+DE-ICING_FAN_ACTIVE = (('binaryValue', 405), "R(1)'HVAC'Erc'DeicReqFan")
+
+# De-icing, enable (e.g. active None)
+DE-ICING_ENABLE = (('binaryValue', 406), "R(1)'HVAC'Erc'EnDeic")
+
+# Fan available for ventilation (e.g. active None)
+FAN_AVAILABLE_FOR_VENTILATION = (('binaryValue', 409), "R(1)'HVAC'FanSu'FanAvlVnt")
+
+# Fan available for dehumidification (e.g. active None)
+FAN_AVAILABLE_FOR_DEHUMIDIFICATION = (('binaryValue', 410), "R(1)'HVAC'FanSu'FanAvlDhu")
+
+# Tacho, enable (e.g. active None)
+TACHO_ENABLE = (('binaryValue', 428), "R(1)'HVAC'FanSu'EnFanSpdFbIn")
+
+# Zero pressure calibration trigger ECU (e.g. inactive None)
+ZERO_PRESSURE_CALIBRATION_TRIGGER_ECU = (('binaryValue', 429), "R(1)'IOExtnDevEcul'ZePClbTrgEcu")
+
+# Fire damper, alarm (e.g. inactive None)
+FIRE_DAMPER_ALARM = (('binaryValue', 430), "R(1)'RHvacCoo'SftyCtl'FdpAlm")
+
+# Duct air temperature fire alarm (e.g. inactive None)
+DUCT_AIR_TEMPERATURE_FIRE_ALARM = (('binaryValue', 431), "R(1)'RHvacCoo'SftyCtl'TDuctFireAlm")
+
+# Exhaust air fan fault (e.g. inactive None)
+EXHAUST_AIR_FAN_FAULT = (('binaryValue', 434), "R(1)'HVAC'FanEhFlt")
+
+# Supply air fan fault (e.g. inactive None)
+SUPPLY_AIR_FAN_FAULT = (('binaryValue', 435), "R(1)'HVAC'FanSuFlt")
+
+# Energy recovery belt broken (e.g. inactive None)
+ENERGY_RECOVERY_BELT_BROKEN = (('binaryValue', 436), "R(1)'HVAC'ErcBltBrk")
+
+# Max.rotary heat exchanger speed state (e.g. active None)
+MAX.ROTARY_HEAT_EXCHANGER_SPEED_STATE = (('binaryValue', 438), "R(1)'HVAC'Erc'RotHExgSpmaSta")
+
+# Heating coil state (e.g. active None)
+HEATING_COIL_STATE = (('binaryValue', 440), "R(1)'HVAC'HclSta")
+
+# Electrical heater, OFF/ON (e.g. active None)
+ELECTRICAL_HEATER_OFF/ON = (('binaryValue', 445), "R(1)'HVAC'Hcl'EnHclEl")
+
+# Reset temporary ventilation operation (e.g. inactive None)
+RESET_TEMPORARY_VENTILATION_OPERATION = (('binaryValue', 452), "R(1)'ROpUnDev'RstTmpVntOp")
+
+# Temporary fireplace ventilation (e.g. inactive None)
+TEMPORARY_FIREPLACE_VENTILATION = (('binaryValue', 453), "R(1)'ROpUnDev'TmpFplcVnt")
+
+# Temporary rapid ventilation (e.g. inactive None)
+TEMPORARY_RAPID_VENTILATION = (('binaryValue', 454), "R(1)'ROpUnDev'TmpRpdVnt")
+
+# Presence button for room operator unit (e.g. active None)
+PRESENCE_BUTTON_FOR_ROOM_OPERATOR_UNIT = (('binaryValue', 455), "R(1)'ROpUnDev'PscBtnRu")
+
+# Presence button input value (e.g. inactive None)
+PRESENCE_BUTTON_INPUT_VALUE = (('binaryValue', 456), "R(1)'ROpUnDev'PscBtnIn")
+
+# Alarm, acknowledgement type B (e.g. inactive None)
+ALARM_ACKNOWLEDGEMENT_TYPE_B = (('binaryValue', 466), "R(1)'RHvacCoo'MntnFnct'BalmAckd")
+
+# Fault list reset (e.g. inactive None)
+FAULT_LIST_RESET = (('binaryValue', 467), "R(1)'RHvacCoo'AlmBdl'FltListRst")
+
+# A-Alarm acknowledged (e.g. inactive None)
+A-ALARM_ACKNOWLEDGED = (('binaryValue', 468), "R(1)'RHvacCoo'AlmFnct'AalmAckd")
+
+# A-Alarm reset (e.g. inactive None)
+A-ALARM_RESET = (('binaryValue', 469), "R(1)'RHvacCoo'AlmFnct'AalmRst")
+
+# Zero pressure calibration trigger QBM (e.g. inactive None)
+ZERO_PRESSURE_CALIBRATION_TRIGGER_QBM = (('binaryValue', 473), "R(1)'PDuctDevQbm'ZePClbTrgQbm")
+
+# Scheduler, override (e.g. inactive None)
+SCHEDULER_OVERRIDE = (('binaryValue', 474), "R(1)'ROpModDtr'SchedRstManCnf")
+
+# Fireplace or fume hood ventilation input (e.g. inactive None)
+FIREPLACE_OR_FUME_HOOD_VENTILATION_INPUT = (('binaryValue', 475), "R(1)'ROpModDtr'FplcOrFhVntIn")
+
+# Backup of comfort button (e.g. inactive None)
+BACKUP_OF_COMFORT_BUTTON = (('binaryValue', 476), "R(1)'ROpModDtr'BckpCmfBtn")
+
+# Enable free cooling (e.g. inactive None)
+ENABLE_FREE_COOLING = (('binaryValue', 478), "R(1)'RHvacCoo'FreeCDtr'EnFreeC")
+
+# Configuration for IO extension ECUL (e.g. inactive None)
+CONFIGURATION_FOR_IO_EXTENSION_ECUL = (('binaryValue', 489), "R(1)'Modbus'IOExtnEcul'IOExtnEculCnf")
+
+# Rot.exch.motor stuck, stop before retry (e.g. inactive None)
+ROT.EXCH.MOTOR_STUCK_STOP_BEFORE_RETRY = (('binaryValue', 491), "R(1)'PrpyExtdCnf'RoxStopBfRetry")
+
+# Emergency off activated (e.g. inactive None)
+EMERGENCY_OFF_ACTIVATED = (('binaryValue', 495), "R(1)'RHvacCoo'AlmBdl'Alm2001")
+
+# Smoke detector tripped (e.g. inactive None)
+SMOKE_DETECTOR_TRIPPED = (('binaryValue', 496), "R(1)'RHvacCoo'AlmBdl'Alm2002")
+
+# CO detector tripped (e.g. inactive None)
+CO_DETECTOR_TRIPPED = (('binaryValue', 497), "R(1)'RHvacCoo'AlmBdl'Alm2003")
+
+# Fire alarm activated (e.g. inactive None)
+FIRE_ALARM_ACTIVATED = (('binaryValue', 498), "R(1)'RHvacCoo'AlmBdl'Alm2004")
+
+# Fire damper, position feedback fault (e.g. inactive None)
+FIRE_DAMPER_POSITION_FEEDBACK_FAULT = (('binaryValue', 499), "R(1)'RHvacCoo'AlmBdl'Alm1009")
+
+# Supply air temp., operat.limits exceeded (e.g. inactive None)
+SUPPLY_AIR_TEMP._OPERAT.LIMITS_EXCEEDED = (('binaryValue', 500), "R(1)'RHvacCoo'AlmBdl'Alm2005")
+
+# Supply air temperature, sensor fault (e.g. inactive None)
+SUPPLY_AIR_TEMPERATURE_SENSOR_FAULT = (('binaryValue', 501), "R(1)'HVAC'AlmBdl'Alm1001")
+
+# Frost prot.temp.heat.coil, sensor fault (e.g. inactive None)
+FROST_PROT.TEMP.HEAT.COIL_SENSOR_FAULT = (('binaryValue', 502), "R(1)'HVAC'AlmBdl'Alm1005")
+
+# Supply air fan, speed feedback fault (e.g. inactive None)
+SUPPLY_AIR_FAN_SPEED_FEEDBACK_FAULT = (('binaryValue', 503), "R(1)'HVAC'AlmBdl'Alm1010")
+
+# Exhaust air fan, speed feedback fault (e.g. inactive None)
+EXHAUST_AIR_FAN_SPEED_FEEDBACK_FAULT = (('binaryValue', 504), "R(1)'HVAC'AlmBdl'Alm1011")
+
+# Heating coil, frost warning (e.g. inactive None)
+HEATING_COIL_FROST_WARNING = (('binaryValue', 505), "R(1)'HVAC'AlmBdl'Alm2007")
+
+# Reheating coil zone, overtemperature (e.g. inactive None)
+REHEATING_COIL_ZONE_OVERTEMPERATURE = (('binaryValue', 506), "R(1)'HVAC'AlmBdl'Alm2009")
+
+# Heating coil, overtemperature (e.g. inactive None)
+HEATING_COIL_OVERTEMPERATURE = (('binaryValue', 507), "R(1)'HVAC'AlmBdl'Alm2010")
+
+# Reheating coil zone, frost warning (e.g. inactive None)
+REHEATING_COIL_ZONE_FROST_WARNING = (('binaryValue', 508), "R(1)'HVAC'AlmBdl'Alm2011")
+
+# Heat pump air damper stops air flow (e.g. inactive None)
+HEAT_PUMP_AIR_DAMPER_STOPS_AIR_FLOW = (('binaryValue', 509), "R(1)'HVAC'AlmBdl'Alm2014")
+
+# Frost prot.temp.reheat.zone,sensor fault (e.g. inactive None)
+FROST_PROT.TEMP.REHEAT.ZONE,SENSOR_FAULT = (('binaryValue', 510), "R(1)'HVAC'AlmBdl'Alm1029")
+
+# Outside air temperature, sensor fault (e.g. inactive None)
+OUTSIDE_AIR_TEMPERATURE_SENSOR_FAULT = (('binaryValue', 511), "R(1)'HVAC'AlmBdl'Alm1004")
+
+# Rotary heat exchanger, motor stuck (e.g. inactive None)
+ROTARY_HEAT_EXCHANGER_MOTOR_STUCK = (('binaryValue', 512), "R(1)'HVAC'AlmBdl'Alm1007")
+
+# Rotary heat exchanger, belt broken (e.g. inactive None)
+ROTARY_HEAT_EXCHANGER_BELT_BROKEN = (('binaryValue', 513), "R(1)'HVAC'AlmBdl'Alm1008")
+
+# Heat pump, common alarm (e.g. inactive None)
+HEAT_PUMP_COMMON_ALARM = (('binaryValue', 514), "R(1)'HVAC'AlmBdl'Alm2015")
+
+# Heat pump controller, Modbus comm.error (e.g. inactive None)
+HEAT_PUMP_CONTROLLER_MODBUS_COMM.ERROR = (('binaryValue', 515), "R(1)'HVAC'AlmBdl'Alm3001")
+
+# I/O exten.module 1, Modbus comm.error (e.g. inactive None)
+I/O_EXTEN.MODULE_1_MODBUS_COMM.ERROR = (('binaryValue', 516), "R(1)'HVAC'AlmBdl'Alm3002")
+
+# I/O exten.module 2, Modbus comm.error (e.g. inactive None)
+I/O_EXTEN.MODULE_2_MODBUS_COMM.ERROR = (('binaryValue', 517), "R(1)'HVAC'AlmBdl'Alm3003")
+
+# Diff.pressure sensor, Modbus comm.error (e.g. inactive None)
+DIFF.PRESSURE_SENSOR_MODBUS_COMM.ERROR = (('binaryValue', 518), "R(1)'HVAC'AlmBdl'Alm3004")
+
+# Exhaust air temperature, sensor fault (e.g. inactive None)
+EXHAUST_AIR_TEMPERATURE_SENSOR_FAULT = (('binaryValue', 519), "R(1)'HVAC'AlmBdl'Alm1002")
+
+# Extract air temperature, sensor fault (e.g. inactive None)
+EXTRACT_AIR_TEMPERATURE_SENSOR_FAULT = (('binaryValue', 520), "R(1)'HVAC'AlmBdl'Alm1003")
+
+# Rel.humidity extract air, sensor fault (e.g. inactive None)
+REL.HUMIDITY_EXTRACT_AIR_SENSOR_FAULT = (('binaryValue', 521), "R(1)'HVAC'AlmBdl'Alm1006")
+
+# Air filter polluted (e.g. inactive None)
+AIR_FILTER_POLLUTED = (('binaryValue', 522), "R(1)'HVAC'AlmBdl'Alm1020")
+
+# Zone supply air temp., sensor fault (e.g. inactive None)
+ZONE_SUPPLY_AIR_TEMP._SENSOR_FAULT = (('binaryValue', 523), "R(1)'HVAC'AlmBdl'Alm1030")
+
+# Supply air pressure, sensor fault (e.g. inactive None)
+SUPPLY_AIR_PRESSURE_SENSOR_FAULT = (('binaryValue', 524), "R(1)'HVAC'AlmBdl'Alm1032")
+
+# Extract air pressure, sensor fault (e.g. inactive None)
+EXTRACT_AIR_PRESSURE_SENSOR_FAULT = (('binaryValue', 525), "R(1)'HVAC'AlmBdl'Alm1033")
+
+# Diff.press.supply air fan, sensor fault (e.g. inactive None)
+DIFF.PRESS.SUPPLY_AIR_FAN_SENSOR_FAULT = (('binaryValue', 526), "R(1)'HVAC'AlmBdl'Alm1034")
+
+# Diff.press.exhaust air fan, sensor fault (e.g. inactive None)
+DIFF.PRESS.EXHAUST_AIR_FAN_SENSOR_FAULT = (('binaryValue', 527), "R(1)'HVAC'AlmBdl'Alm1035")
+
+# RF interface device, Modbus comm.error (e.g. inactive None)
+RF_INTERFACE_DEVICE_MODBUS_COMM.ERROR = (('binaryValue', 528), "R(1)'HVAC'AlmBdl'Alm3006")
+
+# RF communication error (e.g. inactive None)
+RF_COMMUNICATION_ERROR = (('binaryValue', 529), "R(1)'HVAC'AlmBdl'Alm3007")
+
+# RF device, battery low (e.g. inactive None)
+RF_DEVICE_BATTERY_LOW = (('binaryValue', 530), "R(1)'HVAC'AlmBdl'Alm1040")
+
+# Delay for away active (e.g. inactive None)
+DELAY_FOR_AWAY_ACTIVE = (('binaryValue', 574), "R(1)'ROpModDtr'DlyAwayAct")
+
+# Next operating mode (e.g. inactive None)
+NEXT_OPERATING_MODE = (('binaryValue', 575), "R(1)'ROpUnDev'NxOpMod")
+
+# Binary calculated value (e.g. inactive None)
+BINARY_CALCULATED_VALUE = (('binaryValue', 576), "R(1)'ROpModDtr'SchedRstManTrg")
+
+# Outside air damper stops air flow (e.g. inactive None)
+OUTSIDE_AIR_DAMPER_STOPS_AIR_FLOW = (('binaryValue', 580), "R(1)'HVAC'AlmBdl'Alm2013")
+
+# Plant shutdown (e.g. inactive None)
+PLANT_SHUTDOWN = (('binaryValue', 581), "R(1)'HVAC'PltShdn")
+
+# Rotary heat exch. motor short circuit (e.g. inactive None)
+ROTARY_HEAT_EXCH._MOTOR_SHORT_CIRCUIT = (('binaryValue', 587), "R(1)'HVAC'AlmBdl'Alm1039")
+
+# Rotating heat exchanger motor reset (e.g. inactive None)
+ROTATING_HEAT_EXCHANGER_MOTOR_RESET = (('binaryValue', 589), "R(1)'HVAC'Erc'RotHExgSpdRst")
+
+# Stop RMC if Beltbroken (e.g. inactive None)
+STOP_RMC_IF_BELTBROKEN = (('binaryValue', 590), "R(1)'HVAC'Erc'BltBrkStopRMC")
+
+# I/O bus management (e.g. 1 None)
+I/O_BUS_MANAGEMENT = (('multiStateValue', 2), "IOBus'IOBusMgmt")
+
+# KNX PL-Link bus management (e.g. 1 None)
+KNX_PL-LINK_BUS_MANAGEMENT = (('multiStateValue', 4), "PlnkBus'PlnkBusMgmt")
+
+# Alarm, state type A (e.g. 1 None)
+ALARM_STATE_TYPE_A = (('multiStateValue', 7), "R(1)'RHvacCoo'AlmFnct'AalmSta")
+
+# Supply air temperature state (e.g. 2 None)
+SUPPLY_AIR_TEMPERATURE_STATE = (('multiStateValue', 12), "R(1)'RHvacCoo'SftyCtl'TSuSta")
+
+# Heating/cooling state (e.g. 2 None)
+HEATING/COOLING_STATE = (('multiStateValue', 13), "R(1)'RHvacCoo'HCStaDtr'HCSta")
+
+# Plant operating mode (e.g. 4 None)
+PLANT_OPERATING_MODE = (('multiStateValue', 14), "R(1)'RHvacCoo'PltModDtr'PltOpMod")
+
+# Air quality, indication (e.g. 1 None)
+AIR_QUALITY_INDICATION = (('multiStateValue', 16), "R(1)'RHvacCoo'AQualRInd")
+
+# Heating/cooling demand (e.g. 3 None)
+HEATING/COOLING_DEMAND = (('multiStateValue', 17), "R(1)'RHvacCoo'HCDmd")
+
+# Alarm, state type B (e.g. 1 None)
+ALARM_STATE_TYPE_B = (('multiStateValue', 18), "R(1)'RHvacCoo'MntnFnct'BalmSta")
+
+# Actual ventilation mode (e.g. 4 None)
+ACTUAL_VENTILATION_MODE = (('multiStateValue', 19), "R(1)'HVAC'PrPltOpMod")
+
+# Outside air damper device mode (e.g. 2 None)
+OUTSIDE_AIR_DAMPER_DEVICE_MODE = (('multiStateValue', 20), "R(1)'HVAC'DmpOa'DmpOaDevMod")
+
+# Rotating heat exchanger , operating mode (e.g. 2 None)
+ROTATING_HEAT_EXCHANGER__OPERATING_MODE = (('multiStateValue', 21), "R(1)'HVAC'Erc'RotHExgDevMod")
+
+# Electrical heater mode (e.g. 2 None)
+ELECTRICAL_HEATER_MODE = (('multiStateValue', 26), "R(1)'HVAC'Hcl'HclDevMod")
+
+# Present operating mode (e.g. 3 None)
+PRESENT_OPERATING_MODE = (('multiStateValue', 41), "R(1)'ROpModDtr'PrOpMod")
+
+# Present ventilation mode (e.g. 3 None)
+PRESENT_VENTILATION_MODE = (('multiStateValue', 42), "R(1)'ROpModDtr'ROpMod")
+
+# Manual operation condition (e.g. 1 None)
+MANUAL_OPERATION_CONDITION = (('multiStateValue', 43), "R(1)'ROpModDtr'ManOpCnd")
+
+# Central condition trigger (e.g. 1 None)
+CENTRAL_CONDITION_TRIGGER = (('multiStateValue', 44), "R(1)'ROpModDtr'CenCndTrg")
+
+# Comfort condition trigger (e.g. 1 None)
+COMFORT_CONDITION_TRIGGER = (('multiStateValue', 45), "R(1)'ROpModDtr'CmfCndTrg")
+
+# Energy efficiency condition trigger (e.g. 1 None)
+ENERGY_EFFICIENCY_CONDITION_TRIGGER = (('multiStateValue', 46), "R(1)'ROpModDtr'EefCndTrg")
+
+# Modbus management (e.g. 4 None)
+MODBUS_MANAGEMENT = (('multiStateValue', 60), "ModBus'ModBusMgmt")
+
+# On-board module (e.g. 1 None)
+ON-BOARD_MODULE = (('multiStateValue', 61), "OnbMdl4UI'OnbMdl")
+
+# On-board module (e.g. 1 None)
+ON-BOARD_MODULE = (('multiStateValue', 62), "OnbMdl3AO'OnbMdl")
+
+# On-board module (e.g. 1 None)
+ON-BOARD_MODULE = (('multiStateValue', 63), "OnbMdl4AI1UI'OnbMdl")
+
+# On-board module (e.g. 1 None)
+ON-BOARD_MODULE = (('multiStateValue', 64), "OnbMdl4BI'OnbMdl")
+
+# On-board module (e.g. 1 None)
+ON-BOARD_MODULE = (('multiStateValue', 65), "OnbMdl4BO'OnbMdl")
+
+# On-board module (e.g. 1 None)
+ON-BOARD_MODULE = (('multiStateValue', 66), "OnbMTR-V000514B0032")
+
+# IO extension module ECUL (e.g. 4 None)
+IO_EXTENSION_MODULE_ECUL = (('multiStateValue', 284), "R(1)'IOExtnDevEcul'IOExtnEcul")
+
+# Supply fan, operating mode (e.g. 2 None)
+SUPPLY_FAN_OPERATING_MODE = (('multiStateValue', 288), "R(1)'HVAC'FanSu'FanSuDevMod")
+
+# Supply air fan air demand for plant mode (e.g. 4 None)
+SUPPLY_AIR_FAN_AIR_DEMAND_FOR_PLANT_MODE = (('multiStateValue', 289), "R(1)'HVAC'FanSu'FanSuAirDmd")
+
+# Exhaust fan, operating mode (e.g. 2 None)
+EXHAUST_FAN_OPERATING_MODE = (('multiStateValue', 293), "R(1)'HVAC'FanEh'FanEhDevMod")
+
+# Maintenance, operating mode (e.g. 1 None)
+MAINTENANCE_OPERATING_MODE = (('multiStateValue', 294), "R(1)'HVAC'PrMntnSta")
+
+# Reliab.of diff.pressure supply air fan (e.g. 1 None)
+RELIAB.OF_DIFF.PRESSURE_SUPPLY_AIR_FAN = (('multiStateValue', 295), "R(1)'IOExtnDevEcul'DiffPFanSuRlb")
+
+# Reliab.of diff.pressure exhaust air fan (e.g. 1 None)
+RELIAB.OF_DIFF.PRESSURE_EXHAUST_AIR_FAN = (('multiStateValue', 296), "R(1)'IOExtnDevEcul'DiffPFanEhRlb")
+
+# Reliability of room air quality (e.g. 1 None)
+RELIABILITY_OF_ROOM_AIR_QUALITY = (('multiStateValue', 307), "R(1)'IOExtnDevEcul'AQualRRlb")
+
+# Temporary ventilation operation (e.g. 1 None)
+TEMPORARY_VENTILATION_OPERATION = (('multiStateValue', 319), "R(1)'ROpUnDev'TmpVntOp")
+
+# Room climate op.mode for room op.unit (e.g. 3 None)
+ROOM_CLIMATE_OP.MODE_FOR_ROOM_OP.UNIT = (('multiStateValue', 320), "R(1)'ROpUnDev'RClmOpModRu")
+
+# Maintenance indication for room op.unit (e.g. 1 None)
+MAINTENANCE_INDICATION_FOR_ROOM_OP.UNIT = (('multiStateValue', 323), "R(1)'ROpUnDev'MntnIndRu")
+
+# Fault indication for room operator unit (e.g. 1 None)
+FAULT_INDICATION_FOR_ROOM_OPERATOR_UNIT = (('multiStateValue', 326), "R(1)'ROpUnDev'FltIndRu")
+
+# Room operator unit (e.g. 1 None)
+ROOM_OPERATOR_UNIT = (('multiStateValue', 327), "R(1)'ROpUnDev'ROpUn")
+
+# Room climate operating mode input value (e.g. 1 None)
+ROOM_CLIMATE_OPERATING_MODE_INPUT_VALUE = (('multiStateValue', 328), "R(1)'ROpUnDev'RClmOpModIn")
+
+# Alarm, XCU modbus (e.g. 2 None)
+ALARM_XCU_MODBUS = (('multiStateValue', 333), "R(1)'HVAC'AlmBdl'AlmCnfXcu")
+
+# Alarm, ECU modbus (e.g. 1 None)
+ALARM_ECU_MODBUS = (('multiStateValue', 334), "R(1)'HVAC'AlmBdl'AlmCnfEcu")
+
+# Alarm, ECUL modbus (e.g. 2 None)
+ALARM_ECUL_MODBUS = (('multiStateValue', 335), "R(1)'HVAC'AlmBdl'AlmCnfEcul")
+
+# Alarm, QBM modbus (e.g. 2 None)
+ALARM_QBM_MODBUS = (('multiStateValue', 336), "R(1)'HVAC'AlmBdl'AlmCnfQbm")
+
+# Alarm, B4 selection (e.g. 1 None)
+ALARM_B4_SELECTION = (('multiStateValue', 337), "R(1)'HVAC'AlmBdl'AlmCnfTOa")
+
+# Alarm, heat exchanger selection (e.g. 2 None)
+ALARM_HEAT_EXCHANGER_SELECTION = (('multiStateValue', 338), "R(1)'HVAC'AlmBdl'AlmCnfRotHExg")
+
+# Alarm, HP selection (e.g. 3 None)
+ALARM_HP_SELECTION = (('multiStateValue', 339), "R(1)'HVAC'AlmBdl'AlmCnfHpu")
+
+# Alarm, indication type B (e.g. 1 None)
+ALARM_INDICATION_TYPE_B = (('multiStateValue', 340), "R(1)'RHvacCoo'MntnFnct'BalmInd")
+
+# Alarm, acknowledgement state type B (e.g. 1 None)
+ALARM_ACKNOWLEDGEMENT_STATE_TYPE_B = (('multiStateValue', 341), "R(1)'RHvacCoo'MntnFnct'BalmAck")
+
+# Alarm, operation of alarms list (e.g. 1 None)
+ALARM_OPERATION_OF_ALARMS_LIST = (('multiStateValue', 342), "R(1)'RHvacCoo'AlmBdl'FltListOp")
+
+# Alarm, indication type A (e.g. 1 None)
+ALARM_INDICATION_TYPE_A = (('multiStateValue', 343), "R(1)'RHvacCoo'AlmFnct'AalmInd")
+
+# Alarm, acknowledgement state type A (e.g. 1 None)
+ALARM_ACKNOWLEDGEMENT_STATE_TYPE_A = (('multiStateValue', 344), "R(1)'RHvacCoo'AlmFnct'AalmAck")
+
+# Control panel, fault state (e.g. 1 None)
+CONTROL_PANEL_FAULT_STATE = (('multiStateValue', 345), "R(1)'ROpUnDev'FltStaRu")
+
+# Fault acknowledgement input (e.g. 1 None)
+FAULT_ACKNOWLEDGEMENT_INPUT = (('multiStateValue', 346), "R(1)'ROpUnDev'FltAckIn")
+
+# Maintenance state for room operator unit (e.g. 1 None)
+MAINTENANCE_STATE_FOR_ROOM_OPERATOR_UNIT = (('multiStateValue', 347), "R(1)'ROpUnDev'MntnStaRu")
+
+# Maintenance acknowledgement input (e.g. 1 None)
+MAINTENANCE_ACKNOWLEDGEMENT_INPUT = (('multiStateValue', 348), "R(1)'ROpUnDev'MntnAckIn")
+
+# Reliab.of supply air temp.af.heat exch. (e.g. 1 None)
+RELIAB.OF_SUPPLY_AIR_TEMP.AF.HEAT_EXCH. = (('multiStateValue', 349), "R(1)'IOExtnDevEcul'TSuAfHExgRlb")
+
+# Duct pressure sensor QBM (e.g. 4 None)
+DUCT_PRESSURE_SENSOR_QBM = (('multiStateValue', 352), "R(1)'PDuctDevQbm'PDuctQbm")
+
+# Reliability of supply air pressure (e.g. 1 None)
+RELIABILITY_OF_SUPPLY_AIR_PRESSURE = (('multiStateValue', 353), "R(1)'PDuctDevQbm'PSuRlb")
+
+# Reliability of extract air pressure (e.g. 1 None)
+RELIABILITY_OF_EXTRACT_AIR_PRESSURE = (('multiStateValue', 354), "R(1)'PDuctDevQbm'PExRlb")
+
+# Forced ventilation, state (e.g. 1 None)
+FORCED_VENTILATION_STATE = (('multiStateValue', 357), "R(1)'RHvacCoo'RpdVntOp'TmpRpdVntTrg")
+
+# Speed FIRE, trigger APP (e.g. 1 None)
+SPEED_FIRE_TRIGGER_APP = (('multiStateValue', 360), "R(1)'RHvacCoo'FplcVntOp'TmpFplcVntTrg")
+
+# Rotating heat exchanger, state (e.g. 3 None)
+ROTATING_HEAT_EXCHANGER_STATE = (('multiStateValue', 361), "R(1)'ROpModDtr'HrvSta")
+
+# Communication interface BRDG (e.g. 4 None)
+COMMUNICATION_INTERFACE_BRDG = (('multiStateValue', 364), "R(1)'ComItfDevBrdg'ComItfBrdg")
+
+# Communication state RF system (e.g. 1 None)
+COMMUNICATION_STATE_RF_SYSTEM = (('multiStateValue', 365), "R(1)'ComItfDevBrdg'ComStaRfqs")
+
+# Battery state RF system (e.g. 1 None)
+BATTERY_STATE_RF_SYSTEM = (('multiStateValue', 366), "R(1)'ComItfDevBrdg'BattStaRfqs")
+
+# Fault state RF system (e.g. 1 None)
+FAULT_STATE_RF_SYSTEM = (('multiStateValue', 367), "R(1)'ComItfDevBrdg'FltStaRfqs")
+
+# Remove RF device (e.g. 1 None)
+REMOVE_RF_DEVICE = (('multiStateValue', 368), "R(1)'ComItfDevBrdg'RmvRfqDev")
+
+# Connected RF device 1 (e.g. 1 None)
+CONNECTED_RF_DEVICE_1 = (('multiStateValue', 369), "R(1)'ComItfDevBrdg'CnctdRfqDev1")
+
+# Connected RF device 2 (e.g. 1 None)
+CONNECTED_RF_DEVICE_2 = (('multiStateValue', 370), "R(1)'ComItfDevBrdg'CnctdRfqDev2")
+
+# Connected RF device 3 (e.g. 1 None)
+CONNECTED_RF_DEVICE_3 = (('multiStateValue', 371), "R(1)'ComItfDevBrdg'CnctdRfqDev3")
+
+# Connected RF device 4 (e.g. 1 None)
+CONNECTED_RF_DEVICE_4 = (('multiStateValue', 372), "R(1)'ComItfDevBrdg'CnctdRfqDev4")
+
+# Connected RF device 5 (e.g. 1 None)
+CONNECTED_RF_DEVICE_5 = (('multiStateValue', 373), "R(1)'ComItfDevBrdg'CnctdRfqDev5")
+
+# Connected RF device 6 (e.g. 1 None)
+CONNECTED_RF_DEVICE_6 = (('multiStateValue', 374), "R(1)'ComItfDevBrdg'CnctdRfqDev6")
+
+# Connected RF device 7 (e.g. 1 None)
+CONNECTED_RF_DEVICE_7 = (('multiStateValue', 375), "R(1)'ComItfDevBrdg'CnctdRfqDev7")
+
+# Connected RF device 8 (e.g. 1 None)
+CONNECTED_RF_DEVICE_8 = (('multiStateValue', 376), "R(1)'ComItfDevBrdg'CnctdRfqDev8")
+
+# Connected RF device 9 (e.g. 1 None)
+CONNECTED_RF_DEVICE_9 = (('multiStateValue', 377), "R(1)'ComItfDevBrdg'CnctdRfqDev9")
+
+# Connected RF device 10 (e.g. 1 None)
+CONNECTED_RF_DEVICE_10 = (('multiStateValue', 378), "R(1)'ComItfDevBrdg'CnctdRfqDev10")
+
+# RF device address output (e.g. 2 None)
+RF_DEVICE_ADDRESS_OUTPUT = (('multiStateValue', 379), "R(1)'ComItfDevBrdg'RfqDevAddrOut")
+
+# RF device address input (e.g. 1 None)
+RF_DEVICE_ADDRESS_INPUT = (('multiStateValue', 381), "R(1)'ComItfDevBrdg'RfqDevAddrIn")
+
+# Binding state input (e.g. 1 None)
+BINDING_STATE_INPUT = (('multiStateValue', 382), "R(1)'ComItfDevBrdg'BdgStaIn")
+
+# FAN node (e.g. 4 None)
+FAN_NODE = (('multiStateValue', 384), "R(1)'FanNodeDev'FanNode")
+
+# Operating mode output for RF system (e.g. 1 None)
+OPERATING_MODE_OUTPUT_FOR_RF_SYSTEM = (('multiStateValue', 386), "R(1)'FanNodeDev'OpModOutRfqs")
+
+# Binding command (e.g. 3 None)
+BINDING_COMMAND = (('multiStateValue', 387), "R(1)'FanNodeDev'BdgCmd")
+
+# Pushbutton VMN 1 (e.g. 4 None)
+PUSHBUTTON_VMN_1 = (('multiStateValue', 388), "R(1)'PshBtnDevVmn1'PshBtnVmn1")
+
+# Battery state VMN 1 (e.g. 1 None)
+BATTERY_STATE_VMN_1 = (('multiStateValue', 389), "R(1)'PshBtnDevVmn1'BattStaVmn1")
+
+# Pushbutton VMN 2 (e.g. 4 None)
+PUSHBUTTON_VMN_2 = (('multiStateValue', 390), "R(1)'PshBtnDevVmn2'PshBtnVmn2")
+
+# Battery state VMN 2 (e.g. 1 None)
+BATTERY_STATE_VMN_2 = (('multiStateValue', 391), "R(1)'PshBtnDevVmn2'BattStaVmn2")
+
+# Pushbutton VMN 3 (e.g. 4 None)
+PUSHBUTTON_VMN_3 = (('multiStateValue', 392), "R(1)'PshBtnDevVmn3'PshBtnVmn3")
+
+# Battery state VMN 3 (e.g. 1 None)
+BATTERY_STATE_VMN_3 = (('multiStateValue', 393), "R(1)'PshBtnDevVmn3'BattStaVmn3")
+
+# Room operator unit VMSH 1 (e.g. 4 None)
+ROOM_OPERATOR_UNIT_VMSH_1 = (('multiStateValue', 394), "R(1)'ROpUnDevVmsh1'ROpUnVmsh1")
+
+# Battery state VMSH 1 (e.g. 1 None)
+BATTERY_STATE_VMSH_1 = (('multiStateValue', 395), "R(1)'ROpUnDevVmsh1'BattStaVmsh1")
+
+# Room operator unit VMSH 2 (e.g. 4 None)
+ROOM_OPERATOR_UNIT_VMSH_2 = (('multiStateValue', 396), "R(1)'ROpUnDevVmsh2'ROpUnVmsh2")
+
+# Battery state VMSH 2 (e.g. 1 None)
+BATTERY_STATE_VMSH_2 = (('multiStateValue', 397), "R(1)'ROpUnDevVmsh2'BattStaVmsh2")
+
+# Room operator unit VMSH 3 (e.g. 4 None)
+ROOM_OPERATOR_UNIT_VMSH_3 = (('multiStateValue', 398), "R(1)'ROpUnDevVmsh3'ROpUnVmsh3")
+
+# Battery state VMSH 3 (e.g. 1 None)
+BATTERY_STATE_VMSH_3 = (('multiStateValue', 399), "R(1)'ROpUnDevVmsh3'BattStaVmsh3")
+
+# Room operator unit VMSC (e.g. 4 None)
+ROOM_OPERATOR_UNIT_VMSC = (('multiStateValue', 400), "R(1)'ROpUnDevVmsc'ROpUnVmsc")
+
+# I/O extension module VMC (e.g. 4 None)
+I/O_EXTENSION_MODULE_VMC = (('multiStateValue', 401), "R(1)'IOExtnDevVmc'IOExtnVmc")
+
+# Alarm acknowledgement (e.g. 1 None)
+ALARM_ACKNOWLEDGEMENT = (('multiStateValue', 434), "R(1)'AlmHdl'AlmAck")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 435), "R(1)'AlmHdl'Alm1001'AlmSta")
+
+# Alarm type (e.g. 1 None)
+ALARM_TYPE = (('multiStateValue', 436), "R(1)'AlmHdl'Alm1001'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 437), "R(1)'AlmHdl'Alm1002'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 438), "R(1)'AlmHdl'Alm1002'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 439), "R(1)'AlmHdl'Alm1003'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 440), "R(1)'AlmHdl'Alm1003'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 441), "R(1)'AlmHdl'Alm1004'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 442), "R(1)'AlmHdl'Alm1004'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 443), "R(1)'AlmHdl'Alm1005'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 444), "R(1)'AlmHdl'Alm1005'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 445), "R(1)'AlmHdl'Alm1006'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 446), "R(1)'AlmHdl'Alm1006'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 447), "R(1)'AlmHdl'Alm1007'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 448), "R(1)'AlmHdl'Alm1007'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 449), "R(1)'AlmHdl'Alm1008'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 450), "R(1)'AlmHdl'Alm1008'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 451), "R(1)'AlmHdl'Alm1009'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 452), "R(1)'AlmHdl'Alm1009'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 453), "R(1)'AlmHdl'Alm1010'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 454), "R(1)'AlmHdl'Alm1010'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 455), "R(1)'AlmHdl'Alm1011'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 456), "R(1)'AlmHdl'Alm1011'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 457), "R(1)'AlmHdl'Alm1020'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 458), "R(1)'AlmHdl'Alm1020'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 459), "R(1)'AlmHdl'Alm1032'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 460), "R(1)'AlmHdl'Alm1032'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 461), "R(1)'AlmHdl'Alm1033'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 462), "R(1)'AlmHdl'Alm1033'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 463), "R(1)'AlmHdl'Alm1034'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 464), "R(1)'AlmHdl'Alm1034'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 465), "R(1)'AlmHdl'Alm1035'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 466), "R(1)'AlmHdl'Alm1035'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 467), "R(1)'AlmHdl'Alm1040'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 468), "R(1)'AlmHdl'Alm1040'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 469), "R(1)'AlmHdl'Alm2001'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 470), "R(1)'AlmHdl'Alm2001'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 471), "R(1)'AlmHdl'Alm2002'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 472), "R(1)'AlmHdl'Alm2002'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 473), "R(1)'AlmHdl'Alm2003'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 474), "R(1)'AlmHdl'Alm2003'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 475), "R(1)'AlmHdl'Alm2004'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 476), "R(1)'AlmHdl'Alm2004'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 477), "R(1)'AlmHdl'Alm2005'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 478), "R(1)'AlmHdl'Alm2005'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 479), "R(1)'AlmHdl'Alm2007'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 480), "R(1)'AlmHdl'Alm2007'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 481), "R(1)'AlmHdl'Alm2010'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 482), "R(1)'AlmHdl'Alm2010'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 483), "R(1)'AlmHdl'Alm3001'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 484), "R(1)'AlmHdl'Alm3001'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 485), "R(1)'AlmHdl'Alm3002'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 486), "R(1)'AlmHdl'Alm3002'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 487), "R(1)'AlmHdl'Alm3003'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 488), "R(1)'AlmHdl'Alm3003'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 489), "R(1)'AlmHdl'Alm3004'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 490), "R(1)'AlmHdl'Alm3004'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 491), "R(1)'AlmHdl'Alm3006'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 492), "R(1)'AlmHdl'Alm3006'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 493), "R(1)'AlmHdl'Alm3007'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 494), "R(1)'AlmHdl'Alm3007'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 495), "R(1)'AlmHdl'Alm2008'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 496), "R(1)'AlmHdl'Alm2008'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 497), "R(1)'AlmHdl'Alm2009'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 498), "R(1)'AlmHdl'Alm2009'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 499), "R(1)'AlmHdl'Alm2011'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 500), "R(1)'AlmHdl'Alm2011'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 501), "R(1)'AlmHdl'Alm2014'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 502), "R(1)'AlmHdl'Alm2014'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 505), "R(1)'AlmHdl'Alm2016'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 506), "R(1)'AlmHdl'Alm2016'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 507), "R(1)'AlmHdl'Alm9001'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 508), "R(1)'AlmHdl'Alm9001'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 509), "R(1)'AlmHdl'Alm9002'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 510), "R(1)'AlmHdl'Alm9002'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 511), "R(1)'AlmHdl'Alm9003'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 512), "R(1)'AlmHdl'Alm9003'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 513), "R(1)'AlmHdl'Alm9004'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 514), "R(1)'AlmHdl'Alm9004'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 515), "R(1)'AlmHdl'Alm9005'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 516), "R(1)'AlmHdl'Alm9005'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 517), "R(1)'AlmHdl'Alm9006'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 518), "R(1)'AlmHdl'Alm9006'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 519), "R(1)'AlmHdl'Alm9007'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 520), "R(1)'AlmHdl'Alm9007'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 521), "R(1)'AlmHdl'Alm9008'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 522), "R(1)'AlmHdl'Alm9008'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 523), "R(1)'AlmHdl'Alm9009'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 524), "R(1)'AlmHdl'Alm9009'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 525), "R(1)'AlmHdl'Alm9010'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 526), "R(1)'AlmHdl'Alm9010'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 527), "R(1)'AlmHdl'Alm9011'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 528), "R(1)'AlmHdl'Alm9011'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 529), "R(1)'AlmHdl'Alm9012'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 530), "R(1)'AlmHdl'Alm9012'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 531), "R(1)'AlmHdl'Alm9013'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 532), "R(1)'AlmHdl'Alm9013'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 533), "R(1)'AlmHdl'Alm9014'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 534), "R(1)'AlmHdl'Alm9014'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 535), "R(1)'AlmHdl'Alm9015'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 536), "R(1)'AlmHdl'Alm9015'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 537), "R(1)'AlmHdl'Alm9016'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 538), "R(1)'AlmHdl'Alm9016'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 539), "R(1)'AlmHdl'Alm9017'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 540), "R(1)'AlmHdl'Alm9017'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 541), "R(1)'AlmHdl'Alm9018'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 542), "R(1)'AlmHdl'Alm9018'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 543), "R(1)'AlmHdl'Alm9019'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 544), "R(1)'AlmHdl'Alm9019'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 545), "R(1)'AlmHdl'Alm9020'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 546), "R(1)'AlmHdl'Alm9020'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 547), "R(1)'AlmHdl'Alm9021'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 548), "R(1)'AlmHdl'Alm9021'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 549), "R(1)'AlmHdl'Alm9022'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 550), "R(1)'AlmHdl'Alm9022'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 551), "R(1)'AlmHdl'Alm9023'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 552), "R(1)'AlmHdl'Alm9023'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 553), "R(1)'AlmHdl'Alm9024'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 554), "R(1)'AlmHdl'Alm9024'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 555), "R(1)'AlmHdl'Alm9025'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 556), "R(1)'AlmHdl'Alm9025'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 557), "R(1)'AlmHdl'Alm9026'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 558), "R(1)'AlmHdl'Alm9026'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 559), "R(1)'AlmHdl'Alm9027'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 560), "R(1)'AlmHdl'Alm9027'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 561), "R(1)'AlmHdl'Alm9028'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 562), "R(1)'AlmHdl'Alm9028'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 563), "R(1)'AlmHdl'Alm1022'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 564), "R(1)'AlmHdl'Alm1022'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 565), "R(1)'AlmHdl'Alm1023'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 566), "R(1)'AlmHdl'Alm1023'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 567), "R(1)'AlmHdl'Alm1024'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 568), "R(1)'AlmHdl'Alm1024'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 569), "R(1)'AlmHdl'Alm1025'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 570), "R(1)'AlmHdl'Alm1025'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 571), "R(1)'AlmHdl'Alm1026'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 572), "R(1)'AlmHdl'Alm1026'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 573), "R(1)'AlmHdl'Alm1027'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 574), "R(1)'AlmHdl'Alm1027'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 575), "R(1)'AlmHdl'Alm1028'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 576), "R(1)'AlmHdl'Alm1028'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 577), "R(1)'AlmHdl'Alm1029'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 578), "R(1)'AlmHdl'Alm1029'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 579), "R(1)'AlmHdl'Alm1030'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 580), "R(1)'AlmHdl'Alm1030'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 581), "R(1)'AlmHdl'Alm1036'AlmSta")
+
+# Multistate calculated value (e.g. 1 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 582), "R(1)'AlmHdl'Alm1036'AlmType")
+
+# Next room operating mode (e.g. 5 None)
+NEXT_ROOM_OPERATING_MODE = (('multiStateValue', 583), "R(1)'ROpUnDev'NxROpMod")
+
+# Room op.mode determ.for room op.unit (e.g. 1 None)
+ROOM_OP.MODE_DETERM.FOR_ROOM_OP.UNIT = (('multiStateValue', 584), "R(1)'ROpUnDev'ROpModDtrRu")
+
+# Temporary room operating mode input (e.g. 1 None)
+TEMPORARY_ROOM_OPERATING_MODE_INPUT = (('multiStateValue', 585), "R(1)'ROpUnDev'TmpROpModIn")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 605), "R(1)'AlmHdl'Alm2013'AlmSta")
+
+# Alarm type (e.g. 1 None)
+ALARM_TYPE = (('multiStateValue', 606), "R(1)'AlmHdl'Alm2013'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 607), "R(1)'AlmHdl'Alm2018'AlmSta")
+
+# Alarm type (e.g. 2 None)
+ALARM_TYPE = (('multiStateValue', 608), "R(1)'AlmHdl'Alm2018'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 609), "R(1)'AlmHdl'Alm2019'AlmSta")
+
+# Alarm type (e.g. 2 None)
+ALARM_TYPE = (('multiStateValue', 610), "R(1)'AlmHdl'Alm2019'AlmType")
+
+# Alarm state (e.g. 1 None)
+ALARM_STATE = (('multiStateValue', 611), "R(1)'AlmHdl'Alm1039'AlmSta")
+
+# Multistate calculated value (e.g. 2 None)
+MULTISTATE_CALCULATED_VALUE = (('multiStateValue', 612), "R(1)'AlmHdl'Alm1039'AlmType")
+
+# Air filter replace timer reset (e.g. 1 None)
+AIR_FILTER_REPLACE_TIMER_RESET = (('multiStateValue', 613), "R(1)'HVAC'AlmBdl'FilRpcRst")
+
+# Alarm config.for fan speed feedback (e.g. 2 None)
+ALARM_CONFIG.FOR_FAN_SPEED_FEEDBACK = (('multiStateValue', 614), "R(1)'HVAC'AlmBdl'AlmCnfFanFb")
+
+# Device low power (e.g. 1 None)
+DEVICE_LOW_POWER = (('multiStateValue', 617), "R(1)'HdwCnf'DevLwPwr")
+
+# Motor manual reset  (e.g. 1 None)
+MOTOR_MANUAL_RESET_ = (('multiStateValue', 618), "R(1)'HVAC'Erc'MotorManRst")
+
+# Monitor motor MCU state (e.g. 1 None)
+MONITOR_MOTOR_MCU_STATE = (('multiStateValue', 619), "RotHExgSpdState")
