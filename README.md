@@ -13,6 +13,12 @@ In order to use that library, you need to know the IP address and Device ID of y
 5. Open "More" menu -> Installer -> Communication -> BACnet settings.
 6. Note down "IP address" and "Device ID".
 
+## Install this python package
+
+In order to use this package you need to first clone the repo and run `python3 -m pip install .`
+
+You need to have Python version 3.10 or above.
+
 ## Connecting to a device
 
 ```python
