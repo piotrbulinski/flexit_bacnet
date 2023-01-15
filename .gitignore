@@ -3,3 +3,4 @@ venv
 __pycache__
 flexit_bacnet.egg-info
 dist
+.DS_Store
