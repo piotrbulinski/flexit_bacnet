@@ -14,14 +14,16 @@ BAC0.log_level('silence')
 def get_local_ip(device_address: str) -> None | str:
     """Get the local IP address used to connect to the remote one."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
     try:
-        s.connect((device_address, 0))
-    except socket.error:
-        return None
-    else:
-        return s.getsockname()[0]
+        # doesn't even have to be reachable
+        s.connect(('10.254.254.254', 1))
+        ip = s.getsockname()[0]
+    except Exception:  # pylint: disable=broad-except
+        ip = '127.0.0.1'
     finally:
         s.close()
+    return ip
 
 
 @contextmanager
