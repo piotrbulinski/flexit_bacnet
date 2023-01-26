@@ -7,11 +7,12 @@ from decorator import contextmanager
 
 from flexit_bacnet.device_property import DeviceProperty, PRESENT_VALUE
 from flexit_bacnet.typing import DeviceState
+from typing import Optional
 
 BAC0.log_level('silence')
 
 
-def get_local_ip(device_address: str) -> None | str:
+def get_local_ip(device_address: str) -> Optional[str]:
     """Get the local IP address used to connect to the remote one."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(0)

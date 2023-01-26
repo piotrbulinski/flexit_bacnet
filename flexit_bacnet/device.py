@@ -4,6 +4,7 @@ from flexit_bacnet import bacnet
 from flexit_bacnet.device_property import PRESENT_VALUE
 from flexit_bacnet.nordic import *
 from flexit_bacnet.typing import DeviceState
+from typing import Optional
 
 
 class FlexitBACnet:
@@ -29,12 +30,9 @@ class FlexitBACnet:
 
         self._state = bacnet.read_multiple(self.device_address, device_properties)
 
-    def _get_value(self, device_property: DeviceProperty, value_name: str | None = None) -> Any:
+    def _get_value(self, device_property: DeviceProperty, value_name: str = PRESENT_VALUE) -> Any:
         if self._state is None:
             self.refresh()
-
-        if value_name is None:
-            value_name = PRESENT_VALUE
 
         return dict(self._state[device_property.object_identifier])[value_name]
 

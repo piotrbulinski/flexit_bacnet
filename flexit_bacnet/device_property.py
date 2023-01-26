@@ -1,11 +1,18 @@
 from flexit_bacnet.typing import ObjectIdentifier
+from typing import List, Dict
 
 PRESENT_VALUE = 'presentValue'
 
 
 class DeviceProperty:
-    def __init__(self, object_type: str, instance_id: int, value_map: dict[int, str] | None = None,
-                 read_values: list[str] | None = None, priority: int | None = None):
+    def __init__(
+        self,
+        object_type: str,
+        instance_id: int,
+        value_map: Dict[int, str] = None,
+        read_values: List[str] = None,
+        priority: int = None
+    ):
         self.object_type = object_type
         self.instance_id = instance_id
         self.value_map = value_map
