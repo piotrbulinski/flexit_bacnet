@@ -25,3 +25,6 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/piotrbulinski/flexit_bacnet"
 "Bug Tracker" = "https://github.com/piotrbulinski/flexit_bacnet/issues"
+
+[tool.setuptools]
+packages = ["flexit_bacnet"]
