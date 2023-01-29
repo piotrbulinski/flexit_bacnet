@@ -1,10 +1,5 @@
 [build-system]
-requires = [
-    "setuptools>=61.0",
-    "BAC0==22.9.21",
-    "pytz==2022.7.1",
-    "decorator==5.1.1",
-]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]

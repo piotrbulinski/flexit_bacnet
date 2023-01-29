@@ -13,11 +13,8 @@ In order to use that library, you need to know the IP address and Device ID of y
 5. Open "More" menu -> Installer -> Communication -> BACnet settings.
 6. Note down "IP address" and "Device ID".
 
-## Install this python package
-
-In order to use this package you need to first clone the repo and run `python3 -m pip install .`
-
 You need to have Python version 3.10 or above.
+
 
 ## Connecting to a device
 
@@ -71,3 +68,14 @@ Which would result in the following output:
 ventilation mode (before): Home
 ventilation mode (after): High
 ```
+
+
+## Examples
+
+To execute examples without installing the package, set PYTHONPATH to local directory, e.g.:
+
+```bash
+PYTHONPATH=. python3 examples/current_mode.py 192.168.0.100
+```
+
+Where 192.168.0.100 should be replaced with your unit's IP address.

@@ -1,16 +1,14 @@
-from typing import Any
+from typing import Any, Optional
 
 from flexit_bacnet import bacnet
-from flexit_bacnet.device_property import PRESENT_VALUE
 from flexit_bacnet.nordic import *
-from flexit_bacnet.typing import DeviceState
 
 
 class FlexitBACnet:
-    def __init__(self, device_address: str, device_id: int):
-        self.device_address = device_address
+    def __init__(self, device_address: str, device_id: int, port: int = bacnet.DEFAULT_BACNET_PORT):
+        self.bacnet = bacnet.BACnetClient(device_address, port)
         self.device_id = device_id
-        self._state: DeviceState | None = None
+        self._state: Optional[bacnet.DeviceState] = None
 
     def is_valid(self) -> bool:
         """Return True if device address and device ID point to a valid BACnet peer."""
@@ -21,36 +19,44 @@ class FlexitBACnet:
 
     @property
     def _device_property(self) -> DeviceProperty:
-        return DeviceProperty('device', self.device_id, read_values=['objectName', 'description'])
+        return DeviceProperty(ObjectType.DEVICE,
+                              self.device_id,
+                              read_values=[
+                                  bacnet.ReadValue.OBJECT_NAME,
+                                  bacnet.ReadValue.DESCRIPTION
+                              ],
+                              )
 
     def refresh(self):
         """Refresh local device state."""
         device_properties = DEVICE_PROPERTIES + [self._device_property]
 
-        self._state = bacnet.read_multiple(self.device_address, device_properties)
+        self._state = self.bacnet.read_multiple(device_properties)
 
-    def _get_value(self, device_property: DeviceProperty, value_name: str | None = None) -> Any:
+    def _get_value(self,
+                   device_property: DeviceProperty,
+                   value_name: Optional[bacnet.ReadValue] = None) -> Any:
         if self._state is None:
             self.refresh()
 
         if value_name is None:
-            value_name = PRESENT_VALUE
+            value_name = bacnet.ReadValue.PRESENT_VALUE
 
         return dict(self._state[device_property.object_identifier])[value_name]
 
     def _set_value(self, device_property: DeviceProperty, value: Any):
-        bacnet.write(self.device_address, device_property, value)
+        self.bacnet.write(device_property, value)
         self.refresh()
 
     @property
     def device_name(self) -> str:
         """Return device name, e.g.: HvacFnct21y_A."""
-        return self._get_value(self._device_property, 'objectName')
+        return self._get_value(self._device_property, bacnet.ReadValue.OBJECT_NAME)
 
     @property
     def serial_number(self) -> str:
         """Return device's serial number, e.g.: 800220-000000."""
-        return self._get_value(self._device_property, 'description')
+        return self._get_value(self._device_property, bacnet.ReadValue.DESCRIPTION)
 
     @property
     def outside_air_temperature(self) -> float:
@@ -337,4 +343,5 @@ class FlexitBACnet:
 
     def reset_air_filter_timer(self):
         """Resets air filter replace timer."""
-        self._set_value(AIR_FILTER_REPLACE_TIMER_RESET, AIR_FILTER_REPLACE_TIMER_RESET.TRIGGER)
+        self._set_value(AIR_FILTER_REPLACE_TIMER_RESET,
+                        AIR_FILTER_REPLACE_TIMER_RESET.TRIGGER)
