@@ -1,8 +1,8 @@
+import asyncio
+
 from enum import IntEnum
-from socket import socket, timeout, AF_INET, SOCK_DGRAM
 from struct import pack, unpack
 from typing import Any, Dict, List, Optional, Tuple
-
 
 
 class APDUType(IntEnum):
@@ -27,7 +27,7 @@ MAX_APDU_SIZE = 4
 INVOKE_ID = 1
 
 TAG_OBJECT_TYPE_SHIFT = 22
-TAG_INSTANCE_ID_MASK = 0x3fffff
+TAG_INSTANCE_ID_MASK = 0x3FFFFF
 
 
 class ServiceChoice(IntEnum):
@@ -36,12 +36,12 @@ class ServiceChoice(IntEnum):
 
 
 BVLC_TYPE = 0x81
-BVLC_FUNCTION = 0x0a
+BVLC_FUNCTION = 0x0A
 BVLC_LENGTH = 4
 
 NPDU_VERSION = 1
 NPDU_EXPECT_REPLY = 4
-NPDU = pack('!BB', NPDU_VERSION, NPDU_EXPECT_REPLY)
+NPDU = pack("!BB", NPDU_VERSION, NPDU_EXPECT_REPLY)
 
 
 class ReadValue(IntEnum):
@@ -81,7 +81,7 @@ class Tag:
         return self.number << 4 | ctx | self.length_type
 
     def pack(self) -> bytes:
-        return pack('!B', self.int)
+        return pack("!B", self.int)
 
 
 class CtxTag(Tag):
@@ -94,6 +94,12 @@ class AppTag(Tag):
         super().__init__(number=number, is_context=False, length_type=length_type)
 
 
+class WriteType(IntEnum):
+    UnsignedInt = 2
+    Real = 4
+    Enumerated = 9
+
+
 class DeviceProperty:
     def __init__(
         self,
@@ -101,11 +107,13 @@ class DeviceProperty:
         instance_id: int,
         read_values: Optional[List[ReadValue]] = None,
         priority: Optional[int] = None,
+        write_type: Optional[WriteType] = None,
     ):
         self.object_type = object_type
         self.instance_id = instance_id
         self.read_values = read_values or [ReadValue.PRESENT_VALUE]
         self.priority = priority
+        self.write_type = write_type
 
     @property
     def object_identifier(self) -> ObjectIdentifier:
@@ -113,8 +121,7 @@ class DeviceProperty:
 
     def apdu_object_identifier(self) -> bytes:
         apdu = CtxTag(0, 4).pack()
-        apdu += pack('!I', self.object_type <<
-                     TAG_OBJECT_TYPE_SHIFT | self.instance_id)
+        apdu += pack("!I", self.object_type << TAG_OBJECT_TYPE_SHIFT | self.instance_id)
         return apdu
 
     # read_access_spec returns APDU's read access spec for read-property-multiple service
@@ -126,44 +133,51 @@ class DeviceProperty:
         apdu += CtxTag(1, 6).pack()
 
         for read_value in self.read_values:
-            apdu += pack('!BB', CtxTag(0, 1).int, read_value)
+            apdu += pack("!BB", CtxTag(0, 1).int, read_value)
 
         apdu += CtxTag(1, 7).pack()
 
         return apdu
 
         # read_access_spec returns APDU's read access spec for read-property-multiple service
+
     def write_access_spec(self, value: Any) -> bytes:
         # object-identifier definition
         apdu = self.apdu_object_identifier()
-        apdu += pack('!BB', CtxTag(1, 1).int, ReadValue.PRESENT_VALUE)
+        apdu += pack("!BB", CtxTag(1, 1).int, ReadValue.PRESENT_VALUE)
 
         apdu += CtxTag(3, 6).pack()
 
-        apdu += pack('!BB', AppTag(2, 1).int, value)
+        if self.object_type == ObjectType.ANALOG_VALUE:
+            apdu += pack("!Bf", AppTag(WriteType.Real, 4).int, value)
+        elif self.object_type == ObjectType.BINARY_VALUE:
+            apdu += pack("!BB", AppTag(WriteType.Enumerated, 1).int, value)
+        else:
+            apdu += pack("!BB", AppTag(WriteType.UnsignedInt, 1).int, value)
 
         apdu += CtxTag(3, 7).pack()
 
         if self.priority is not None:
-            apdu += pack('!BB', CtxTag(4, 1).int, self.priority)
+            apdu += pack("!BB", CtxTag(4, 1).int, self.priority)
 
         return apdu
 
 
 # _read_property_multiple returns request payload for read-property-multiple service
 def _read_property_multiple(device_properties: List[DeviceProperty]) -> bytes:
-    apdu = pack('!BBBB',
-                APDUType.CONFIRMED_REQ << 4 | PDUFlags.SEGMENTED_RESPONSE_ACCEPTED,
-                MAX_RESPONSE_SEGMENTS << 4 | MAX_APDU_SIZE,
-                INVOKE_ID,
-                ServiceChoice.READ_PROPERTY_MULTIPLE)
+    apdu = pack(
+        "!BBBB",
+        APDUType.CONFIRMED_REQ << 4 | PDUFlags.SEGMENTED_RESPONSE_ACCEPTED,
+        MAX_RESPONSE_SEGMENTS << 4 | MAX_APDU_SIZE,
+        INVOKE_ID,
+        ServiceChoice.READ_PROPERTY_MULTIPLE,
+    )
 
     # for each device property, build read access spec chunk and append to the APDU
     for dp in device_properties:
         apdu += dp.read_access_spec()
 
-    bvlc = pack('!BBH', BVLC_TYPE, BVLC_FUNCTION,
-                BVLC_LENGTH + len(NPDU) + len(apdu))
+    bvlc = pack("!BBH", BVLC_TYPE, BVLC_FUNCTION, BVLC_LENGTH + len(NPDU) + len(apdu))
 
     return bvlc + NPDU + apdu
 
@@ -174,22 +188,22 @@ def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
     if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION:
         raise ConnectionError("unexpected response")
 
-    apdu = response[BVLC_LENGTH + len(NPDU):]
+    apdu = response[BVLC_LENGTH + len(NPDU) :]
 
     apdu_type = apdu[0] >> 4
 
     if apdu_type != APDUType.COMPLEX_ACK:
-        raise Exception(f'unsupported response type: {apdu_type}')
+        raise Exception(f"unsupported response type: {apdu_type}")
 
     invoke_id = apdu[1]
     if invoke_id != INVOKE_ID:
-        raise Exception(f'unexpected invoke ID: {invoke_id}')
+        raise Exception(f"unexpected invoke ID: {invoke_id}")
 
     service_choice = apdu[2]
     if service_choice != ServiceChoice.READ_PROPERTY_MULTIPLE:
-        raise Exception(f'unexpected service choice: {service_choice}')
+        raise Exception(f"unexpected service choice: {service_choice}")
 
-    decoder = BACNetDecoder(apdu, 3)
+    decoder = BACnetDecoder(apdu, 3)
 
     device_state = {}
 
@@ -201,7 +215,7 @@ def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
     return device_state
 
 
-class BACNetDecoder:
+class BACnetDecoder:
     def __init__(self, data: bytes, offset: int = 0):
         self.data = data
         self.i = offset
@@ -211,9 +225,9 @@ class BACNetDecoder:
 
     def read_bytes(self, n: int) -> bytes:
         if self.i + n > len(self.data):
-            raise Exception('unexpected EOF')
+            raise Exception("unexpected EOF")
 
-        data = self.data[self.i:self.i+n]
+        data = self.data[self.i : self.i + n]
 
         self.i += n
 
@@ -221,7 +235,7 @@ class BACNetDecoder:
 
     def read_byte(self) -> int:
         if self.i + 1 > len(self.data):
-            raise Exception('unexpected EOF')
+            raise Exception("unexpected EOF")
 
         byte = self.data[self.i]
 
@@ -264,19 +278,19 @@ class BACNetDecoder:
         tag_number, tag_length = self.read_context_tag()
 
         if tag_number != 0:
-            raise Exception('unexpected tag')
+            raise Exception("unexpected tag")
 
-        data = unpack('!I', self.read_bytes(tag_length))[0]
+        data = unpack("!I", self.read_bytes(tag_length))[0]
 
         object_type = ObjectType(data >> TAG_OBJECT_TYPE_SHIFT)
-        instance_number = data & 0x3fffff
+        instance_number = data & 0x3FFFFF
 
         return object_type, instance_number
 
     def parse_list_of_results(self) -> ObjectProperties:
         tag_number, tag_type = self.read_context_tag()
         if tag_number != 1 or tag_type != 6:
-            raise Exception('expected openning tag')
+            raise Exception("expected openning tag")
 
         results = []
 
@@ -286,7 +300,7 @@ class BACNetDecoder:
                 break
 
             if tag_number != 2:
-                raise Exception('unexpected tag')
+                raise Exception("unexpected tag")
 
             data = self.read_byte()
 
@@ -302,7 +316,7 @@ class BACNetDecoder:
         # check the openning tag
         tag_number, tag_type = self.read_context_tag()
         if tag_number != 4 or tag_type != 6:
-            raise Exception('expected openning tag')
+            raise Exception("expected openning tag")
 
         tag_number, tag_length = self.read_application_tag()
 
@@ -316,7 +330,7 @@ class BACNetDecoder:
         # check the closing tag
         tag_number, tag_type = self.read_context_tag()
         if tag_number != 4 or tag_type != 7:
-            raise Exception('expected closing tag')
+            raise Exception("expected closing tag")
 
         return value
 
@@ -333,30 +347,31 @@ class BACNetDecoder:
 
     def parse_float(self, length: int) -> float:
         if length != 4:
-            raise Exception(f'unsupported float size: {length}')
+            raise Exception(f"unsupported float size: {length}")
 
-        return unpack('!f', self.read_bytes(length))[0]
+        return unpack("!f", self.read_bytes(length))[0]
 
     def parse_string(self, length: int) -> str:
         encoding = self.read_byte()
 
         if encoding != 0:
-            raise Exception(f'unsupported encoding: {encoding}')
+            raise Exception(f"unsupported encoding: {encoding}")
 
-        return self.read_bytes(length-1).decode('utf-8')
+        return self.read_bytes(length - 1).decode("utf-8")
 
 
 def _write_property(device_property: DeviceProperty, value: Any) -> bytes:
-    apdu = pack('!BBBB',
-                APDUType.CONFIRMED_REQ << 4 | PDUFlags.SEGMENTED_RESPONSE_ACCEPTED,
-                MAX_RESPONSE_SEGMENTS << 4 | MAX_APDU_SIZE,
-                INVOKE_ID,
-                ServiceChoice.WRITE_PROPERTY)
+    apdu = pack(
+        "!BBBB",
+        APDUType.CONFIRMED_REQ << 4 | PDUFlags.SEGMENTED_RESPONSE_ACCEPTED,
+        MAX_RESPONSE_SEGMENTS << 4 | MAX_APDU_SIZE,
+        INVOKE_ID,
+        ServiceChoice.WRITE_PROPERTY,
+    )
 
     apdu += device_property.write_access_spec(value)
 
-    bvlc = pack('!BBH', BVLC_TYPE, BVLC_FUNCTION,
-                BVLC_LENGTH + len(NPDU) + len(apdu))
+    bvlc = pack("!BBH", BVLC_TYPE, BVLC_FUNCTION, BVLC_LENGTH + len(NPDU) + len(apdu))
 
     return bvlc + NPDU + apdu
 
@@ -367,23 +382,48 @@ def _parse_write_property_response(response: bytes):
     if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION:
         raise ConnectionError("unexpected response")
 
-    apdu = response[BVLC_LENGTH + len(NPDU):]
+    apdu = response[BVLC_LENGTH + len(NPDU) :]
 
     apdu_type = apdu[0] >> 4
 
     if apdu_type != APDUType.SIMPLE_ACK:
-        raise Exception(f'unsupported response type: {apdu_type}')
+        raise Exception(f"unsupported response type: {apdu_type}")
 
     invoke_id = apdu[1]
     if invoke_id != INVOKE_ID:
-        raise Exception(f'unexpected invoke ID: {invoke_id}')
+        raise Exception(f"unexpected invoke ID: {invoke_id}")
 
     service_choice = apdu[2]
     if service_choice != ServiceChoice.WRITE_PROPERTY:
-        raise Exception(f'unexpected service choice: {service_choice}')
+        raise Exception(f"unexpected service choice: {service_choice}")
 
 
 DEFAULT_BACNET_PORT = 47808
+
+
+class BACnetRequest:
+    def __init__(self, request: bytes, done: asyncio.Future):
+        self.request = request
+        self.done = done
+
+        self.transport: asyncio.DatagramTransport
+        self.response: bytes
+        self.exception: Exception
+
+    def connection_made(self, transport: asyncio.DatagramTransport):
+        self.transport = transport
+        self.transport.sendto(self.request)
+
+    def datagram_received(self, response: bytes, addr: Tuple[str, int]):
+        self.response = response
+        self.transport.close()
+
+    def error_received(self, exception: Exception):
+        self.exception = exception
+
+    def connection_lost(self, exception: Exception):
+        self.exception = exception
+        self.done.set_result(True)
 
 
 class BACnetClient:
@@ -391,29 +431,38 @@ class BACnetClient:
         self.address = address
         self.port = port
 
-    def _send(self, request: bytes) -> bytes:
-        s = socket(AF_INET, SOCK_DGRAM)
-        s.settimeout(1)
+    async def _send(self, request: bytes) -> bytes:
+        loop = asyncio.get_running_loop()
+
+        done = loop.create_future()
+
+        bacnet_request = BACnetRequest(request, done)
+
+        transport, _ = await loop.create_datagram_endpoint(
+            lambda: bacnet_request, remote_addr=(self.address, self.port)
+        )
 
         try:
-            s.sendto(request, (self.address, self.port))
-            response, _ = s.recvfrom(1024)
-        except timeout as exc:
-            raise ConnectionError from exc
-        else:
-            return response
+            await asyncio.wait_for(done, timeout=1.0)
         finally:
-            s.close()
+            transport.close()
 
-    def read_multiple(self, device_properties: List[DeviceProperty]) -> DeviceState:
+        if bacnet_request.exception is not None:
+            raise bacnet_request.exception
+
+        return bacnet_request.response
+
+    async def read_multiple(
+        self, device_properties: List[DeviceProperty]
+    ) -> DeviceState:
         request = _read_property_multiple(device_properties)
 
-        response = self._send(request)
+        response = await self._send(request)
 
         return _parse_read_property_multiple_response(response)
 
-    def write(self, device_property: DeviceProperty, value: Any):
+    async def write(self, device_property: DeviceProperty, value: Any):
         request = _write_property(device_property, value)
 
-        response = self._send(request)
+        response = await self._send(request)
         return _parse_write_property_response(response)

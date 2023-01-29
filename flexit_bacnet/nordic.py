@@ -9,8 +9,8 @@ from .bacnet import DeviceProperty, ObjectType
 #     Also overrides Room operating mode PRESENT_VENTILATION_MODE.
 # 1 = Ventilation mode according to Room operating mode PRESENT_VENTILATION_MODE.
 COMFORT_BUTTON = DeviceProperty(ObjectType.BINARY_VALUE, 50, priority=13)
-COMFORT_BUTTON.ACTIVE = 'active'
-COMFORT_BUTTON.INACTIVE = 'inactive'
+COMFORT_BUTTON.ACTIVE = 1
+COMFORT_BUTTON.INACTIVE = 0
 
 # Sets the delay time in minutes for Comfort button
 COMFORT_BUTTON_DELAY = DeviceProperty(ObjectType.POSITIVE_INTEGER_VALUE, 318)
@@ -31,7 +31,7 @@ OPERATION_MODES = {
     OPERATION_MODE.HIGH: "High",
     OPERATION_MODE.FUME_HOOD: "Fume hood",
     OPERATION_MODE.FIREPLACE: "Fireplace",
-    OPERATION_MODE.TEMPORARY_HIGH: "Temporary high"
+    OPERATION_MODE.TEMPORARY_HIGH: "Temporary high",
 }
 
 # Ventilation mode [RW]
@@ -110,8 +110,8 @@ ROTATING_HEAT_EXCHANGER_EFFICIENCY = DeviceProperty(ObjectType.ANALOG_VALUE, 202
 
 # Electrical heater, OFF/ON (e.g. inactive)
 ELECTRICAL_HEATER = DeviceProperty(ObjectType.BINARY_VALUE, 445)
-ELECTRICAL_HEATER.ACTIVE = 'active'
-ELECTRICAL_HEATER.INACTIVE = 'inactive'
+ELECTRICAL_HEATER.ACTIVE = 1
+ELECTRICAL_HEATER.INACTIVE = 0
 
 # Electric heater, nom. Power (e.g. 0.800000011920929 kilowatts)
 ELECTRIC_HEATER_NOM_POWER = DeviceProperty(ObjectType.ANALOG_VALUE, 190)
@@ -121,8 +121,8 @@ HEATING_COIL_ELECTRIC_POWER = DeviceProperty(ObjectType.ANALOG_VALUE, 194)
 
 # Cooker hood, activate (e.g. inactive)
 COOKER_HOOD = DeviceProperty(ObjectType.BINARY_VALUE, 402, priority=13)
-COOKER_HOOD.ACTIVE = 'active'
-COOKER_HOOD.INACTIVE = 'inactive'
+COOKER_HOOD.ACTIVE = 1
+COOKER_HOOD.INACTIVE = 0
 
 # Linear, setpoint supply air HIGH (e.g. 100.0 percent)
 LINEAR_SETPOINT_SUPPLY_AIR_HIGH = DeviceProperty(ObjectType.ANALOG_VALUE, 1835)
@@ -162,16 +162,19 @@ AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE = DeviceProperty(ObjectType.ANALOG_VALUE, 28
 
 # Air filter polluted (e.g. inactive)
 AIR_FILTER_POLLUTED = DeviceProperty(ObjectType.BINARY_VALUE, 522)
-AIR_FILTER_POLLUTED.ACTIVE = 'active'
+AIR_FILTER_POLLUTED.ACTIVE = 1
 
 # Air filter replace timer reset (e.g. 1 None)
 AIR_FILTER_REPLACE_TIMER_RESET = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 613)
 AIR_FILTER_REPLACE_TIMER_RESET.TRIGGER = 2
 
+
+# Humidity sensorts
+ROOM_1_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2093)
+ROOM_2_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2094)
+ROOM_3_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2095)
+
 # List of all DeviceProperties defined in this file
 DEVICE_PROPERTIES = [
-    item
-    for _, item
-    in globals().items()
-    if isinstance(item, DeviceProperty)
+    item for _, item in globals().items() if isinstance(item, DeviceProperty)
 ]

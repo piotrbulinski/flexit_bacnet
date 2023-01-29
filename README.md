@@ -19,12 +19,17 @@ You need to have Python version 3.10 or above.
 ## Connecting to a device
 
 ```python
+import asyncio
+
 # import FlexitBACnet
 from flexit_bacnet import FlexitBACnet
 
-if __name__ == '__main__':
+
+async def main():
     # create a FlexitBACnet device instance with the IP address and Device ID
     device = FlexitBACnet('192.168.0.18', 2)
+
+    await device.update()
 
     # check whether device address and ID are correct
     if not device.is_valid():
@@ -33,6 +38,10 @@ if __name__ == '__main__':
     # check device name and s/n
     print('Device Name:', device.device_name)
     print('Serial Number:', device.serial_number)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Interacting with the device
@@ -42,24 +51,33 @@ For list of available states and interactions, please study [device.py](./flexit
 For example, changing ventilation mode can be done as follows:
 
 ```python
+import asyncio
+
 # import FlexitBACnet
 from flexit_bacnet import (
     FlexitBACnet,
     VENTILATION_MODE,
 )
 
-if __name__ == '__main__':
+
+async def main():
     # create a FlexitBACnet device instance with the IP address and Device ID
     device = FlexitBACnet('192.168.0.18', 2)
+
+    await device.update()
 
     # check current ventilation mode
     print('ventilation mode (before):', device.ventilation_mode)
 
     # set ventilation mode to High
-    device.set_ventilation_mode(VENTILATION_MODE.HIGH)
+    await device.set_ventilation_mode(VENTILATION_MODE.HIGH)
 
     # check current ventilation mode again
     print('ventilation mode (after):', device.ventilation_mode)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 Which would result in the following output:
