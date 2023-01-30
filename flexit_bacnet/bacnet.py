@@ -36,6 +36,7 @@ TAG_NO_PROPERTY_ACCESS_ERROR = 5
 
 PROPERTY_ACCESS_ERROR_SIZE = 4
 
+
 class ServiceChoice(IntEnum):
     READ_PROPERTY_MULTIPLE = 14
     WRITE_PROPERTY = 15
@@ -478,8 +479,9 @@ class BACnetClient:
         try:
             return _parse_read_property_multiple_response(response)
         except DecodingError as exc:
-            raise Exception(f"response decoding failed: {exc}\n{response.hex()}") from exc
-
+            raise Exception(
+                f"response decoding failed: {exc}\n{response.hex()}"
+            ) from exc
 
     async def write(self, device_property: DeviceProperty, value: Any):
         request = _write_property(device_property, value)
@@ -489,4 +491,6 @@ class BACnetClient:
         try:
             return _parse_write_property_response(response)
         except DecodingError as exc:
-            raise Exception(f"response decoding failed: {exc}\n{response.hex()}") from exc
+            raise Exception(
+                f"response decoding failed: {exc}\n{response.hex()}"
+            ) from exc
