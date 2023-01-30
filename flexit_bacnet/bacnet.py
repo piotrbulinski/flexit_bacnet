@@ -31,7 +31,10 @@ TAG_INSTANCE_ID_MASK = 0x3FFFFF
 
 TAG_OPEN = 6
 TAG_CLOSE = 7
+TAG_NO_PROPERTY_VALUE = 4
+TAG_NO_PROPERTY_ACCESS_ERROR = 5
 
+PROPERTY_ACCESS_ERROR_SIZE = 4
 
 class ServiceChoice(IntEnum):
     READ_PROPERTY_MULTIPLE = 14
@@ -326,14 +329,19 @@ class BACnetDecoder:
         if tag_type != TAG_OPEN:
             raise DecodingError("expected opening tag")
 
-        tag_number, tag_length = self.read_application_tag()
+        value = 0
 
-        value = {
-            2: self.parse_unsinged_int,
-            4: self.parse_float,
-            7: self.parse_string,
-            9: self.parse_enumarated_value,
-        }[tag_number](tag_length)
+        if opening_tag_number == TAG_NO_PROPERTY_VALUE:
+            tag_number, tag_length = self.read_application_tag()
+
+            value = {
+                2: self.parse_unsinged_int,
+                4: self.parse_float,
+                7: self.parse_string,
+                9: self.parse_enumarated_value,
+            }[tag_number](tag_length)
+        elif opening_tag_number == TAG_NO_PROPERTY_ACCESS_ERROR:
+            self.read_bytes(PROPERTY_ACCESS_ERROR_SIZE)
 
         # check the closing tag
         tag_number, tag_type = self.read_context_tag()
