@@ -29,6 +29,9 @@ INVOKE_ID = 1
 TAG_OBJECT_TYPE_SHIFT = 22
 TAG_INSTANCE_ID_MASK = 0x3FFFFF
 
+TAG_OPEN = 6
+TAG_CLOSE = 7
+
 
 class ServiceChoice(IntEnum):
     READ_PROPERTY_MULTIPLE = 14
@@ -100,6 +103,10 @@ class WriteType(IntEnum):
     Enumerated = 9
 
 
+class DecodingError(Exception):
+    pass
+
+
 class DeviceProperty:
     def __init__(
         self,
@@ -130,12 +137,12 @@ class DeviceProperty:
         apdu = self.apdu_object_identifier()
 
         # list of property references
-        apdu += CtxTag(1, 6).pack()
+        apdu += CtxTag(1, TAG_OPEN).pack()
 
         for read_value in self.read_values:
             apdu += pack("!BB", CtxTag(0, 1).int, read_value)
 
-        apdu += CtxTag(1, 7).pack()
+        apdu += CtxTag(1, TAG_CLOSE).pack()
 
         return apdu
 
@@ -146,7 +153,7 @@ class DeviceProperty:
         apdu = self.apdu_object_identifier()
         apdu += pack("!BB", CtxTag(1, 1).int, ReadValue.PRESENT_VALUE)
 
-        apdu += CtxTag(3, 6).pack()
+        apdu += CtxTag(3, TAG_OPEN).pack()
 
         if self.object_type == ObjectType.ANALOG_VALUE:
             apdu += pack("!Bf", AppTag(WriteType.Real, 4).int, value)
@@ -155,7 +162,7 @@ class DeviceProperty:
         else:
             apdu += pack("!BB", AppTag(WriteType.UnsignedInt, 1).int, value)
 
-        apdu += CtxTag(3, 7).pack()
+        apdu += CtxTag(3, TAG_CLOSE).pack()
 
         if self.priority is not None:
             apdu += pack("!BB", CtxTag(4, 1).int, self.priority)
@@ -184,24 +191,25 @@ def _read_property_multiple(device_properties: List[DeviceProperty]) -> bytes:
 
 # _parse_read_property_multiple_response and return DeviceState
 def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
-    bvlc_type, bvlc_function, bvlc_length = unpack("!BBH", response[0:4])
+    bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
     if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION:
         raise ConnectionError("unexpected response")
 
-    apdu = response[BVLC_LENGTH + len(NPDU) :]
+    apdu_start_index = BVLC_LENGTH + len(NPDU)
+    apdu = response[apdu_start_index:]
 
     apdu_type = apdu[0] >> 4
 
     if apdu_type != APDUType.COMPLEX_ACK:
-        raise Exception(f"unsupported response type: {apdu_type}")
+        raise DecodingError(f"unsupported response type: {apdu_type}")
 
     invoke_id = apdu[1]
     if invoke_id != INVOKE_ID:
-        raise Exception(f"unexpected invoke ID: {invoke_id}")
+        raise DecodingError(f"unexpected invoke ID: {invoke_id}")
 
     service_choice = apdu[2]
     if service_choice != ServiceChoice.READ_PROPERTY_MULTIPLE:
-        raise Exception(f"unexpected service choice: {service_choice}")
+        raise DecodingError(f"unexpected service choice: {service_choice}")
 
     decoder = BACnetDecoder(apdu, 3)
 
@@ -225,7 +233,7 @@ class BACnetDecoder:
 
     def read_bytes(self, n: int) -> bytes:
         if self.i + n > len(self.data):
-            raise Exception("unexpected EOF")
+            raise DecodingError("unexpected EOF")
 
         data = self.data[self.i : self.i + n]
 
@@ -235,7 +243,7 @@ class BACnetDecoder:
 
     def read_byte(self) -> int:
         if self.i + 1 > len(self.data):
-            raise Exception("unexpected EOF")
+            raise DecodingError("unexpected EOF")
 
         byte = self.data[self.i]
 
@@ -262,7 +270,7 @@ class BACnetDecoder:
     def read_context_tag(self) -> Tuple[int, int]:
         tag_number, tag_class, tag_type_length = self.read_tag()
         if tag_class != 1:
-            raise Exception(f"expected context specific tag, got {tag_class}")
+            raise DecodingError(f"expected context specific tag, got {tag_class}")
 
         return tag_number, tag_type_length
 
@@ -270,7 +278,7 @@ class BACnetDecoder:
     def read_application_tag(self) -> Tuple[int, int]:
         tag_number, tag_class, tag_type_length = self.read_tag()
         if tag_class != 0:
-            raise Exception(f"expected application tag, got {tag_class}")
+            raise DecodingError(f"expected application tag, got {tag_class}")
 
         return tag_number, tag_type_length
 
@@ -278,7 +286,7 @@ class BACnetDecoder:
         tag_number, tag_length = self.read_context_tag()
 
         if tag_number != 0:
-            raise Exception("unexpected tag")
+            raise DecodingError("unexpected tag")
 
         data = unpack("!I", self.read_bytes(tag_length))[0]
 
@@ -288,19 +296,19 @@ class BACnetDecoder:
         return object_type, instance_number
 
     def parse_list_of_results(self) -> ObjectProperties:
-        tag_number, tag_type = self.read_context_tag()
-        if tag_number != 1 or tag_type != 6:
-            raise Exception("expected openning tag")
+        opening_tag_number, tag_type = self.read_context_tag()
+        if tag_type != TAG_OPEN:
+            raise DecodingError("expected opening tag")
 
         results = []
 
         while True:
             tag_number, tag_type = self.read_context_tag()
-            if tag_number == 1 and tag_type == 7:
+            if tag_number == opening_tag_number and tag_type == TAG_CLOSE:
                 break
 
             if tag_number != 2:
-                raise Exception("unexpected tag")
+                raise DecodingError("unexpected tag")
 
             data = self.read_byte()
 
@@ -313,10 +321,10 @@ class BACnetDecoder:
         return results
 
     def read_value(self) -> Any:
-        # check the openning tag
-        tag_number, tag_type = self.read_context_tag()
-        if tag_number != 4 or tag_type != 6:
-            raise Exception("expected openning tag")
+        # check the opening tag
+        opening_tag_number, tag_type = self.read_context_tag()
+        if tag_type != TAG_OPEN:
+            raise DecodingError("expected opening tag")
 
         tag_number, tag_length = self.read_application_tag()
 
@@ -329,8 +337,8 @@ class BACnetDecoder:
 
         # check the closing tag
         tag_number, tag_type = self.read_context_tag()
-        if tag_number != 4 or tag_type != 7:
-            raise Exception("expected closing tag")
+        if tag_number != opening_tag_number or tag_type != TAG_CLOSE:
+            raise DecodingError("expected closing tag")
 
         return value
 
@@ -347,7 +355,7 @@ class BACnetDecoder:
 
     def parse_float(self, length: int) -> float:
         if length != 4:
-            raise Exception(f"unsupported float size: {length}")
+            raise DecodingError(f"unsupported float size: {length}")
 
         return unpack("!f", self.read_bytes(length))[0]
 
@@ -355,7 +363,7 @@ class BACnetDecoder:
         encoding = self.read_byte()
 
         if encoding != 0:
-            raise Exception(f"unsupported encoding: {encoding}")
+            raise DecodingError(f"unsupported encoding: {encoding}")
 
         return self.read_bytes(length - 1).decode("utf-8")
 
@@ -387,15 +395,15 @@ def _parse_write_property_response(response: bytes):
     apdu_type = apdu[0] >> 4
 
     if apdu_type != APDUType.SIMPLE_ACK:
-        raise Exception(f"unsupported response type: {apdu_type}")
+        raise DecodingError(f"unsupported response type: {apdu_type}")
 
     invoke_id = apdu[1]
     if invoke_id != INVOKE_ID:
-        raise Exception(f"unexpected invoke ID: {invoke_id}")
+        raise DecodingError(f"unexpected invoke ID: {invoke_id}")
 
     service_choice = apdu[2]
     if service_choice != ServiceChoice.WRITE_PROPERTY:
-        raise Exception(f"unexpected service choice: {service_choice}")
+        raise DecodingError(f"unexpected service choice: {service_choice}")
 
 
 DEFAULT_BACNET_PORT = 47808
@@ -459,10 +467,18 @@ class BACnetClient:
 
         response = await self._send(request)
 
-        return _parse_read_property_multiple_response(response)
+        try:
+            return _parse_read_property_multiple_response(response)
+        except DecodingError as exc:
+            raise Exception(f"response decoding failed: {exc}\n{response.hex()}") from exc
+
 
     async def write(self, device_property: DeviceProperty, value: Any):
         request = _write_property(device_property, value)
 
         response = await self._send(request)
-        return _parse_write_property_response(response)
+
+        try:
+            return _parse_write_property_response(response)
+        except DecodingError as exc:
+            raise Exception(f"response decoding failed: {exc}\n{response.hex()}") from exc
