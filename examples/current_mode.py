@@ -1,15 +1,29 @@
-# import FlexitBACnet
-from flexit_bacnet import (
-    FlexitBACnet,
-)
+import asyncio
+import sys
 
-if __name__ == '__main__':
+# import FlexitBACnet
+from flexit_bacnet import FlexitBACnet, VENTILATION_MODE
+
+
+async def main():
+    if len(sys.argv) < 2:
+        print(f"usage ./{sys.argv[0]} <flexit-unit-ip-address>")
+        exit()
+
+    device_address = sys.argv[1]
+
     # create a FlexitBACnet device instance with the IP address and Device ID
-    device = FlexitBACnet('192.168.2.14', 2)
+    device = FlexitBACnet(device_address, 2)
+
+    await device.update()
 
     # check whether device address and ID are correct
     if not device.is_valid():
-        raise Exception('not a valid device')
+        raise Exception("not a valid device")
 
     # check current ventilation mode
-    print('ventilation mode:', device.ventilation_mode)
+    print("ventilation mode:", device.ventilation_mode)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
