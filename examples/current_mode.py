@@ -2,7 +2,7 @@ import asyncio
 import sys
 
 # import FlexitBACnet
-from flexit_bacnet import FlexitBACnet, VENTILATION_MODE
+from flexit_bacnet import FlexitBACnet
 
 
 async def main():
