@@ -1,8 +1,12 @@
 import asyncio
+import os
 
 from enum import IntEnum
 from struct import pack, unpack
 from typing import Any, Dict, List, Optional, Tuple
+
+
+DEBUG = os.getenv("DEBUG") is not None
 
 
 class APDUType(IntEnum):
@@ -474,7 +478,13 @@ class BACnetClient:
     ) -> DeviceState:
         request = _read_property_multiple(device_properties)
 
+        if DEBUG:
+            print(f">>> {request.hex()}")
+
         response = await self._send(request)
+
+        if DEBUG:
+            print(f"<<< {response.hex()}")
 
         try:
             return _parse_read_property_multiple_response(response)
