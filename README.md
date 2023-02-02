@@ -13,7 +13,7 @@ In order to use that library, you need to know the IP address and Device ID of y
 5. Open "More" menu -> Installer -> Communication -> BACnet settings.
 6. Note down "IP address" and "Device ID".
 
-You need to have Python version 3.10 or above.
+You need to have Python version 3.7 or above.
 
 
 ## Connecting to a device
