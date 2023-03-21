@@ -67,22 +67,22 @@ class FlexitBACnet:
     @property
     def outside_air_temperature(self) -> float:
         """Outside air temperature in degrees Celsius, e.g. 14.3."""
-        return round(self._get_value(OUTSIDE_AIR_TEMPERATURE), 1)
+        return float(round(self._get_value(OUTSIDE_AIR_TEMPERATURE), 1))
 
     @property
     def supply_air_temperature(self) -> float:
         """Supply air temperature in degrees Celsius, e.g. 18.9."""
-        return round(self._get_value(SUPPLY_AIR_TEMPERATURE), 1)
+        return float(round(self._get_value(SUPPLY_AIR_TEMPERATURE), 1))
 
     @property
     def exhaust_air_temperature(self) -> float:
         """Exhaust air temperature in degrees Celsius, e.g. 14.5."""
-        return round(self._get_value(EXHAUST_AIR_TEMPERATURE), 1)
+        return float(round(self._get_value(EXHAUST_AIR_TEMPERATURE), 1))
 
     @property
     def extract_air_temperature(self) -> float:
         """Extract air temperature in degrees Celsius, e.g. 14.3."""
-        return round(self._get_value(EXTRACT_AIR_TEMPERATURE), 1)
+        return float(round(self._get_value(EXTRACT_AIR_TEMPERATURE), 1))
 
     @property
     def room_temperature(self) -> float:
@@ -90,7 +90,7 @@ class FlexitBACnet:
 
         Temperature is read from the temperature sensor on a CI70 panel.
         """
-        return round(self._get_value(ROOM_TEMPERATURE), 1)
+        return float(round(self._get_value(ROOM_TEMPERATURE), 1))
 
     @property
     def room_1_humidity(self) -> float:
@@ -98,7 +98,7 @@ class FlexitBACnet:
 
         RH value from CI77 - RH sensor 1.
         """
-        return round(self._get_value(ROOM_1_HUMIDITY), 1)
+        return float(round(self._get_value(ROOM_1_HUMIDITY), 1))
 
     @property
     def room_2_humidity(self) -> float:
@@ -106,7 +106,7 @@ class FlexitBACnet:
 
         RH value from CI77 - RH sensor 2.
         """
-        return round(self._get_value(ROOM_2_HUMIDITY), 1)
+        return float(round(self._get_value(ROOM_2_HUMIDITY), 1))
 
     @property
     def room_3_humidity(self) -> float:
@@ -114,7 +114,7 @@ class FlexitBACnet:
 
         RH value from CI77 - RH sensor 3.
         """
-        return round(self._get_value(ROOM_3_HUMIDITY), 1)
+        return float(round(self._get_value(ROOM_3_HUMIDITY), 1))
 
     @property
     def comfort_button(self) -> str:
@@ -159,7 +159,7 @@ class FlexitBACnet:
     @property
     def air_temp_setpoint_away(self) -> float:
         """Return temperature setpoint for Away mode."""
-        return self._get_value(AIR_TEMP_SETPOINT_AWAY)
+        return float(self._get_value(AIR_TEMP_SETPOINT_AWAY))
 
     async def set_air_temp_setpoint_away(self, temperature: float):
         """Set temperature setpoint for Away mode.
@@ -171,7 +171,7 @@ class FlexitBACnet:
     @property
     def air_temp_setpoint_home(self) -> float:
         """Return temperature setpoint for Home mode."""
-        return self._get_value(AIR_TEMP_SETPOINT_HOME)
+        return float(self._get_value(AIR_TEMP_SETPOINT_HOME))
 
     async def set_air_temp_setpoint_home(self, temperature: float):
         """Set temperature setpoint for Home mode.
@@ -191,7 +191,7 @@ class FlexitBACnet:
     @property
     def fireplace_ventilation_remaining_duration(self) -> int:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
-        return self._get_value(FIREPLACE_VENTILATION_REMAINING_DURATION)
+        return int(self._get_value(FIREPLACE_VENTILATION_REMAINING_DURATION))
 
     async def start_rapid_ventilation(self, minutes: int):
         """Trigger temporary rapid ventilation mode.
@@ -204,7 +204,7 @@ class FlexitBACnet:
     @property
     def rapid_ventilation_remaining_duration(self) -> int:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
-        return self._get_value(RAPID_VENTILATION_REMAINING_DURATION)
+        return int(self._get_value(RAPID_VENTILATION_REMAINING_DURATION))
 
     @property
     def supply_air_fan_control_signal(self) -> int:
@@ -229,7 +229,7 @@ class FlexitBACnet:
     @property
     def electric_heater(self) -> bool:
         """Return True if electric heater is enabled."""
-        return self._get_value(ELECTRICAL_HEATER) == ELECTRICAL_HEATER.ACTIVE
+        return bool(self._get_value(ELECTRICAL_HEATER) == ELECTRICAL_HEATER.ACTIVE)
 
     async def enable_electric_heater(self):
         """Enables electric air heater."""
@@ -242,12 +242,12 @@ class FlexitBACnet:
     @property
     def electric_heater_nominal_power(self) -> float:
         """Return nominal heater power in kilowatts."""
-        return self._get_value(ELECTRIC_HEATER_NOM_POWER)
+        return float(self._get_value(ELECTRIC_HEATER_NOM_POWER))
 
     @property
     def electric_heater_power(self) -> float:
         """Return heater power consumption in kilowatts."""
-        return self._get_value(HEATING_COIL_ELECTRIC_POWER)
+        return float(self._get_value(HEATING_COIL_ELECTRIC_POWER))
 
     async def activate_cooker_hood(self):
         """Activates cooker hood mode."""
@@ -350,26 +350,26 @@ class FlexitBACnet:
     @property
     def air_filter_operating_time(self) -> float:
         """Return air filter operating time in hours."""
-        return self._get_value(AIR_FILTER_OPERATING_TIME)
+        return float(self._get_value(AIR_FILTER_OPERATING_TIME))
 
     @property
     def air_filter_exchange_interval(self) -> float:
-        return self._get_value(AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE)
+        return float(self._get_value(AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE))
 
     @property
     def heat_exchanger_efficiency(self) -> int:
         """Returns heat exchanger efficiency in percent."""
-        return round(self._get_value(ROTATING_HEAT_EXCHANGER_EFFICIENCY))
+        return float(round(self._get_value(ROTATING_HEAT_EXCHANGER_EFFICIENCY)))
 
     @property
     def heat_exchanger_speed(self) -> int:
         """Returns heat exchanger speed in percent."""
-        return round(self._get_value(ROTATING_HEAT_EXCHANGER_SPEED))
+        return float(round(self._get_value(ROTATING_HEAT_EXCHANGER_SPEED)))
 
     @property
     def air_filter_polluted(self) -> bool:
         """Returns True if filter is polluted."""
-        return self._get_value(AIR_FILTER_POLLUTED) == AIR_FILTER_POLLUTED.ACTIVE
+        return bool(self._get_value(AIR_FILTER_POLLUTED) == AIR_FILTER_POLLUTED.ACTIVE)
 
     async def reset_air_filter_timer(self):
         """Resets air filter replace timer."""
