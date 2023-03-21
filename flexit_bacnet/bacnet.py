@@ -201,7 +201,7 @@ def _read_property_multiple(device_properties: List[DeviceProperty]) -> bytes:
 def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
     bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
     if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION:
-        raise ConnectionError("unexpected response")
+        raise DecodingError("unexpected response")
 
     apdu_start_index = BVLC_LENGTH + len(NPDU)
     apdu = response[apdu_start_index:]
@@ -401,7 +401,7 @@ def _write_property(device_property: DeviceProperty, value: Any) -> bytes:
 def _parse_write_property_response(response: bytes):
     bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
     if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION:
-        raise ConnectionError("unexpected response")
+        raise DecodingError("unexpected response")
 
     apdu = response[BVLC_LENGTH + len(NPDU) :]
 
@@ -469,7 +469,7 @@ class BACnetClient:
             transport.close()
 
         if bacnet_request.exception is not None:
-            raise bacnet_request.exception
+            raise ConnectionError from bacnet_request.exception
 
         return bacnet_request.response
 
@@ -489,7 +489,7 @@ class BACnetClient:
         try:
             return _parse_read_property_multiple_response(response)
         except DecodingError as exc:
-            raise Exception(
+            raise DecodingError(
                 f"response decoding failed: {exc}\n{response.hex()}"
             ) from exc
 
@@ -501,6 +501,6 @@ class BACnetClient:
         try:
             return _parse_write_property_response(response)
         except DecodingError as exc:
-            raise Exception(
+            raise DecodingError(
                 f"response decoding failed: {exc}\n{response.hex()}"
             ) from exc
