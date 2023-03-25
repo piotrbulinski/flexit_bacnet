@@ -10,7 +10,7 @@ class FlexitBACnet:
         device_address: str,
         device_id: int,
         port: int = bacnet.DEFAULT_BACNET_PORT,
-    ):
+    ) -> None:
         self.bacnet = bacnet.BACnetClient(device_address, port)
         self.device_id = device_id
         self._state: Optional[bacnet.DeviceState] = None
@@ -30,7 +30,7 @@ class FlexitBACnet:
             read_values=[bacnet.ReadValue.OBJECT_NAME, bacnet.ReadValue.DESCRIPTION],
         )
 
-    async def update(self):
+    async def update(self) -> None:
         """Refresh local device state."""
         device_properties = DEVICE_PROPERTIES + [self._device_property]
 
@@ -50,7 +50,7 @@ class FlexitBACnet:
 
         return dict(self._state[device_property.object_identifier])[value_name]
 
-    async def _set_value(self, device_property: DeviceProperty, value: Any):
+    async def _set_value(self, device_property: DeviceProperty, value: Any) -> None:
         await self.bacnet.write(device_property, value)
         await self.update()
 
@@ -121,17 +121,17 @@ class FlexitBACnet:
         """Comfort button state, e.g. active."""
         return self._get_value(COMFORT_BUTTON)
 
-    async def activate_comfort_button(self):
+    async def activate_comfort_button(self) -> None:
         """Activate comfort button."""
-        await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON.ACTIVE)
+        await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON_ACTIVE)
 
-    async def deactivate_comfort_button(self, delay: int = 0):
+    async def deactivate_comfort_button(self, delay: int = 0) -> None:
         """Deactivate comfort button with optional delay (in minutes)."""
         if delay < 0 or delay > 600:
             raise ValueError("delay must be between 0 and 600 minutes")
 
         await self._set_value(COMFORT_BUTTON_DELAY, delay)
-        await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON.INACTIVE)
+        await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON_INACTIVE)
 
     @property
     def operation_mode(self) -> str:
@@ -147,7 +147,7 @@ class FlexitBACnet:
         """
         return VENTILATION_MODES[self._get_value(VENTILATION_MODE)]
 
-    async def set_ventilation_mode(self, mode: int):
+    async def set_ventilation_mode(self, mode: int) -> None:
         """Set ventilation mode to one of the supported values:
         1 - Stop (VENTILATION_MODE.STOP)
         2 - Away (VENTILATION_MODE.AWAY)
@@ -173,33 +173,33 @@ class FlexitBACnet:
         """Return temperature setpoint for Home mode."""
         return float(self._get_value(AIR_TEMP_SETPOINT_HOME))
 
-    async def set_air_temp_setpoint_home(self, temperature: float):
+    async def set_air_temp_setpoint_home(self, temperature: float) -> None:
         """Set temperature setpoint for Home mode.
 
         temperature -- temperature in degrees Celsius
         """
         await self._set_value(AIR_TEMP_SETPOINT_HOME, temperature)
 
-    async def start_fireplace_ventilation(self, minutes: int):
+    async def start_fireplace_ventilation(self, minutes: int) -> None:
         """Trigger temporary fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
         """
         await self._set_value(FIREPLACE_VENTILATION_RUNTIME, minutes)
-        await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION.TRIGGER)
+        await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION_TRIGGER)
 
     @property
     def fireplace_ventilation_remaining_duration(self) -> int:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
         return int(self._get_value(FIREPLACE_VENTILATION_REMAINING_DURATION))
 
-    async def start_rapid_ventilation(self, minutes: int):
+    async def start_rapid_ventilation(self, minutes: int) -> None:
         """Trigger temporary rapid ventilation mode.
 
         minutes -- duration of rapid ventilation in minutes (1 - 360)
         """
         await self._set_value(RAPID_VENTILATION_RUNTIME, minutes)
-        await self._set_value(RAPID_VENTILATION, RAPID_VENTILATION.TRIGGER)
+        await self._set_value(RAPID_VENTILATION, RAPID_VENTILATION_TRIGGER)
 
     @property
     def rapid_ventilation_remaining_duration(self) -> int:
@@ -229,15 +229,15 @@ class FlexitBACnet:
     @property
     def electric_heater(self) -> bool:
         """Return True if electric heater is enabled."""
-        return bool(self._get_value(ELECTRICAL_HEATER) == ELECTRICAL_HEATER.ACTIVE)
+        return bool(self._get_value(ELECTRICAL_HEATER) == ELECTRICAL_HEATER_ACTIVE)
 
-    async def enable_electric_heater(self):
+    async def enable_electric_heater(self) -> None:
         """Enables electric air heater."""
-        await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER.ACTIVE)
+        await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER_ACTIVE)
 
-    async def disable_electric_heater(self):
+    async def disable_electric_heater(self) -> None:
         """Disables electric air heater."""
-        await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER.INACTIVE)
+        await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER_INACTIVE)
 
     @property
     def electric_heater_nominal_power(self) -> float:
@@ -249,20 +249,20 @@ class FlexitBACnet:
         """Return heater power consumption in kilowatts."""
         return float(self._get_value(HEATING_COIL_ELECTRIC_POWER))
 
-    async def activate_cooker_hood(self):
+    async def activate_cooker_hood(self) -> None:
         """Activates cooker hood mode."""
-        await self._set_value(COOKER_HOOD, COOKER_HOOD.ACTIVE)
+        await self._set_value(COOKER_HOOD, COOKER_HOOD_ACTIVE)
 
-    async def deactivate_cooker_hood(self):
+    async def deactivate_cooker_hood(self) -> None:
         """Deactivates cooker hood mode."""
-        await self._set_value(COOKER_HOOD, COOKER_HOOD.INACTIVE)
+        await self._set_value(COOKER_HOOD, COOKER_HOOD_INACTIVE)
 
     @property
     def fan_setpoint_supply_air_home(self) -> int:
         """Return fan setpoint for supply air HOME in percent."""
         return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_HOME))
 
-    async def set_fan_setpoint_supply_air_home(self, percent: int):
+    async def set_fan_setpoint_supply_air_home(self, percent: int) -> None:
         """Set fan setpoint for supply air HOME in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HOME, percent)
 
@@ -271,7 +271,7 @@ class FlexitBACnet:
         """Return fan setpoint for extract air HOME in percent."""
         return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_HOME))
 
-    async def set_fan_setpoint_extract_air_home(self, percent: int):
+    async def set_fan_setpoint_extract_air_home(self, percent: int) -> None:
         """Set fan setpoint for extract air HOME in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HOME, percent)
 
@@ -280,7 +280,7 @@ class FlexitBACnet:
         """Return fan setpoint for supply air HIGH in percent."""
         return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_HIGH))
 
-    async def set_fan_setpoint_supply_air_high(self, percent: int):
+    async def set_fan_setpoint_supply_air_high(self, percent: int) -> None:
         """Set fan setpoint for supply air HIGH in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HIGH, percent)
 
@@ -289,7 +289,7 @@ class FlexitBACnet:
         """Return fan setpoint for extract air HIGH in percent."""
         return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_HIGH))
 
-    async def set_fan_setpoint_extract_air_high(self, percent: int):
+    async def set_fan_setpoint_extract_air_high(self, percent: int) -> None:
         """Set fan setpoint for extract air HIGH in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HIGH, percent)
 
@@ -298,7 +298,7 @@ class FlexitBACnet:
         """Return fan setpoint for supply air AWAY in percent."""
         return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_AWAY))
 
-    async def set_fan_setpoint_supply_air_away(self, percent: int):
+    async def set_fan_setpoint_supply_air_away(self, percent: int) -> None:
         """Set fan setpoint for supply air AWAY in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_AWAY, percent)
 
@@ -307,7 +307,7 @@ class FlexitBACnet:
         """Return fan setpoint for extract air AWAY in percent."""
         return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_AWAY))
 
-    async def set_fan_setpoint_extract_air_away(self, percent: int):
+    async def set_fan_setpoint_extract_air_away(self, percent: int) -> None:
         """Set fan setpoint for extract air AWAY in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_AWAY, percent)
 
@@ -316,7 +316,7 @@ class FlexitBACnet:
         """Return fan setpoint for supply air COOKER in percent."""
         return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_COOKER))
 
-    async def set_fan_setpoint_supply_air_cooker(self, percent: int):
+    async def set_fan_setpoint_supply_air_cooker(self, percent: int) -> None:
         """Set fan setpoint for supply air COOKER in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_COOKER, percent)
 
@@ -325,7 +325,7 @@ class FlexitBACnet:
         """Return fan setpoint for extract air COOKER in percent."""
         return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_COOKER))
 
-    async def set_fan_setpoint_extract_air_cooker(self, percent: int):
+    async def set_fan_setpoint_extract_air_cooker(self, percent: int) -> None:
         """Set fan setpoint for extract air COOKER in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_COOKER, percent)
 
@@ -343,7 +343,7 @@ class FlexitBACnet:
         """Return fan setpoint for extract air FIRE in percent."""
         return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_FIRE))
 
-    async def set_fan_setpoint_extract_air_fire(self, percent: int):
+    async def set_fan_setpoint_extract_air_fire(self, percent: int) -> None:
         """Set fan setpoint for extract air FIRE in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_FIRE, percent)
 
@@ -359,20 +359,20 @@ class FlexitBACnet:
     @property
     def heat_exchanger_efficiency(self) -> int:
         """Returns heat exchanger efficiency in percent."""
-        return float(round(self._get_value(ROTATING_HEAT_EXCHANGER_EFFICIENCY)))
+        return int(round(self._get_value(ROTATING_HEAT_EXCHANGER_EFFICIENCY)))
 
     @property
     def heat_exchanger_speed(self) -> int:
         """Returns heat exchanger speed in percent."""
-        return float(round(self._get_value(ROTATING_HEAT_EXCHANGER_SPEED)))
+        return int(round(self._get_value(ROTATING_HEAT_EXCHANGER_SPEED)))
 
     @property
     def air_filter_polluted(self) -> bool:
         """Returns True if filter is polluted."""
-        return bool(self._get_value(AIR_FILTER_POLLUTED) == AIR_FILTER_POLLUTED.ACTIVE)
+        return bool(self._get_value(AIR_FILTER_POLLUTED) == AIR_FILTER_POLLUTED_ACTIVE)
 
-    async def reset_air_filter_timer(self):
+    async def reset_air_filter_timer(self) -> None:
         """Resets air filter replace timer."""
         await self._set_value(
-            AIR_FILTER_REPLACE_TIMER_RESET, AIR_FILTER_REPLACE_TIMER_RESET.TRIGGER
+            AIR_FILTER_REPLACE_TIMER_RESET, AIR_FILTER_REPLACE_TIMER_RESET_TRIGGER
         )
