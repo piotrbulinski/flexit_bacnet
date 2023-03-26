@@ -15,13 +15,6 @@ class FlexitBACnet:
         self.device_id = device_id
         self._state: Optional[bacnet.DeviceState] = None
 
-    def is_valid(self) -> bool:
-        """Return True if device address and device ID point to a valid BACnet peer."""
-        try:
-            return self.serial_number is not None
-        except ConnectionError:
-            return False
-
     @property
     def _device_property(self) -> DeviceProperty:
         return DeviceProperty(
@@ -117,9 +110,9 @@ class FlexitBACnet:
         return float(round(self._get_value(ROOM_3_HUMIDITY), 1))
 
     @property
-    def comfort_button(self) -> str:
-        """Comfort button state, e.g. active."""
-        return self._get_value(COMFORT_BUTTON)
+    def comfort_button(self) -> bool:
+        """Comfort button state, True if active."""
+        return self._get_value(COMFORT_BUTTON) == COMFORT_BUTTON_ACTIVE
 
     async def activate_comfort_button(self) -> None:
         """Activate comfort button."""
@@ -134,25 +127,25 @@ class FlexitBACnet:
         await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON_INACTIVE)
 
     @property
-    def operation_mode(self) -> str:
+    def operation_mode(self) -> int:
         """Returns current heat exchanger operation mode, e.g. Home."""
-        return OPERATION_MODES[self._get_value(OPERATION_MODE)]
+        return self._get_value(OPERATION_MODE)
 
     @property
-    def ventilation_mode(self) -> str:
+    def ventilation_mode(self) -> int:
         """Returns current ventilation mode, e.g. Home.
 
         This setting only works when comfort_button is active.
-        When inactive, this will always return "Away".
+        When inactive, this will always return VENTILATION_MODE_AWAY.
         """
-        return VENTILATION_MODES[self._get_value(VENTILATION_MODE)]
+        return self._get_value(VENTILATION_MODE)
 
     async def set_ventilation_mode(self, mode: int) -> None:
         """Set ventilation mode to one of the supported values:
-        1 - Stop (VENTILATION_MODE.STOP)
-        2 - Away (VENTILATION_MODE.AWAY)
-        3 - Home (VENTILATION_MODE.HOME)
-        4 - High (VENTILATION_MODE.HIGH)
+        1 - Stop (VENTILATION_MODE_STOP)
+        2 - Away (VENTILATION_MODE_AWAY)
+        3 - Home (VENTILATION_MODE_HOME)
+        4 - High (VENTILATION_MODE_HIGH)
         """
         await self._set_value(VENTILATION_MODE, mode)
 

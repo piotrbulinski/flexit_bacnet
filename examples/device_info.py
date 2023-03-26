@@ -17,10 +17,6 @@ async def main():
 
     await device.update()
 
-    # check whether device address and ID are correct
-    if not device.is_valid():
-        raise Exception("not a valid device")
-
     # check device name and s/n
     print(f"Device Name: {device.device_name}")
     print(f"Serial Number: {device.serial_number}")
