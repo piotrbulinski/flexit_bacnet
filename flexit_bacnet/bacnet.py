@@ -334,7 +334,7 @@ class BACnetDecoder:
         if tag_type != TAG_OPEN:
             raise DecodingError("expected opening tag")
 
-        value = 0
+        value: Any = 0
 
         if opening_tag_number == TAG_NO_PROPERTY_VALUE:
             tag_number, tag_length = self.read_application_tag()

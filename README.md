@@ -31,10 +31,6 @@ async def main():
 
     await device.update()
 
-    # check whether device address and ID are correct
-    if not device.is_valid():
-        raise Exception('not a valid device')
-
     # check device name and s/n
     print('Device Name:', device.device_name)
     print('Serial Number:', device.serial_number)
@@ -56,7 +52,7 @@ import asyncio
 # import FlexitBACnet
 from flexit_bacnet import (
     FlexitBACnet,
-    VENTILATION_MODE,
+    VENTILATION_MODE_HIGH
 )
 
 
@@ -70,7 +66,7 @@ async def main():
     print('ventilation mode (before):', device.ventilation_mode)
 
     # set ventilation mode to High
-    await device.set_ventilation_mode(VENTILATION_MODE.HIGH)
+    await device.set_ventilation_mode(VENTILATION_MODE_HIGH)
 
     # check current ventilation mode again
     print('ventilation mode (after):', device.ventilation_mode)
@@ -83,8 +79,8 @@ if __name__ == "__main__":
 Which would result in the following output:
 
 ```text
-ventilation mode (before): Home
-ventilation mode (after): High
+ventilation mode (before): 3
+ventilation mode (after): 2
 ```
 
 

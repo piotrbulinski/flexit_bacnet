@@ -17,10 +17,6 @@ async def main():
 
     await device.update()
 
-    # check whether device address and ID are correct
-    if not device.is_valid():
-        raise Exception("not a valid device")
-
     # check current ventilation mode
     print("ventilation mode:", device.ventilation_mode)
 
