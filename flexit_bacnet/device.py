@@ -36,7 +36,7 @@ class FlexitBACnet:
     ) -> Any:
 
         if self._state is None:
-            raise Exception("must run 'update()' mehtod first")
+            raise Exception("must run 'update()' method first")
 
         if value_name is None:
             value_name = bacnet.ReadValue.PRESENT_VALUE
