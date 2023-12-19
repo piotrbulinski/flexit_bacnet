@@ -5,12 +5,14 @@ from enum import IntEnum
 from struct import pack, unpack
 from typing import Any, Dict, List, Optional, Tuple
 
+from flexit_bacnet.network import get_broadcast_addresses
 
 DEBUG = os.getenv("DEBUG") is not None
 
 
 class APDUType(IntEnum):
     CONFIRMED_REQ = 0
+    UNCONFIRMED_REQ = 1
     SIMPLE_ACK = 2
     COMPLEX_ACK = 3
 
@@ -46,8 +48,13 @@ class ServiceChoice(IntEnum):
     WRITE_PROPERTY = 15
 
 
+class UnconfirmedServiceChoice(IntEnum):
+    UNCONFIRMED_PRIVATE_TRANSFER = 4
+
+
 BVLC_TYPE = 0x81
-BVLC_FUNCTION = 0x0A
+BVLC_FUNCTION_UNICAST = 0x0A
+BVLC_FUNCTION_BROADCAST = 0x0B
 BVLC_LENGTH = 4
 
 NPDU_VERSION = 1
@@ -192,7 +199,7 @@ def _read_property_multiple(device_properties: List[DeviceProperty]) -> bytes:
     for dp in device_properties:
         apdu += dp.read_access_spec()
 
-    bvlc = pack("!BBH", BVLC_TYPE, BVLC_FUNCTION, BVLC_LENGTH + len(NPDU) + len(apdu))
+    bvlc = pack("!BBH", BVLC_TYPE, BVLC_FUNCTION_UNICAST, BVLC_LENGTH + len(NPDU) + len(apdu))
 
     return bvlc + NPDU + apdu
 
@@ -200,7 +207,7 @@ def _read_property_multiple(device_properties: List[DeviceProperty]) -> bytes:
 # _parse_read_property_multiple_response and return DeviceState
 def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
     bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
-    if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION:
+    if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION_UNICAST:
         raise DecodingError("unexpected response")
 
     apdu_start_index = BVLC_LENGTH + len(NPDU)
@@ -392,7 +399,7 @@ def _write_property(device_property: DeviceProperty, value: Any) -> bytes:
 
     apdu += device_property.write_access_spec(value)
 
-    bvlc = pack("!BBH", BVLC_TYPE, BVLC_FUNCTION, BVLC_LENGTH + len(NPDU) + len(apdu))
+    bvlc = pack("!BBH", BVLC_TYPE, BVLC_FUNCTION_UNICAST, BVLC_LENGTH + len(NPDU) + len(apdu))
 
     return bvlc + NPDU + apdu
 
@@ -400,7 +407,7 @@ def _write_property(device_property: DeviceProperty, value: Any) -> bytes:
 # _parse_write_property_response and check for errors
 def _parse_write_property_response(response: bytes):
     bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
-    if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION:
+    if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION_UNICAST:
         raise DecodingError("unexpected response")
 
     apdu = response[BVLC_LENGTH + len(NPDU) :]
@@ -423,21 +430,33 @@ DEFAULT_BACNET_PORT = 47808
 
 
 class BACnetRequest:
-    def __init__(self, request: bytes, done: asyncio.Future):
+    _transport: asyncio.DatagramTransport
+
+    # response is the response payload
+    response: bytes
+
+    # src is the source address from where the response was received
+    src: Tuple[str, int]
+
+    # exception is the exception that occurred during the request
+    exception: Exception
+
+    def __init__(self, request: bytes, done: asyncio.Future = None):
         self.request = request
+
+        if done is None:
+            done = asyncio.get_running_loop().create_future()
+
         self.done = done
 
-        self.transport: asyncio.DatagramTransport
-        self.response: bytes
-        self.exception: Exception
-
     def connection_made(self, transport: asyncio.DatagramTransport):
-        self.transport = transport
-        self.transport.sendto(self.request)
+        self._transport = transport
+        self._transport.sendto(self.request)
 
     def datagram_received(self, response: bytes, addr: Tuple[str, int]):
         self.response = response
-        self.transport.close()
+        self.src = addr
+        self._transport.close()
 
     def error_received(self, exception: Exception):
         self.exception = exception
@@ -445,6 +464,9 @@ class BACnetRequest:
     def connection_lost(self, exception: Exception):
         self.exception = exception
         self.done.set_result(True)
+
+    def wait(self, timeout: float = 1.0):
+        return asyncio.wait_for(self.done, timeout=timeout)
 
 
 class BACnetClient:
@@ -455,16 +477,14 @@ class BACnetClient:
     async def _send(self, request: bytes) -> bytes:
         loop = asyncio.get_running_loop()
 
-        done = loop.create_future()
-
-        bacnet_request = BACnetRequest(request, done)
+        bacnet_request = BACnetRequest(request)
 
         transport, _ = await loop.create_datagram_endpoint(
             lambda: bacnet_request, remote_addr=(self.address, self.port)
         )
 
         try:
-            await asyncio.wait_for(done, timeout=1.0)
+            await bacnet_request.wait(timeout=1.0)
         finally:
             transport.close()
 
@@ -504,3 +524,124 @@ class BACnetClient:
             raise DecodingError(
                 f"response decoding failed: {exc}\n{response.hex()}"
             ) from exc
+
+
+# Flexit uses a proprietary service defined by Siemens to discover devices on the local network.
+VENDOR_ID_SIEMENS = 7
+SERVICE_NUMBER_DISCOVERY = 515
+SERVICE_NUMBER_IDENTIFICATION = 516
+
+# As I cannot find the specification for the service parameters,
+# will use what I've captured them from the Flexit app using Wireshark.
+# It seems to contain a UUID and some other "random" value,
+# but will use a fixed value for now and worry about it if anyone ever complains.
+DISCOVERY_SERVICE_PARAMETERS = (
+        b"\x80\x01\x00\x04\x00\x00\x00\x08\x64\x69\x73\x63\x6f\x76\x65\x72" +
+        b"\x00\x00\x00\x00\x0c\x00\x01\x0b\x00\x01\x00\x00\x00\x00\x0b\x00" +
+        b"\x02\x00\x00\x00\x2e\x41\x42\x54\x4d\x6f\x62\x69\x6c\x65\x3a\x38" +
+        b"\x34\x33\x30\x33\x64\x32\x64\x2d\x30\x34\x39\x37\x2d\x34\x65\x33" +
+        b"\x62\x2d\x62\x63\x38\x31\x2d\x37\x65\x36\x65\x62\x62\x31\x31\x65" +
+        b"\x64\x62\x38\x0b\x00\x03\x00\x00\x00\x0c\x3f\x44\x65\x76\x69\x63" +
+        b"\x65\x73\x3d\x41\x6c\x6c\x00\x00")
+
+
+def _discovery_request() -> bytes:
+    """Build a discovery request."""
+
+    # start APDU for unconfirmed private transfer
+    apdu = pack("!BB",
+                APDUType.UNCONFIRMED_REQ << 4,
+                UnconfirmedServiceChoice.UNCONFIRMED_PRIVATE_TRANSFER)
+
+    # set vendor ID and service number
+    apdu += pack("!BBBH",
+                 CtxTag(0, 1).int, VENDOR_ID_SIEMENS,
+                 CtxTag(1, 2).int, SERVICE_NUMBER_DISCOVERY)
+
+    # set the service parameters
+    apdu += CtxTag(2, TAG_OPEN).pack()
+    apdu += DISCOVERY_SERVICE_PARAMETERS
+    apdu += CtxTag(2, TAG_CLOSE).pack()
+
+    # set custom npdu and bvlc
+    npdu = pack("!BB", NPDU_VERSION, 0)  # don't expect reply
+    bvlc = pack("!BBH", BVLC_TYPE, BVLC_FUNCTION_BROADCAST, BVLC_LENGTH + len(npdu) + len(apdu))
+
+    return bvlc + npdu + apdu
+
+
+def _is_discovery_response(response: bytes) -> bool:
+    """Check if the response is a discovery response."""
+
+    bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
+    if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION_BROADCAST:
+        return False
+
+    apdu_start_index = BVLC_LENGTH + len(NPDU)
+    apdu = response[apdu_start_index:]
+
+    apdu_type = apdu[0] >> 4
+
+    if apdu_type != APDUType.UNCONFIRMED_REQ:
+        return False
+
+    decoder = BACnetDecoder(apdu, 2)
+
+    if decoder.read_context_tag() != (0, 1):
+        return False
+
+    if decoder.read_byte() != VENDOR_ID_SIEMENS:
+        return False
+
+    if decoder.read_context_tag() != (1, 2):
+        return False
+
+    if decoder.parse_unsinged_int(2) != SERVICE_NUMBER_IDENTIFICATION:
+        return False
+
+    return True
+
+
+async def discover() -> List[str]:
+    """
+    Discover devices on the local network.
+
+    Returns a list of IP addresses.
+    """
+    loop = asyncio.get_running_loop()
+
+    devices = []
+
+    for address in get_broadcast_addresses():
+        bacnet_request = BACnetRequest(_discovery_request())
+
+        transport, _ = await loop.create_datagram_endpoint(
+            lambda: bacnet_request,
+            local_addr=("0.0.0.0", DEFAULT_BACNET_PORT),
+            remote_addr=(address, DEFAULT_BACNET_PORT),
+            reuse_port=True,
+            allow_broadcast=True,
+        )
+
+        try:
+            await bacnet_request.wait(timeout=2.0)
+        except asyncio.TimeoutError:
+            continue
+        finally:
+            transport.close()
+
+        if bacnet_request.exception is not None:
+            raise ConnectionError from bacnet_request.exception
+
+        if bacnet_request.response is None:
+            continue
+
+        if _is_discovery_response(bacnet_request.response):
+            device_ip = bacnet_request.src[0]
+
+            if device_ip in devices:
+                continue
+
+            devices.append(bacnet_request.src[0])
+
+    return devices
