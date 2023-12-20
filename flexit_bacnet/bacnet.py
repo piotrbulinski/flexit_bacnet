@@ -1,5 +1,6 @@
 import asyncio
 import os
+import socket
 
 from enum import IntEnum
 from struct import pack, unpack
@@ -435,9 +436,6 @@ class BACnetRequest:
     # response is the response payload
     response: bytes
 
-    # src is the source address from where the response was received
-    src: Tuple[str, int]
-
     # exception is the exception that occurred during the request
     exception: Exception
 
@@ -455,7 +453,6 @@ class BACnetRequest:
 
     def datagram_received(self, response: bytes, addr: Tuple[str, int]):
         self.response = response
-        self.src = addr
         self._transport.close()
 
     def error_received(self, exception: Exception):
@@ -572,6 +569,8 @@ def _discovery_request() -> bytes:
 
 def _is_discovery_response(response: bytes) -> bool:
     """Check if the response is a discovery response."""
+    if len(response) < 32:
+        return False
 
     bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
     if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION_BROADCAST:
@@ -602,46 +601,45 @@ def _is_discovery_response(response: bytes) -> bool:
     return True
 
 
-async def discover() -> List[str]:
+async def discover(timeout: float = 1.0) -> List[str]:
     """
     Discover devices on the local network.
 
     Returns a list of IP addresses.
     """
-    loop = asyncio.get_running_loop()
+    response_ips = set()
 
-    devices = []
+    # Create a UDP socket
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.bind(('', DEFAULT_BACNET_PORT))
+        sock.setblocking(False)
 
-    for address in get_broadcast_addresses():
-        bacnet_request = BACnetRequest(_discovery_request())
+        async def receive_responses():
+            while True:
+                try:
+                    data, addr = sock.recvfrom(1024)
+                    if _is_discovery_response(data):
+                        response_ips.add(addr[0])
+                except BlockingIOError:
+                    await asyncio.sleep(0.1)  # Wait briefly to avoid busy loop
+                    continue
+                except Exception as e:
+                    print(f"Error receiving data: {e}")
+                    break
 
-        transport, _ = await loop.create_datagram_endpoint(
-            lambda: bacnet_request,
-            local_addr=("0.0.0.0", DEFAULT_BACNET_PORT),
-            remote_addr=(address, DEFAULT_BACNET_PORT),
-            reuse_port=True,
-            allow_broadcast=True,
-        )
+        # Run sending and receiving tasks concurrently
+        receiver = asyncio.create_task(receive_responses())
 
-        try:
-            await bacnet_request.wait(timeout=2.0)
-        except asyncio.TimeoutError:
-            continue
-        finally:
-            transport.close()
+        for address in get_broadcast_addresses():
+            sock.sendto(_discovery_request(), (address, DEFAULT_BACNET_PORT))
+            await asyncio.sleep(0.1)  # Slight delay between sends
 
-        if bacnet_request.exception is not None:
-            raise ConnectionError from bacnet_request.exception
+        # Wait for the specified timeout duration
+        await asyncio.sleep(timeout)
 
-        if bacnet_request.response is None:
-            continue
+        # Cancel the receiver task and close the socket
+        receiver.cancel()
 
-        if _is_discovery_response(bacnet_request.response):
-            device_ip = bacnet_request.src[0]
-
-            if device_ip in devices:
-                continue
-
-            devices.append(bacnet_request.src[0])
-
-    return devices
+    return list(response_ips)
