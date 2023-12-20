@@ -601,6 +601,26 @@ def _is_discovery_response(response: bytes) -> bool:
     return True
 
 
+async def _receive_identification_responses(sock: socket.socket, response_ips: set):
+    while True:
+        try:
+            data, addr = sock.recvfrom(1024)
+            if _is_discovery_response(data):
+                response_ips.add(addr[0])
+        except BlockingIOError:
+            await asyncio.sleep(0.1)  # Wait briefly to avoid busy loop
+            continue
+        except Exception as e:
+            print(f"Error receiving data: {e}")
+            break
+
+
+async def _send_discovery_request(sock: socket.socket):
+    for address in get_broadcast_addresses():
+        sock.sendto(_discovery_request(), (address, DEFAULT_BACNET_PORT))
+        await asyncio.sleep(0.1)  # Slight delay between sends
+
+
 async def discover(timeout: float = 1.0) -> List[str]:
     """
     Discover devices on the local network.
@@ -616,30 +636,15 @@ async def discover(timeout: float = 1.0) -> List[str]:
         sock.bind(('', DEFAULT_BACNET_PORT))
         sock.setblocking(False)
 
-        async def receive_responses():
-            while True:
-                try:
-                    data, addr = sock.recvfrom(1024)
-                    if _is_discovery_response(data):
-                        response_ips.add(addr[0])
-                except BlockingIOError:
-                    await asyncio.sleep(0.1)  # Wait briefly to avoid busy loop
-                    continue
-                except Exception as e:
-                    print(f"Error receiving data: {e}")
-                    break
-
         # Run sending and receiving tasks concurrently
-        receiver = asyncio.create_task(receive_responses())
+        try:
+            receiver = asyncio.create_task(_receive_identification_responses(sock, response_ips))
+            await _send_discovery_request(sock)
 
-        for address in get_broadcast_addresses():
-            sock.sendto(_discovery_request(), (address, DEFAULT_BACNET_PORT))
-            await asyncio.sleep(0.1)  # Slight delay between sends
-
-        # Wait for the specified timeout duration
-        await asyncio.sleep(timeout)
-
-        # Cancel the receiver task and close the socket
-        receiver.cancel()
+            # Wait a bit, so we can collect all device responses
+            await asyncio.sleep(timeout)
+        finally:
+            # cancel the receiver task
+            receiver.cancel()
 
     return list(response_ips)
