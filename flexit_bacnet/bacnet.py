@@ -6,7 +6,6 @@ from enum import IntEnum
 from struct import pack, unpack
 from typing import Any, Dict, List, Optional, Tuple
 
-from flexit_bacnet.network import get_broadcast_addresses
 
 DEBUG = os.getenv("DEBUG") is not None
 
@@ -615,13 +614,16 @@ async def _receive_identification_responses(sock: socket.socket, response_ips: s
             break
 
 
+BROADCAST_ADDRESS = "255.255.255.255"
+
+
 async def _send_discovery_request(sock: socket.socket):
-    for address in get_broadcast_addresses():
-        sock.sendto(_discovery_request(), (address, DEFAULT_BACNET_PORT))
+    while True:
+        sock.sendto(_discovery_request(), (BROADCAST_ADDRESS, DEFAULT_BACNET_PORT))
         await asyncio.sleep(0.1)  # Slight delay between sends
 
 
-async def discover(timeout: float = 1.0) -> List[str]:
+async def discover(timeout: float = 2.0) -> List[str]:
     """
     Discover devices on the local network.
 
@@ -630,7 +632,7 @@ async def discover(timeout: float = 1.0) -> List[str]:
     response_ips = set()
 
     # Create a UDP socket
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.bind(('', DEFAULT_BACNET_PORT))
@@ -639,12 +641,13 @@ async def discover(timeout: float = 1.0) -> List[str]:
         # Run sending and receiving tasks concurrently
         try:
             receiver = asyncio.create_task(_receive_identification_responses(sock, response_ips))
-            await _send_discovery_request(sock)
+            sender = asyncio.create_task(_send_discovery_request(sock))
 
             # Wait a bit, so we can collect all device responses
             await asyncio.sleep(timeout)
         finally:
             # cancel the receiver task
             receiver.cancel()
+            sender.cancel()
 
     return list(response_ips)
