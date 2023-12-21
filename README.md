@@ -93,3 +93,11 @@ PYTHONPATH=. python3 examples/current_mode.py 192.168.0.100
 ```
 
 Where 192.168.0.100 should be replaced with your unit's IP address.
+
+## Finding device IP address
+
+If you don't know the IP address of your unit, you can use the following script to find it:
+
+```bash
+PYTHONPATH=. python3 examples/discover.py
+```
