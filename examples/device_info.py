@@ -20,6 +20,7 @@ async def main():
     # check device name and s/n
     print(f"Device Name: {device.device_name}")
     print(f"Serial Number: {device.serial_number}")
+    print(f"Device Model: {device.model}")
     print(f"Outside air temp.: {device.outside_air_temperature} °C")
     print(f"Supply air temp.: {device.supply_air_temperature} °C")
     print(f"Extract air temp.: {device.extract_air_temperature} °C")

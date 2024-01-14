@@ -163,3 +163,22 @@ ROOM_3_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2095)
 DEVICE_PROPERTIES = [
     item for _, item in globals().items() if isinstance(item, DeviceProperty)
 ]
+
+# The first six digits in the Nordic serial number corresponds to the Nordic model.
+NORDIC_MODELS = {
+    800111: "Nordic S2 REL",
+    800121: "Nordic S3 REL",
+    800110: "Nordic S2 RER",
+    800120: "Nordic S3 RER",
+    800221: "Nordic CL4 REL",
+    800220: "Nordic CL4 RER",
+    800130: "Nordic S4 RER",
+    800131: "Nordic S4 REL",
+    800210: "Nordic CL2 RER",
+    800211: "Nordic CL2 REL",
+    800200: "Nordic CL3 RER",
+    800201: "Nordic CL3 REL",
+    800300: "Nordic KS3 RER",
+    800301: "Nordic KS3 REL",
+}
+
