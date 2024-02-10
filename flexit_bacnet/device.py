@@ -49,8 +49,9 @@ class FlexitBACnet:
 
     @property
     def device_name(self) -> str:
-        """Return device name, e.g.: HvacFnct21y_A."""
-        device_name = self._get_value(self._device_property, bacnet.ReadValue.OBJECT_NAME)
+        """Return device name, e.g.: Flexit Nordic"""
+        device_name_from_device = self._get_value(self._device_property, bacnet.ReadValue.OBJECT_NAME)
+        device_name = DEVICE_NAMES.get(device_name_from_device)
 
         if not isinstance(device_name, str):
             return ''
@@ -66,6 +67,16 @@ class FlexitBACnet:
             return ''
 
         return serial_number
+
+    @property
+    def model(self) -> str:
+        """Return device's model, e.g.: S2 REL."""
+        model = NORDIC_MODELS.get(int(self.serial_number[0:6]))
+
+        if not isinstance(model, str):
+            return ''
+
+        return model
 
     @property
     def outside_air_temperature(self) -> float:
