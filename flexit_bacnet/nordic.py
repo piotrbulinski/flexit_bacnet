@@ -77,6 +77,7 @@ TACHO_EXHAUST_FAN = DeviceProperty(ObjectType.ANALOG_INPUT, 12)
 
 # Extract air temperature (e.g. 21.5 degreesCelsius)
 EXTRACT_AIR_TEMPERATURE = DeviceProperty(ObjectType.ANALOG_INPUT, 59)
+EXTRACT_AIR_TEMPERATURE_ALT = DeviceProperty(ObjectType.ANALOG_INPUT, 95)
 
 # Room temperature (e.g. 22.200000762939453 degreesCelsius)
 ROOM_TEMPERATURE = DeviceProperty(ObjectType.ANALOG_INPUT, 75)
@@ -153,8 +154,8 @@ AIR_FILTER_POLLUTED_ACTIVE = 1
 AIR_FILTER_REPLACE_TIMER_RESET = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 613)
 AIR_FILTER_REPLACE_TIMER_RESET_TRIGGER = 2
 
-
-# Humidity sensorts
+# Humidity sensors
+EXTRACT_AIR_HUMIDITY = DeviceProperty(ObjectType.ANALOG_INPUT, 96)  # available on some models
 ROOM_1_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2093)
 ROOM_2_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2094)
 ROOM_3_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2095)

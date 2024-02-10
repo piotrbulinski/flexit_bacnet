@@ -96,7 +96,19 @@ class FlexitBACnet:
     @property
     def extract_air_temperature(self) -> float:
         """Extract air temperature in degrees Celsius, e.g. 14.3."""
-        return float(round(self._get_value(EXTRACT_AIR_TEMPERATURE), 1))
+        value = float(round(self._get_value(EXTRACT_AIR_TEMPERATURE), 1))
+
+        # as some models use different object identifier for extract air temperature
+        # we need to check if the value is 0.0 and try to read the alternative value
+        if value == 0.0:
+            value = float(round(self._get_value(EXTRACT_AIR_TEMPERATURE_ALT), 1))
+
+        return value
+
+    @property
+    def extract_air_humidity(self) -> float:
+        """Extract air relative humidity in %, e.g. 40.3."""
+        return float(round(self._get_value(EXTRACT_AIR_HUMIDITY), 1))
 
     @property
     def room_temperature(self) -> float:
