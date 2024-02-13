@@ -26,6 +26,7 @@ async def main():
     print(f"Extract air temp.: {device.extract_air_temperature} °C")
     print(f"Exhaust air temp.: {device.exhaust_air_temperature} °C")
     print(f"Room air temp.: {device.room_temperature} °C")
+    print(f"Extract air humidity: {device.extract_air_humidity}%")
     print(f"Room 1 humidity: {device.room_1_humidity}%")
     print(f"Room 2 humidity: {device.room_2_humidity}%")
     print(f"Room 3 humidity: {device.room_3_humidity}%")
