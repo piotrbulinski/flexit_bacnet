@@ -280,6 +280,11 @@ class FlexitBACnet:
         """Return heater power consumption in kilowatts."""
         return float(self._get_value(HEATING_COIL_ELECTRIC_POWER))
 
+    @property
+    def cooker_hood_status(self) -> bool:
+        """Cooker hood ventilation state, True if active."""
+        return self._get_value(COOKER_HOOD) == COOKER_HOOD_ACTIVE
+
     async def activate_cooker_hood(self) -> None:
         """Activates cooker hood mode."""
         await self._set_value(COOKER_HOOD, COOKER_HOOD_ACTIVE)
