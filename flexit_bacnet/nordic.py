@@ -50,6 +50,11 @@ FIREPLACE_VENTILATION_RUNTIME = DeviceProperty(ObjectType.POSITIVE_INTEGER_VALUE
 # Fireplace ventilation remaining time in minutes
 FIREPLACE_VENTILATION_REMAINING_DURATION = DeviceProperty(ObjectType.ANALOG_VALUE, 2038)
 
+# Fireplace status
+FIREPLACE_STATE = DeviceProperty(ObjectType.BINARY_VALUE, 400)
+FIREPLACE_STATE_ACTIVE = 1
+FIREPLACE_STATE_INACTIVE = 0
+
 # Trigger temporary rapid ventilation
 RAPID_VENTILATION = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 357)
 RAPID_VENTILATION_TRIGGER = 2

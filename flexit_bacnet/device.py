@@ -215,6 +215,11 @@ class FlexitBACnet:
         await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION_TRIGGER)
 
     @property
+    def fireplace_ventilation_status(self) -> bool:
+        """Return true if fireplace mode is active."""
+        return self._get_value(FIREPLACE_STATE) == FIREPLACE_STATE_ACTIVE
+
+    @property
     def fireplace_ventilation_remaining_duration(self) -> int:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
         return int(self._get_value(FIREPLACE_VENTILATION_REMAINING_DURATION))
