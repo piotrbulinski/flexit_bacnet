@@ -71,12 +71,12 @@ class FlexitBACnet:
     @property
     def model(self) -> str:
         """Return device's model, e.g.: S2 REL."""
-        model = NORDIC_MODELS.get(int(self.serial_number[0:6]))
-
-        if not isinstance(model, str):
+        try:
+            model_id = int(self.serial_number[0:6])
+        except ValueError:
             return ''
 
-        return model
+        return NORDIC_MODELS.get(model_id, '')
 
     @property
     def outside_air_temperature(self) -> float:
