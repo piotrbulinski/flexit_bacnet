@@ -215,6 +215,11 @@ class FlexitBACnet:
         await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION_TRIGGER)
 
     @property
+    def fireplace_ventilation_status(self) -> bool:
+        """Return true if fireplace mode is active."""
+        return self._get_value(FIREPLACE_STATE) == FIREPLACE_STATE_ACTIVE
+
+    @property
     def fireplace_ventilation_remaining_duration(self) -> int:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
         return int(self._get_value(FIREPLACE_VENTILATION_REMAINING_DURATION))
@@ -274,6 +279,11 @@ class FlexitBACnet:
     def electric_heater_power(self) -> float:
         """Return heater power consumption in kilowatts."""
         return float(self._get_value(HEATING_COIL_ELECTRIC_POWER))
+
+    @property
+    def cooker_hood_status(self) -> bool:
+        """Cooker hood ventilation state, True if active."""
+        return self._get_value(COOKER_HOOD) == COOKER_HOOD_ACTIVE
 
     async def activate_cooker_hood(self) -> None:
         """Activates cooker hood mode."""
