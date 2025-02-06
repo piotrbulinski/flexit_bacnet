@@ -37,6 +37,7 @@ async def main():
     print(f"Air temp. setpoint Home: {device.air_temp_setpoint_home} °C")
     print(f"Cooker-hood status: {device.cooker_hood_status}")
     print(f"Fireplace status: {device.fireplace_ventilation_status}")
+    print(f"Fireplace mode runtime: {device.fireplace_mode_runtime} minutes")
     print(
         f"Fireplace duration remaining: {device.fireplace_ventilation_remaining_duration} minutes"
     )
