@@ -207,11 +207,27 @@ class FlexitBACnet:
         await self._set_value(AIR_TEMP_SETPOINT_HOME, temperature)
 
     async def start_fireplace_ventilation(self, minutes: int) -> None:
-        """Trigger temporary fireplace ventilation mode.
+        """Set duration and trigger fireplace ventilation mode.
+
+        minutes -- duration of fireplace ventilation in minutes (1 - 360)
+        """
+        await self.set_fireplace_mode_runtime(minutes)
+        await self.trigger_fireplace_mode()
+
+    async def set_fireplace_mode_runtime(self, minutes: int) -> None:
+        """Set runtime duration for the fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
         """
         await self._set_value(FIREPLACE_VENTILATION_RUNTIME, minutes)
+
+    @property
+    def fireplace_mode_runtime(self) -> int:
+        """Returns currently set runtime for the fireplace mode (in minutes)."""
+        return self._get_value(FIREPLACE_VENTILATION_RUNTIME)
+
+    async def trigger_fireplace_mode(self) -> None:
+        """Trigger temporary fireplace ventilation mode."""
         await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION_TRIGGER)
 
     @property
