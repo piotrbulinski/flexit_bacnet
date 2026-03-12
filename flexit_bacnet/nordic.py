@@ -4,6 +4,8 @@ Based on https://www.flexit.no/globalassets/catalog/documents/bacnet-nordic-basi
 """
 from .bacnet import DeviceProperty, ObjectType
 
+PRODUCT_LINE = "Nordic"
+
 # Comfort button [RW]
 # 0 = Ventilation mode Away after Away delay timer duration [Pintval,318].
 #     Also overrides Room operating mode PRESENT_VENTILATION_MODE.
@@ -171,8 +173,8 @@ DEVICE_PROPERTIES = [
     item for _, item in globals().items() if isinstance(item, DeviceProperty)
 ]
 
-# The first six digits in the Nordic serial number corresponds to the Nordic model.
-NORDIC_MODELS = {
+# The first six digits in serial number corresponds to model
+MODELS = {
     800111: "S2 REL",
     800121: "S3 REL",
     800110: "S2 RER",

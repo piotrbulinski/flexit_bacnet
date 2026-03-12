@@ -50,10 +50,7 @@ For example, changing ventilation mode can be done as follows:
 import asyncio
 
 # import FlexitBACnet
-from flexit_bacnet import (
-    FlexitBACnet,
-    VENTILATION_MODE_HIGH
-)
+from flexit_bacnet import FlexitBACnet
 
 
 async def main():
@@ -66,7 +63,7 @@ async def main():
     print('ventilation mode (before):', device.ventilation_mode)
 
     # set ventilation mode to High
-    await device.set_ventilation_mode(VENTILATION_MODE_HIGH)
+    await device.set_ventilation_mode(device.VENTILATION_MODE_HIGH)
 
     # check current ventilation mode again
     print('ventilation mode (after):', device.ventilation_mode)

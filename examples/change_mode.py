@@ -2,11 +2,7 @@ import asyncio
 import sys
 
 # import FlexitBACnet
-from flexit_bacnet import (
-    FlexitBACnet,
-    VENTILATION_MODE_AWAY,
-    VENTILATION_MODE_HOME,
-)
+from flexit_bacnet import FlexitBACnet
 
 
 async def main():
@@ -26,10 +22,10 @@ async def main():
     print(f"Ventilation mode (before): {device.ventilation_mode}")
 
     # check current ventilation mode and toggle it between HOME & AWAY
-    if device.ventilation_mode == VENTILATION_MODE_HOME:
-        await device.set_ventilation_mode(VENTILATION_MODE_AWAY)
-    elif device.ventilation_mode == VENTILATION_MODE_AWAY:
-        await device.set_ventilation_mode(VENTILATION_MODE_HOME)
+    if device.ventilation_mode == device.VENTILATION_MODE_HOME:
+        await device.set_ventilation_mode(device.VENTILATION_MODE_AWAY)
+    elif device.ventilation_mode == device.VENTILATION_MODE_AWAY:
+        await device.set_ventilation_mode(device.VENTILATION_MODE_HOME)
     else:
         print("This example toggles only between Home and Away modes.")
 

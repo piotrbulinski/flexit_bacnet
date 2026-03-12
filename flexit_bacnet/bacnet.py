@@ -74,6 +74,7 @@ class ObjectType(IntEnum):
     ANALOG_VALUE = 2
     BINARY_VALUE = 5
     DEVICE = 8
+    MULTI_STATE_INPUT = 13
     MULTI_STATE_VALUE = 19
     POSITIVE_INTEGER_VALUE = 48
 

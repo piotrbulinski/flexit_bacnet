@@ -21,6 +21,7 @@ async def main():
     print(f"Device Name: {device.device_name}")
     print(f"Serial Number: {device.serial_number}")
     print(f"Device Model: {device.model}")
+    print(f"Product Line: {device.product_line}")
     print(f"Outside air temp.: {device.outside_air_temperature} °C")
     print(f"Supply air temp.: {device.supply_air_temperature} °C")
     print(f"Extract air temp.: {device.extract_air_temperature} °C")
@@ -72,6 +73,17 @@ async def main():
     print(f"Air filter polluted: {device.air_filter_polluted}")
     print(f"Heat-exchanger efficiency: {device.heat_exchanger_efficiency}%")
     print(f"Heat-exchanger speed: {device.heat_exchanger_speed}%")
+
+    if device.product_line == "EcoNordic":
+        print(f"DHW operation mode: {device.dhw_operation_mode}")
+        print(f"DHW temperature setpoint (comfort): {device.dhw_temperature_setpoint_comfort} °C")
+        print(f"DHW temperature setpoint (economy): {device.dhw_temperature_setpoint_economy} °C")
+        print(f"DHW tank temperature (top): {device.dhw_tank_temperature_top} °C")
+        print(f"DHW tank temperature (middle): {device.dhw_tank_temperature_middle} °C")
+        print(f"DHW tank temperature (bottom): {device.dhw_tank_temperature_bottom} °C")
+        print(f"DHW electric heater status: {device.dhw_electric_heater_status}%")
+        print(f"Space heating setpoint: {device.space_heating_setpoint} °C")
+        print(f"Heat pump state: {device.heat_pump_state}")
 
 
 if __name__ == "__main__":
