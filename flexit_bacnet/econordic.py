@@ -6,7 +6,9 @@ https://community.home-assistant.io/t/flexit-nordic-bacnet-roadmap-ideas/675223/
 from .bacnet import DeviceProperty, ObjectType
 
 PRODUCT_LINE = "EcoNordic"
-SERIAL_PREFIX = "80050"
+# Serial number prefixes of the EcoNordic product line (see models.py).
+# 80048x: WH4 (older article number, e.g. 800481-xxxxxx), 80050x: WH4 / W4 / WH4 XL
+SERIAL_PREFIX = ("80048", "80050")
 
 # Comfort button [RW]
 # 0 = Ventilation mode Away after Away delay timer duration [Pintval,318].
@@ -183,6 +185,22 @@ DHW_TEMPORARY_BOOST = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 424)
 DHW_TEMPORARY_BOOST_START = 2
 DHW_TEMPORARY_BOOST_STOP = 3
 
+# DHW forced charge (trigger). Starts a heat pump charge of the tank up to the
+# tank setpoint regardless of the operating mode. There is no stop command:
+# the charge runs until the unit's own stop condition is met.
+DHW_FORCED_CHARGE = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 425, priority=13)
+DHW_FORCED_CHARGE_START = 2
+
+# DHW state (read-only) - what the DHW production is doing right now
+DHW_STATE = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 423)
+DHW_STATE_COMFORT = 1
+DHW_STATE_ECONOMY = 2
+DHW_STATE_BOOST = 3
+DHW_STATE_TEMPORARY_BOOST = 4
+DHW_STATE_FORCED_CHARGE = 5
+DHW_STATE_ECONOMY_DELAY = 6
+DHW_STATE_LEGIONELLA_PREVENTION = 7
+
 # DHW temperature setpoints
 DHW_TEMPERATURE_SETPOINT_COMFORT = DeviceProperty(ObjectType.ANALOG_VALUE, 253)
 DHW_TEMPERATURE_SETPOINT_ECONOMY = DeviceProperty(ObjectType.ANALOG_VALUE, 2127)
@@ -210,6 +228,57 @@ HEAT_PUMP_STATE_STANDBY_WHEN_ERROR = 7
 HEAT_PUMP_STATE_MANUAL_OPERATION = 8
 HEAT_PUMP_STATE_FORCED_FAN_OPERATION = 9
 HEAT_PUMP_STATE_FORCED_PUMP_OPERATION = 10
+
+# Free cooling
+#
+# Cools an overheated house by replacing warm indoor air with cooler outdoor air when the
+# outdoor air is colder than the extract air (per the setpoints); the unit does this by
+# running the ventilation in HIGH.
+# The unit activates it when the extract air is above FREE_COOLING_EXTRACT_TEMP_SETPOINT,
+# the outdoor air is above FREE_COOLING_OUTSIDE_TEMP_LIMIT and the outdoor air is more
+# than FREE_COOLING_DT_ENABLE_START colder than the extract air; it stops when that
+# difference drops below FREE_COOLING_DT_DISABLE (Flexit GO manual, "Additional functions").
+# In Flexit GO the settings are installer-level; an end user only sees the enable flag.
+# Same object identifiers on Nordic (seen in S3/S4/CL4 dumps) and EcoNordic (verified on a WH4).
+
+# Free cooling enabled [RW] - whether the function is allowed to run
+FREE_COOLING_ENABLED = DeviceProperty(ObjectType.BINARY_VALUE, 478, priority=13)
+FREE_COOLING_ENABLED_ACTIVE = 1
+FREE_COOLING_ENABLED_INACTIVE = 0
+
+# Extract temp setpoint (e.g. 22.0 degreesCelsius, range 10 - 30)
+FREE_COOLING_EXTRACT_TEMP_SETPOINT = DeviceProperty(ObjectType.ANALOG_VALUE, 2071)
+
+# Outside temp limit - free cooling is not used below this outdoor temperature
+# (e.g. 18.0 degreesCelsius, range 10 - 30)
+FREE_COOLING_OUTSIDE_TEMP_LIMIT = DeviceProperty(ObjectType.ANALOG_VALUE, 1934)
+
+# DT B3-B4: extract air (B3) minus outdoor air (B4) in K (range 0 - 10)
+FREE_COOLING_DT_ENABLE_START = DeviceProperty(ObjectType.ANALOG_VALUE, 1936)
+FREE_COOLING_DT_DISABLE = DeviceProperty(ObjectType.ANALOG_VALUE, 1937)
+
+# Plant state (read-only) - what the ventilation plant is doing right now.
+# PLANT_STATE_FREE_COOLING is the only way to see that free cooling is running;
+# FREE_COOLING_ENABLED only says that it is allowed to.
+PLANT_STATE = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 623)
+PLANT_STATE_NORMAL_OPERATION = 1
+PLANT_STATE_DEICING_EXHAUST_TEMPERATURE = 2
+PLANT_STATE_DEICING_ERC = 3
+PLANT_STATE_AIR_QUALITY_CONTROL = 4
+PLANT_STATE_DEHUMIDIFICATION_PID_CONTROL = 5
+PLANT_STATE_DEHUMIDIFICATION_SLOPE_CONTROL = 6
+PLANT_STATE_FREE_COOLING = 7
+PLANT_STATE_DEICING_FAN = 8
+PLANT_STATE_PLANT_SHUTDOWN = 9
+PLANT_STATE_PLANT_STARTUP = 10
+PLANT_STATE_MAINTENANCE_SHUTDOWN = 11
+PLANT_STATE_A_ALARM_PROTECTION = 12
+PLANT_STATE_FROST_WATER = 13
+PLANT_STATE_POWER_UP_CONTROLLER = 14
+PLANT_STATE_SMOKE_EXTRACT_SUPPLY_EXHAUST = 15
+PLANT_STATE_SMOKE_EXTRACT_EXHAUST = 16
+PLANT_STATE_SMOKE_EXTRACT_SUPPLY = 17
+PLANT_STATE_EMERGENCY_OFF = 18
 
 # List of all DeviceProperties defined in this file
 DEVICE_PROPERTIES = [

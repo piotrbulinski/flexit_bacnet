@@ -235,10 +235,25 @@ class FlexitBACnet:
         """
         await self._set_value(self._prop_map.AIR_TEMP_SETPOINT_HOME, temperature)
 
+    @property
+    def _runtime_is_read_only(self) -> bool:
+        """Return true if the fireplace/rapid runtime objects cannot be written.
+
+        On EcoNordic units the runtime objects (FIREPLACE_VENTILATION_RUNTIME,
+        RAPID_VENTILATION_RUNTIME) are read-only: a write is rejected by the
+        unit ("unsupported response type: 5"). The duration is configured in
+        the Flexit GO app and the unit runs that configured duration.
+        Verified on an EcoNordic WH4.
+        """
+        return self.product_line == econordic.PRODUCT_LINE
+
     async def start_fireplace_ventilation(self, minutes: int) -> None:
         """Set duration and trigger fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only (see
+        `_runtime_is_read_only`) - use trigger_fireplace_mode() instead.
         """
         await self.set_fireplace_mode_runtime(minutes)
         await self.trigger_fireplace_mode()
@@ -247,7 +262,14 @@ class FlexitBACnet:
         """Set runtime duration for the fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only.
         """
+        if self._runtime_is_read_only:
+            raise Exception(
+                "Fireplace ventilation runtime is read-only on EcoNordic models - use trigger_fireplace_mode()"
+            )
+
         await self._set_value(self._prop_map.FIREPLACE_VENTILATION_RUNTIME, minutes)
 
     @property
@@ -258,6 +280,7 @@ class FlexitBACnet:
     async def trigger_fireplace_mode(self) -> None:
         """Trigger temporary fireplace ventilation mode."""
         await self._set_value(self._prop_map.FIREPLACE_VENTILATION, self._prop_map.FIREPLACE_VENTILATION_TRIGGER)
+
     @property
     def fireplace_ventilation_status(self) -> bool:
         """Return true if fireplace mode is active."""
@@ -269,11 +292,23 @@ class FlexitBACnet:
         return int(self._get_value(self._prop_map.FIREPLACE_VENTILATION_REMAINING_DURATION))
 
     async def start_rapid_ventilation(self, minutes: int) -> None:
-        """Trigger temporary rapid ventilation mode.
+        """Set duration and trigger temporary rapid ventilation mode.
 
         minutes -- duration of rapid ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only (see
+        `_runtime_is_read_only`) - use trigger_rapid_ventilation() instead.
         """
+        if self._runtime_is_read_only:
+            raise Exception(
+                "Rapid ventilation runtime is read-only on EcoNordic models - use trigger_rapid_ventilation()"
+            )
+
         await self._set_value(self._prop_map.RAPID_VENTILATION_RUNTIME, minutes)
+        await self.trigger_rapid_ventilation()
+
+    async def trigger_rapid_ventilation(self) -> None:
+        """Trigger temporary rapid ventilation mode (counterpart of trigger_fireplace_mode)."""
         await self._set_value(self._prop_map.RAPID_VENTILATION, self._prop_map.RAPID_VENTILATION_TRIGGER)
 
     @property
@@ -491,6 +526,29 @@ class FlexitBACnet:
 
         await self._set_value(econordic.DHW_TEMPORARY_BOOST, econordic.DHW_TEMPORARY_BOOST_STOP)
 
+    async def dhw_forced_charge_start(self) -> None:
+        """Start a forced charge of the Domestic Hot Water (DHW) tank.
+
+        The heat pump charges the tank up to the tank setpoint regardless of
+        the DHW operation mode. There is no stop command: the charge runs
+        until the unit's own stop condition is met. Check `dhw_state ==
+        DHW_STATE_FORCED_CHARGE` to see whether a forced charge is running.
+        """
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW forced charge is only available on EcoNordic models")
+
+        await self._set_value(econordic.DHW_FORCED_CHARGE, econordic.DHW_FORCED_CHARGE_START)
+
+    @property
+    def dhw_state(self) -> int:
+        """Return current Domestic Hot Water (DHW) state (one of econordic.DHW_STATE_*)."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW state is only available on EcoNordic models")
+
+        return int(self._get_value(econordic.DHW_STATE))
+
     @property
     def dhw_temperature_setpoint_comfort(self) -> float:
         """Return Domestic Hot Water (DHW) temperature setpoint for Comfort mode."""
@@ -595,3 +653,93 @@ class FlexitBACnet:
             raise Exception("Heat pump state is only available on EcoNordic models")
 
         return int(self._get_value(econordic.HEAT_PUMP_STATE))
+
+    # Free cooling - see the "Free cooling" section in nordic.py / econordic.py
+    # and README.md for how the function works and which settings make it run.
+
+    @property
+    def plant_state(self) -> int:
+        """Return plant state (one of PLANT_STATE_*) - what the ventilation plant is doing right now."""
+        return int(self._get_value(self._prop_map.PLANT_STATE))
+
+    @property
+    def free_cooling_active(self) -> bool:
+        """Return true if free cooling is running right now.
+
+        This is what explains a unit that is suddenly running in HIGH with cold
+        supply air. Flexit GO does not show it; the plant state does.
+        """
+        return self.plant_state == self._prop_map.PLANT_STATE_FREE_COOLING
+
+    @property
+    def free_cooling_enabled(self) -> bool:
+        """Return true if the free cooling function is enabled (allowed to run).
+
+        This is the on/off an end user sees in Flexit GO. Whether it is running
+        right now is `free_cooling_active`.
+        """
+        return self._get_value(self._prop_map.FREE_COOLING_ENABLED) == self._prop_map.FREE_COOLING_ENABLED_ACTIVE
+
+    async def enable_free_cooling(self) -> None:
+        """Enable the free cooling function (installer-level setting in Flexit GO)."""
+        await self._set_value(self._prop_map.FREE_COOLING_ENABLED, self._prop_map.FREE_COOLING_ENABLED_ACTIVE)
+
+    async def disable_free_cooling(self) -> None:
+        """Disable the free cooling function (installer-level setting in Flexit GO)."""
+        await self._set_value(self._prop_map.FREE_COOLING_ENABLED, self._prop_map.FREE_COOLING_ENABLED_INACTIVE)
+
+    @property
+    def free_cooling_extract_temp_setpoint(self) -> float:
+        """Return the extract air temperature above which free cooling may start, in degrees Celsius."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_EXTRACT_TEMP_SETPOINT))
+
+    async def set_free_cooling_extract_temp_setpoint(self, temperature: float) -> None:
+        """Set the extract air temperature above which free cooling may start.
+
+        temperature -- degrees Celsius, 10 - 30 (Flexit GO default 22). This is
+                       effectively the room temperature you want free cooling to
+                       keep the house below; free cooling also stops when the
+                       extract air falls below it. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_EXTRACT_TEMP_SETPOINT, temperature)
+
+    @property
+    def free_cooling_outside_temp_limit(self) -> float:
+        """Return the outdoor temperature below which free cooling is not used, in degrees Celsius."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_OUTSIDE_TEMP_LIMIT))
+
+    async def set_free_cooling_outside_temp_limit(self, temperature: float) -> None:
+        """Set the outdoor temperature below which free cooling is not used.
+
+        temperature -- degrees Celsius, 10 - 30 (Flexit GO default 18). With the
+                       default, free cooling only runs on warm nights; the lower
+                       end of the range (10) lets it run on most summer nights in
+                       a Nordic climate. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_OUTSIDE_TEMP_LIMIT, temperature)
+
+    @property
+    def free_cooling_dt_enable_start(self) -> float:
+        """Return how much colder (K) the outdoor air must be than the extract air for free cooling to start."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_DT_ENABLE_START))
+
+    async def set_free_cooling_dt_enable_start(self, delta: float) -> None:
+        """Set how much colder the outdoor air must be than the extract air for free cooling to start.
+
+        delta -- K, 0 - 10 (Flexit GO default 4). Must be larger than
+                 `free_cooling_dt_disable`. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_DT_ENABLE_START, delta)
+
+    @property
+    def free_cooling_dt_disable(self) -> float:
+        """Return the extract/outdoor air temperature difference (K) below which free cooling stops."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_DT_DISABLE))
+
+    async def set_free_cooling_dt_disable(self, delta: float) -> None:
+        """Set the extract/outdoor air temperature difference below which free cooling stops.
+
+        delta -- K, 0 - 10 (Flexit GO default 1). Must be smaller than
+                 `free_cooling_dt_enable_start`. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_DT_DISABLE, delta)

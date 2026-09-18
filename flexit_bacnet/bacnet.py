@@ -29,6 +29,11 @@ MAX_RESPONSE_SEGMENTS = 4
 # max 1024 octets
 MAX_APDU_SIZE = 4
 
+# Max number of properties per readPropertyMultiple request. The unit answers
+# in a single APDU of at most MAX_APDU_SIZE octets; a longer answer is segmented,
+# which this client does not reassemble. 57 EcoNordic properties fit, 65 did not.
+READ_MULTIPLE_MAX_PROPERTIES = 50
+
 # use static invoke ID
 INVOKE_ID = 1
 
@@ -218,6 +223,11 @@ def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
 
     if apdu_type != APDUType.COMPLEX_ACK:
         raise DecodingError(f"unsupported response type: {apdu_type}")
+
+    if apdu[0] & PDUFlags.SEGMENTED_REQUEST:
+        raise DecodingError(
+            "segmented response is not supported - read fewer properties per request"
+        )
 
     invoke_id = apdu[1]
     if invoke_id != INVOKE_ID:
@@ -491,6 +501,22 @@ class BACnetClient:
         return bacnet_request.response
 
     async def read_multiple(
+        self, device_properties: List[DeviceProperty]
+    ) -> DeviceState:
+        """Read the present value of many properties.
+
+        The list is read in chunks of READ_MULTIPLE_MAX_PROPERTIES so that
+        each answer fits in one APDU (see the constant).
+        """
+        device_state: DeviceState = {}
+
+        for start in range(0, len(device_properties), READ_MULTIPLE_MAX_PROPERTIES):
+            chunk = device_properties[start:start + READ_MULTIPLE_MAX_PROPERTIES]
+            device_state.update(await self._read_multiple_chunk(chunk))
+
+        return device_state
+
+    async def _read_multiple_chunk(
         self, device_properties: List[DeviceProperty]
     ) -> DeviceState:
         request = _read_property_multiple(device_properties)
