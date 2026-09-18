@@ -6,7 +6,9 @@ https://community.home-assistant.io/t/flexit-nordic-bacnet-roadmap-ideas/675223/
 from .bacnet import DeviceProperty, ObjectType
 
 PRODUCT_LINE = "EcoNordic"
-SERIAL_PREFIX = "80050"
+# Serial number prefixes of the EcoNordic product line (see models.py).
+# 80048x: WH4 (older article number, e.g. 800481-xxxxxx), 80050x: WH4 / W4 / WH4 XL
+SERIAL_PREFIX = ("80048", "80050")
 
 # Comfort button [RW]
 # 0 = Ventilation mode Away after Away delay timer duration [Pintval,318].

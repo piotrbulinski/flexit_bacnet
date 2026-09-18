@@ -235,10 +235,25 @@ class FlexitBACnet:
         """
         await self._set_value(self._prop_map.AIR_TEMP_SETPOINT_HOME, temperature)
 
+    @property
+    def _runtime_is_read_only(self) -> bool:
+        """Return true if the fireplace/rapid runtime objects cannot be written.
+
+        On EcoNordic units the runtime objects (FIREPLACE_VENTILATION_RUNTIME,
+        RAPID_VENTILATION_RUNTIME) are read-only: a write is rejected by the
+        unit ("unsupported response type: 5"). The duration is configured in
+        the Flexit GO app and the unit runs that configured duration.
+        Verified on an EcoNordic WH4.
+        """
+        return self.product_line == econordic.PRODUCT_LINE
+
     async def start_fireplace_ventilation(self, minutes: int) -> None:
         """Set duration and trigger fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only (see
+        `_runtime_is_read_only`) - use trigger_fireplace_mode() instead.
         """
         await self.set_fireplace_mode_runtime(minutes)
         await self.trigger_fireplace_mode()
@@ -247,7 +262,14 @@ class FlexitBACnet:
         """Set runtime duration for the fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only.
         """
+        if self._runtime_is_read_only:
+            raise Exception(
+                "Fireplace ventilation runtime is read-only on EcoNordic models - use trigger_fireplace_mode()"
+            )
+
         await self._set_value(self._prop_map.FIREPLACE_VENTILATION_RUNTIME, minutes)
 
     @property
@@ -258,6 +280,7 @@ class FlexitBACnet:
     async def trigger_fireplace_mode(self) -> None:
         """Trigger temporary fireplace ventilation mode."""
         await self._set_value(self._prop_map.FIREPLACE_VENTILATION, self._prop_map.FIREPLACE_VENTILATION_TRIGGER)
+
     @property
     def fireplace_ventilation_status(self) -> bool:
         """Return true if fireplace mode is active."""
@@ -269,11 +292,23 @@ class FlexitBACnet:
         return int(self._get_value(self._prop_map.FIREPLACE_VENTILATION_REMAINING_DURATION))
 
     async def start_rapid_ventilation(self, minutes: int) -> None:
-        """Trigger temporary rapid ventilation mode.
+        """Set duration and trigger temporary rapid ventilation mode.
 
         minutes -- duration of rapid ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only (see
+        `_runtime_is_read_only`) - use trigger_rapid_ventilation() instead.
         """
+        if self._runtime_is_read_only:
+            raise Exception(
+                "Rapid ventilation runtime is read-only on EcoNordic models - use trigger_rapid_ventilation()"
+            )
+
         await self._set_value(self._prop_map.RAPID_VENTILATION_RUNTIME, minutes)
+        await self.trigger_rapid_ventilation()
+
+    async def trigger_rapid_ventilation(self) -> None:
+        """Trigger temporary rapid ventilation mode (counterpart of trigger_fireplace_mode)."""
         await self._set_value(self._prop_map.RAPID_VENTILATION, self._prop_map.RAPID_VENTILATION_TRIGGER)
 
     @property
