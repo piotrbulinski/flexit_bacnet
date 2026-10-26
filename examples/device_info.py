@@ -30,6 +30,18 @@ async def main():
     print(f"Room 1 humidity: {device.room_1_humidity}%")
     print(f"Room 2 humidity: {device.room_2_humidity}%")
     print(f"Room 3 humidity: {device.room_3_humidity}%")
+    print(f"Humidity setpoint (present/Home/Away/High): {device.humidity_setpoint_present}/"
+          f"{device.humidity_setpoint_home}/{device.humidity_setpoint_away}/{device.humidity_setpoint_high}%")
+    print(f"Dehumidification fan control: {device.dehumidification_fan_control}%")
+    print(f"Dehumidification PID control: {device.dehumidification_pid_control}")
+    print(f"Dehumidification slope control: {device.dehumidification_slope_control}")
+    print(f"Dehumidification slope (current/on/off): {device.dehumidification_slope}/"
+          f"{device.dehumidification_slope_switch_on}/{device.dehumidification_slope_switch_off}")
+    print(f"Dehumidification by slope: {device.dehumidification_by_slope}")
+    print(f"Dehumidification slope resolution: {device.dehumidification_slope_resolution} minutes")
+    print(f"Dehumidification slope on delay: {device.dehumidification_slope_on_delay} seconds")
+    print(f"Dehumidification switch-off delay: {device.dehumidification_switch_off_delay} minutes")
+    print(f"Dehumidification max runtime: {device.dehumidification_max_runtime} minutes")
     print(f"Comfort button state: {device.comfort_button}")
     print(f"Operation mode: {device.operation_mode}")
     print(f"Ventilation mode: {device.ventilation_mode}")

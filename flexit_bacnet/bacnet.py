@@ -175,7 +175,10 @@ class DeviceProperty:
         elif self.object_type == ObjectType.BINARY_VALUE:
             apdu += pack("!BB", AppTag(WriteType.Enumerated, 1).int, value)
         else:
-            apdu += pack("!BB", AppTag(WriteType.UnsignedInt, 1).int, value)
+            # unsigned integer encoded on the minimal number of octets (1-4)
+            length = max(1, (int(value).bit_length() + 7) // 8)
+            apdu += AppTag(WriteType.UnsignedInt, length).pack()
+            apdu += int(value).to_bytes(length, "big")
 
         apdu += CtxTag(3, TAG_CLOSE).pack()
 
