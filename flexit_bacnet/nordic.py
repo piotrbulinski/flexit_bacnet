@@ -236,6 +236,7 @@ NORDIC_MODELS = {
     800130: "S4 RER",
     800131: "S4 REL",
     800140: "S7 RER",
+    800141: "S7 REL",
     800210: "CL2 RER",
     800211: "CL2 REL",
     800200: "CL3 RER",
