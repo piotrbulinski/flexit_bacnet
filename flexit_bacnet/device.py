@@ -268,7 +268,7 @@ class FlexitBACnet:
 
     async def set_dehumidification_slope_on_delay(self, seconds: int) -> None:
         """Set on delay of the slope control in seconds."""
-        await self._set_value(DEHUMIDIFICATION_SLOPE_ON_DELAY, int(seconds))
+        await self._set_value(DEHUMIDIFICATION_SLOPE_ON_DELAY, seconds)
 
     @property
     def dehumidification_switch_off_delay(self) -> int:
@@ -277,7 +277,7 @@ class FlexitBACnet:
 
     async def set_dehumidification_switch_off_delay(self, minutes: int) -> None:
         """Set humidity control switch-off delay in minutes."""
-        await self._set_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY, int(minutes))
+        await self._set_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY, minutes)
 
     @property
     def dehumidification_max_runtime(self) -> int:
@@ -286,7 +286,7 @@ class FlexitBACnet:
 
     async def set_dehumidification_max_runtime(self, minutes: int) -> None:
         """Set maximum runtime of humidity control in minutes."""
-        await self._set_value(DEHUMIDIFICATION_MAX_RUNTIME, int(minutes))
+        await self._set_value(DEHUMIDIFICATION_MAX_RUNTIME, minutes)
 
     @property
     def comfort_button(self) -> bool:

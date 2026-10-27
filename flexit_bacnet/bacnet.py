@@ -176,12 +176,21 @@ class DeviceProperty:
             apdu += pack("!BB", AppTag(WriteType.Enumerated, 1).int, value)
         else:
             # unsigned integer encoded on the minimal number of octets (1-4)
-            if not 0 <= int(value) <= 0xFFFFFFFF:
+            try:
+                unsigned = int(value)
+            except (TypeError, ValueError, OverflowError) as e:
+                raise ValueError(f"unsigned integer value required: {value}") from e
+
+            # reject lossy conversions, e.g. 1.5 -> 1 (integral floats like 30.0 are accepted)
+            if unsigned != value:
+                raise ValueError(f"unsigned integer value required: {value}")
+
+            if not 0 <= unsigned <= 0xFFFFFFFF:
                 raise ValueError(f"unsigned integer value out of range (0 - 4294967295): {value}")
 
-            length = max(1, (int(value).bit_length() + 7) // 8)
+            length = max(1, (unsigned.bit_length() + 7) // 8)
             apdu += AppTag(WriteType.UnsignedInt, length).pack()
-            apdu += int(value).to_bytes(length, "big")
+            apdu += unsigned.to_bytes(length, "big")
 
         apdu += CtxTag(3, TAG_CLOSE).pack()
 

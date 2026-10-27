@@ -33,6 +33,16 @@ def test_unsigned_int_out_of_range(value):
         UNSIGNED.write_access_spec(value)
 
 
+@pytest.mark.parametrize("value", [-0.5, 0.5, 1.5, 255.9, math.nan, math.inf])
+def test_unsigned_int_fractional_rejected(value):
+    with pytest.raises(ValueError):
+        UNSIGNED.write_access_spec(value)
+
+
+def test_unsigned_int_integral_float_accepted():
+    assert UNSIGNED.write_access_spec(600.0) == UNSIGNED.write_access_spec(600)
+
+
 class _WriteRecorder:
     def __init__(self):
         self.writes = []
@@ -63,3 +73,27 @@ def test_humidity_setpoint_accepted():
     asyncio.run(device.set_humidity_setpoint_home(65))
 
     assert device.bacnet.writes == [(HUMIDITY_SETPOINT_HOME, 65.0)]
+
+
+class _EncodingWriteRecorder(_WriteRecorder):
+    async def write(self, device_property, value):
+        device_property.write_access_spec(value)
+        await super().write(device_property, value)
+
+
+@pytest.mark.parametrize(
+    "setter",
+    [
+        "set_dehumidification_slope_on_delay",
+        "set_dehumidification_switch_off_delay",
+        "set_dehumidification_max_runtime",
+    ],
+)
+def test_unsigned_setter_fractional_rejected(setter):
+    device = FlexitBACnet("127.0.0.1", 2)
+    device.bacnet = _EncodingWriteRecorder()
+
+    with pytest.raises(ValueError):
+        asyncio.run(getattr(device, setter)(1.5))
+
+    assert device.bacnet.writes == []
