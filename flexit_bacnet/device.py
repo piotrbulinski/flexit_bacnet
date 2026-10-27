@@ -184,7 +184,8 @@ class FlexitBACnet:
         await self._set_humidity_setpoint(HUMIDITY_SETPOINT_HIGH, percent)
 
     async def _set_humidity_setpoint(self, device_property: DeviceProperty, percent: float) -> None:
-        if percent < 0 or percent > 100:
+        # chained comparison also rejects NaN
+        if not 0 <= percent <= 100:
             raise ValueError("humidity setpoint must be between 0 and 100 %")
 
         await self._set_value(device_property, float(percent))
