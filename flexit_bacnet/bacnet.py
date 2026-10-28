@@ -459,7 +459,8 @@ class BACnetRequest:
 
     def connection_lost(self, exception: Exception):
         self.exception = exception
-        self.done.set_result(True)
+        if not self.done.done():
+            self.done.set_result(True)
 
     def wait(self, timeout: float = 1.0):
         return asyncio.wait_for(self.done, timeout=timeout)
