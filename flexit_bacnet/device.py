@@ -1,7 +1,14 @@
+from types import ModuleType
 from typing import Any, Optional
 
 from flexit_bacnet import bacnet
-from flexit_bacnet.nordic import *
+from flexit_bacnet import nordic, econordic
+from flexit_bacnet.models import MODELS
+
+# The name of the device
+DEVICE_NAMES = {
+    "HvacFnct21y_A": "Flexit Nordic",
+}
 
 
 class FlexitBACnet:
@@ -15,23 +22,57 @@ class FlexitBACnet:
         self.device_id = device_id
         self._state: Optional[bacnet.DeviceState] = None
 
+        # property mapping for the specific product line (nordic/econordic),
+        # resolved by the first call to update()
+        self._prop_map_module: Optional[ModuleType] = None
+
     @property
-    def _device_property(self) -> DeviceProperty:
-        return DeviceProperty(
-            ObjectType.DEVICE,
+    def _prop_map(self) -> ModuleType:
+        """Return property mapping module (nordic/econordic) for this device.
+
+        The product line is detected from the serial number, so the mapping is
+        only known after the first update(). Reading or writing before that
+        would guess the object identifiers, which differ between product lines.
+        """
+        if self._prop_map_module is None:
+            raise Exception("must run 'update()' method first")
+
+        return self._prop_map_module
+
+    @property
+    def _device_property(self) -> bacnet.DeviceProperty:
+        return bacnet.DeviceProperty(
+            bacnet.ObjectType.DEVICE,
             self.device_id,
             read_values=[bacnet.ReadValue.OBJECT_NAME, bacnet.ReadValue.DESCRIPTION],
         )
 
+    async def _get_property_mapping(self) -> ModuleType:
+        """Return property mapping module based on product line."""
+        self._state = await self.bacnet.read_multiple([self._device_property])
+
+        if self.product_line == econordic.PRODUCT_LINE:
+            return econordic
+
+        return nordic
+
     async def update(self) -> None:
-        """Refresh local device state."""
-        device_properties = DEVICE_PROPERTIES + [self._device_property]
+        """Refresh local device state.
+
+        Must be called before any other property or method is used: the first
+        call detects the product line (Nordic/EcoNordic) and selects the
+        matching property mapping.
+        """
+        if self._prop_map_module is None:
+            self._prop_map_module = await self._get_property_mapping()
+
+        device_properties = self._prop_map.DEVICE_PROPERTIES + [self._device_property]
 
         self._state = await self.bacnet.read_multiple(device_properties)
 
     def _get_value(
         self,
-        device_property: DeviceProperty,
+        device_property: bacnet.DeviceProperty,
         value_name: Optional[bacnet.ReadValue] = None,
     ) -> Any:
 
@@ -43,9 +84,17 @@ class FlexitBACnet:
 
         return dict(self._state[device_property.object_identifier])[value_name]
 
-    async def _set_value(self, device_property: DeviceProperty, value: Any) -> None:
+    async def _set_value(self, device_property: bacnet.DeviceProperty, value: Any) -> None:
         await self.bacnet.write(device_property, value)
         await self.update()
+
+    @property
+    def product_line(self) -> str:
+        """Return product line, e.g.: Nordic or EcoNordic."""
+        if self.serial_number.startswith(econordic.SERIAL_PREFIX):
+            return econordic.PRODUCT_LINE
+
+        return nordic.PRODUCT_LINE
 
     @property
     def device_name(self) -> str:
@@ -76,39 +125,39 @@ class FlexitBACnet:
         except ValueError:
             return ''
 
-        return NORDIC_MODELS.get(model_id, '')
+        return MODELS.get(model_id, '')
 
     @property
     def outside_air_temperature(self) -> float:
         """Outside air temperature in degrees Celsius, e.g. 14.3."""
-        return float(round(self._get_value(OUTSIDE_AIR_TEMPERATURE), 1))
+        return float(round(self._get_value(self._prop_map.OUTSIDE_AIR_TEMPERATURE), 1))
 
     @property
     def supply_air_temperature(self) -> float:
         """Supply air temperature in degrees Celsius, e.g. 18.9."""
-        return float(round(self._get_value(SUPPLY_AIR_TEMPERATURE), 1))
+        return float(round(self._get_value(self._prop_map.SUPPLY_AIR_TEMPERATURE), 1))
 
     @property
     def exhaust_air_temperature(self) -> float:
         """Exhaust air temperature in degrees Celsius, e.g. 14.5."""
-        return float(round(self._get_value(EXHAUST_AIR_TEMPERATURE), 1))
+        return float(round(self._get_value(self._prop_map.EXHAUST_AIR_TEMPERATURE), 1))
 
     @property
     def extract_air_temperature(self) -> float:
         """Extract air temperature in degrees Celsius, e.g. 14.3."""
-        value = float(round(self._get_value(EXTRACT_AIR_TEMPERATURE), 1))
+        value = float(round(self._get_value(self._prop_map.EXTRACT_AIR_TEMPERATURE), 1))
 
         # as some models use different object identifier for extract air temperature
         # we need to check if the value is 0.0 and try to read the alternative value
         if value == 0.0:
-            value = float(round(self._get_value(EXTRACT_AIR_TEMPERATURE_ALT), 1))
+            value = float(round(self._get_value(self._prop_map.EXTRACT_AIR_TEMPERATURE_ALT), 1))
 
         return value
 
     @property
     def extract_air_humidity(self) -> float:
         """Extract air relative humidity in %, e.g. 40.3."""
-        return float(round(self._get_value(EXTRACT_AIR_HUMIDITY), 1))
+        return float(round(self._get_value(self._prop_map.EXTRACT_AIR_HUMIDITY), 1))
 
     @property
     def room_temperature(self) -> float:
@@ -116,7 +165,7 @@ class FlexitBACnet:
 
         Temperature is read from the temperature sensor on a CI70 panel.
         """
-        return float(round(self._get_value(ROOM_TEMPERATURE), 1))
+        return float(round(self._get_value(self._prop_map.ROOM_TEMPERATURE), 1))
 
     @property
     def room_1_humidity(self) -> float:
@@ -124,7 +173,7 @@ class FlexitBACnet:
 
         RH value from CI77 - RH sensor 1.
         """
-        return float(round(self._get_value(ROOM_1_HUMIDITY), 1))
+        return float(round(self._get_value(self._prop_map.ROOM_1_HUMIDITY), 1))
 
     @property
     def room_2_humidity(self) -> float:
@@ -132,7 +181,7 @@ class FlexitBACnet:
 
         RH value from CI77 - RH sensor 2.
         """
-        return float(round(self._get_value(ROOM_2_HUMIDITY), 1))
+        return float(round(self._get_value(self._prop_map.ROOM_2_HUMIDITY), 1))
 
     @property
     def room_3_humidity(self) -> float:
@@ -140,50 +189,50 @@ class FlexitBACnet:
 
         RH value from CI77 - RH sensor 3.
         """
-        return float(round(self._get_value(ROOM_3_HUMIDITY), 1))
+        return float(round(self._get_value(self._prop_map.ROOM_3_HUMIDITY), 1))
 
     @property
     def humidity_setpoint_present(self) -> float:
         """Present humidity setpoint in %, e.g. 70.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_PRESENT), 1))
+        return float(round(self._get_value(self._prop_map.HUMIDITY_SETPOINT_PRESENT), 1))
 
     @property
     def humidity_setpoint_home(self) -> float:
         """Humidity setpoint for Home mode in %, e.g. 70.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_HOME), 1))
+        return float(round(self._get_value(self._prop_map.HUMIDITY_SETPOINT_HOME), 1))
 
     async def set_humidity_setpoint_home(self, percent: float) -> None:
         """Set humidity setpoint for Home mode.
 
         percent -- relative humidity in % (0 - 100)
         """
-        await self._set_humidity_setpoint(HUMIDITY_SETPOINT_HOME, percent)
+        await self._set_humidity_setpoint(self._prop_map.HUMIDITY_SETPOINT_HOME, percent)
 
     @property
     def humidity_setpoint_away(self) -> float:
         """Humidity setpoint for Away mode in %, e.g. 80.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_AWAY), 1))
+        return float(round(self._get_value(self._prop_map.HUMIDITY_SETPOINT_AWAY), 1))
 
     async def set_humidity_setpoint_away(self, percent: float) -> None:
         """Set humidity setpoint for Away mode.
 
         percent -- relative humidity in % (0 - 100)
         """
-        await self._set_humidity_setpoint(HUMIDITY_SETPOINT_AWAY, percent)
+        await self._set_humidity_setpoint(self._prop_map.HUMIDITY_SETPOINT_AWAY, percent)
 
     @property
     def humidity_setpoint_high(self) -> float:
         """Humidity setpoint for High mode in %, e.g. 100.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_HIGH), 1))
+        return float(round(self._get_value(self._prop_map.HUMIDITY_SETPOINT_HIGH), 1))
 
     async def set_humidity_setpoint_high(self, percent: float) -> None:
         """Set humidity setpoint for High mode.
 
         percent -- relative humidity in % (0 - 100)
         """
-        await self._set_humidity_setpoint(HUMIDITY_SETPOINT_HIGH, percent)
+        await self._set_humidity_setpoint(self._prop_map.HUMIDITY_SETPOINT_HIGH, percent)
 
-    async def _set_humidity_setpoint(self, device_property: DeviceProperty, percent: float) -> None:
+    async def _set_humidity_setpoint(self, device_property: bacnet.DeviceProperty, percent: float) -> None:
         # chained comparison also rejects NaN
         if not 0 <= percent <= 100:
             raise ValueError("humidity setpoint must be between 0 and 100 %")
@@ -193,20 +242,20 @@ class FlexitBACnet:
     @property
     def dehumidification_fan_control(self) -> float:
         """Fan speed request caused by humidity control in %, e.g. 0.0."""
-        return float(round(self._get_value(DEHUMIDIFICATION_FAN_CONTROL), 1))
+        return float(round(self._get_value(self._prop_map.DEHUMIDIFICATION_FAN_CONTROL), 1))
 
     @property
     def dehumidification_pid_control(self) -> bool:
         """True if setpoint based (PID) humidity control is enabled."""
-        return self._get_value(DEHUMIDIFICATION_PID_CONTROL) == DEHUMIDIFICATION_PID_CONTROL_ACTIVE
+        return self._get_value(self._prop_map.DEHUMIDIFICATION_PID_CONTROL) == self._prop_map.DEHUMIDIFICATION_PID_CONTROL_ACTIVE
 
     async def enable_dehumidification_pid_control(self) -> None:
         """Enable setpoint based (PID) humidity control."""
-        await self._set_value(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_ACTIVE)
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_PID_CONTROL, self._prop_map.DEHUMIDIFICATION_PID_CONTROL_ACTIVE)
 
     async def disable_dehumidification_pid_control(self) -> None:
         """Disable setpoint based (PID) humidity control."""
-        await self._set_value(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_INACTIVE)
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_PID_CONTROL, self._prop_map.DEHUMIDIFICATION_PID_CONTROL_INACTIVE)
 
     @property
     def dehumidification_slope_control(self) -> int:
@@ -215,100 +264,100 @@ class FlexitBACnet:
         2 - Extract air humidity (DEHUMIDIFICATION_SLOPE_CONTROL_EXTRACT_AIR)
         3 - Max room humidity (DEHUMIDIFICATION_SLOPE_CONTROL_ROOM_MAX)
         """
-        return int(self._get_value(DEHUMIDIFICATION_SLOPE_CONTROL))
+        return int(self._get_value(self._prop_map.DEHUMIDIFICATION_SLOPE_CONTROL))
 
     async def set_dehumidification_slope_control(self, mode: int) -> None:
         """Set slope control mode to one of the values of dehumidification_slope_control."""
         if mode not in (
-            DEHUMIDIFICATION_SLOPE_CONTROL_DISABLED,
-            DEHUMIDIFICATION_SLOPE_CONTROL_EXTRACT_AIR,
-            DEHUMIDIFICATION_SLOPE_CONTROL_ROOM_MAX,
+            self._prop_map.DEHUMIDIFICATION_SLOPE_CONTROL_DISABLED,
+            self._prop_map.DEHUMIDIFICATION_SLOPE_CONTROL_EXTRACT_AIR,
+            self._prop_map.DEHUMIDIFICATION_SLOPE_CONTROL_ROOM_MAX,
         ):
             raise ValueError(f"unsupported slope control mode: {mode}")
 
-        await self._set_value(DEHUMIDIFICATION_SLOPE_CONTROL, mode)
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_SLOPE_CONTROL, mode)
 
     @property
     def dehumidification_slope_switch_on(self) -> float:
         """Humidity slope above which humidity control is switched on, e.g. 1.0."""
-        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE_SWITCH_ON), 2))
+        return float(round(self._get_value(self._prop_map.DEHUMIDIFICATION_SLOPE_SWITCH_ON), 2))
 
     async def set_dehumidification_slope_switch_on(self, value: float) -> None:
         """Set humidity slope above which humidity control is switched on."""
-        await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_ON, float(value))
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_SLOPE_SWITCH_ON, float(value))
 
     @property
     def dehumidification_slope_switch_off(self) -> float:
         """Humidity slope below which humidity control is switched off, e.g. -0.3."""
-        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE_SWITCH_OFF), 2))
+        return float(round(self._get_value(self._prop_map.DEHUMIDIFICATION_SLOPE_SWITCH_OFF), 2))
 
     async def set_dehumidification_slope_switch_off(self, value: float) -> None:
         """Set humidity slope below which humidity control is switched off."""
-        await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_OFF, float(value))
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_SLOPE_SWITCH_OFF, float(value))
 
     @property
     def dehumidification_slope(self) -> float:
         """Current calculated humidity slope, e.g. 0.0."""
-        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE), 2))
+        return float(round(self._get_value(self._prop_map.DEHUMIDIFICATION_SLOPE), 2))
 
     @property
     def dehumidification_by_slope(self) -> bool:
         """True if the current humidity control request is caused by the slope."""
-        return self._get_value(DEHUMIDIFICATION_BY_SLOPE) == DEHUMIDIFICATION_BY_SLOPE_ACTIVE
+        return self._get_value(self._prop_map.DEHUMIDIFICATION_BY_SLOPE) == self._prop_map.DEHUMIDIFICATION_BY_SLOPE_ACTIVE
 
     @property
     def dehumidification_slope_resolution(self) -> int:
         """Time base of the humidity slope calculation in minutes, e.g. 5."""
-        return int(self._get_value(DEHUMIDIFICATION_SLOPE_RESOLUTION))
+        return int(self._get_value(self._prop_map.DEHUMIDIFICATION_SLOPE_RESOLUTION))
 
     @property
     def dehumidification_slope_on_delay(self) -> int:
         """On delay of the slope control in seconds, e.g. 600."""
-        return int(self._get_value(DEHUMIDIFICATION_SLOPE_ON_DELAY))
+        return int(self._get_value(self._prop_map.DEHUMIDIFICATION_SLOPE_ON_DELAY))
 
     async def set_dehumidification_slope_on_delay(self, seconds: int) -> None:
         """Set on delay of the slope control in seconds."""
-        await self._set_value(DEHUMIDIFICATION_SLOPE_ON_DELAY, seconds)
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_SLOPE_ON_DELAY, seconds)
 
     @property
     def dehumidification_switch_off_delay(self) -> int:
         """Humidity control switch-off delay in minutes, e.g. 30."""
-        return int(self._get_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY))
+        return int(self._get_value(self._prop_map.DEHUMIDIFICATION_SWITCH_OFF_DELAY))
 
     async def set_dehumidification_switch_off_delay(self, minutes: int) -> None:
         """Set humidity control switch-off delay in minutes."""
-        await self._set_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY, minutes)
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_SWITCH_OFF_DELAY, minutes)
 
     @property
     def dehumidification_max_runtime(self) -> int:
         """Maximum runtime of humidity control in minutes, e.g. 120."""
-        return int(self._get_value(DEHUMIDIFICATION_MAX_RUNTIME))
+        return int(self._get_value(self._prop_map.DEHUMIDIFICATION_MAX_RUNTIME))
 
     async def set_dehumidification_max_runtime(self, minutes: int) -> None:
         """Set maximum runtime of humidity control in minutes."""
-        await self._set_value(DEHUMIDIFICATION_MAX_RUNTIME, minutes)
+        await self._set_value(self._prop_map.DEHUMIDIFICATION_MAX_RUNTIME, minutes)
 
     @property
     def comfort_button(self) -> bool:
         """Comfort button state, True if active."""
-        return self._get_value(COMFORT_BUTTON) == COMFORT_BUTTON_ACTIVE
+        return self._get_value(self._prop_map.COMFORT_BUTTON) == self._prop_map.COMFORT_BUTTON_ACTIVE
 
     async def activate_comfort_button(self) -> None:
         """Activate comfort button."""
-        await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON_ACTIVE)
+        await self._set_value(self._prop_map.COMFORT_BUTTON, self._prop_map.COMFORT_BUTTON_ACTIVE)
 
     async def deactivate_comfort_button(self, delay: int = 0) -> None:
         """Deactivate comfort button with optional delay (in minutes)."""
         if delay < 0 or delay > 600:
             raise ValueError("delay must be between 0 and 600 minutes")
 
-        await self._set_value(COMFORT_BUTTON_DELAY, delay)
-        await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON_INACTIVE)
+        await self._set_value(self._prop_map.COMFORT_BUTTON_DELAY, delay)
+        await self._set_value(self._prop_map.COMFORT_BUTTON, self._prop_map.COMFORT_BUTTON_INACTIVE)
 
     @property
     def operation_mode(self) -> int:
         """Returns current heat exchanger operation mode, e.g. Home."""
-        return self._get_value(OPERATION_MODE)
+        return self._get_value(self._prop_map.OPERATION_MODE)
 
     @property
     def ventilation_mode(self) -> int:
@@ -317,7 +366,7 @@ class FlexitBACnet:
         This setting only works when comfort_button is active.
         When inactive, this will always return VENTILATION_MODE_AWAY.
         """
-        return self._get_value(VENTILATION_MODE)
+        return self._get_value(self._prop_map.VENTILATION_MODE)
 
     async def set_ventilation_mode(self, mode: int) -> None:
         """Set ventilation mode to one of the supported values:
@@ -326,36 +375,51 @@ class FlexitBACnet:
         3 - Home (VENTILATION_MODE_HOME)
         4 - High (VENTILATION_MODE_HIGH)
         """
-        await self._set_value(VENTILATION_MODE, mode)
+        await self._set_value(self._prop_map.VENTILATION_MODE, mode)
 
     @property
     def air_temp_setpoint_away(self) -> float:
         """Return temperature setpoint for Away mode."""
-        return float(self._get_value(AIR_TEMP_SETPOINT_AWAY))
+        return float(self._get_value(self._prop_map.AIR_TEMP_SETPOINT_AWAY))
 
     async def set_air_temp_setpoint_away(self, temperature: float):
         """Set temperature setpoint for Away mode.
 
         temperature -- temperature in degrees Celsius
         """
-        await self._set_value(AIR_TEMP_SETPOINT_AWAY, temperature)
+        await self._set_value(self._prop_map.AIR_TEMP_SETPOINT_AWAY, temperature)
 
     @property
     def air_temp_setpoint_home(self) -> float:
         """Return temperature setpoint for Home mode."""
-        return float(self._get_value(AIR_TEMP_SETPOINT_HOME))
+        return float(self._get_value(self._prop_map.AIR_TEMP_SETPOINT_HOME))
 
     async def set_air_temp_setpoint_home(self, temperature: float) -> None:
         """Set temperature setpoint for Home mode.
 
         temperature -- temperature in degrees Celsius
         """
-        await self._set_value(AIR_TEMP_SETPOINT_HOME, temperature)
+        await self._set_value(self._prop_map.AIR_TEMP_SETPOINT_HOME, temperature)
+
+    @property
+    def _runtime_is_read_only(self) -> bool:
+        """Return true if the fireplace/rapid runtime objects cannot be written.
+
+        On EcoNordic units the runtime objects (FIREPLACE_VENTILATION_RUNTIME,
+        RAPID_VENTILATION_RUNTIME) are read-only: a write is rejected by the
+        unit ("unsupported response type: 5"). The duration is configured in
+        the Flexit GO app and the unit runs that configured duration.
+        Verified on an EcoNordic WH4.
+        """
+        return self.product_line == econordic.PRODUCT_LINE
 
     async def start_fireplace_ventilation(self, minutes: int) -> None:
         """Set duration and trigger fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only (see
+        `_runtime_is_read_only`) - use trigger_fireplace_mode() instead.
         """
         await self.set_fireplace_mode_runtime(minutes)
         await self.trigger_fireplace_mode()
@@ -364,213 +428,484 @@ class FlexitBACnet:
         """Set runtime duration for the fireplace ventilation mode.
 
         minutes -- duration of fireplace ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only.
         """
-        await self._set_value(FIREPLACE_VENTILATION_RUNTIME, minutes)
+        if self._runtime_is_read_only:
+            raise Exception(
+                "Fireplace ventilation runtime is read-only on EcoNordic models - use trigger_fireplace_mode()"
+            )
+
+        await self._set_value(self._prop_map.FIREPLACE_VENTILATION_RUNTIME, minutes)
 
     @property
     def fireplace_mode_runtime(self) -> int:
         """Returns currently set runtime for the fireplace mode (in minutes)."""
-        return self._get_value(FIREPLACE_VENTILATION_RUNTIME)
+        return self._get_value(self._prop_map.FIREPLACE_VENTILATION_RUNTIME)
 
     async def trigger_fireplace_mode(self) -> None:
         """Trigger temporary fireplace ventilation mode."""
-        await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION_TRIGGER)
+        await self._set_value(self._prop_map.FIREPLACE_VENTILATION, self._prop_map.FIREPLACE_VENTILATION_TRIGGER)
 
     @property
     def fireplace_ventilation_status(self) -> bool:
         """Return true if fireplace mode is active."""
-        return self._get_value(FIREPLACE_STATE) == FIREPLACE_STATE_ACTIVE
+        return self._get_value(self._prop_map.FIREPLACE_STATE) == self._prop_map.FIREPLACE_STATE_ACTIVE
 
     @property
     def fireplace_ventilation_remaining_duration(self) -> int:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
-        return int(self._get_value(FIREPLACE_VENTILATION_REMAINING_DURATION))
+        return int(self._get_value(self._prop_map.FIREPLACE_VENTILATION_REMAINING_DURATION))
 
     async def start_rapid_ventilation(self, minutes: int) -> None:
-        """Trigger temporary rapid ventilation mode.
+        """Set duration and trigger temporary rapid ventilation mode.
 
         minutes -- duration of rapid ventilation in minutes (1 - 360)
+
+        Raises on EcoNordic units, where the runtime is read-only (see
+        `_runtime_is_read_only`) - use trigger_rapid_ventilation() instead.
         """
-        await self._set_value(RAPID_VENTILATION_RUNTIME, minutes)
-        await self._set_value(RAPID_VENTILATION, RAPID_VENTILATION_TRIGGER)
+        if self._runtime_is_read_only:
+            raise Exception(
+                "Rapid ventilation runtime is read-only on EcoNordic models - use trigger_rapid_ventilation()"
+            )
+
+        await self._set_value(self._prop_map.RAPID_VENTILATION_RUNTIME, minutes)
+        await self.trigger_rapid_ventilation()
+
+    async def trigger_rapid_ventilation(self) -> None:
+        """Trigger temporary rapid ventilation mode (counterpart of trigger_fireplace_mode)."""
+        await self._set_value(self._prop_map.RAPID_VENTILATION, self._prop_map.RAPID_VENTILATION_TRIGGER)
 
     @property
     def rapid_ventilation_remaining_duration(self) -> int:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
-        return int(self._get_value(RAPID_VENTILATION_REMAINING_DURATION))
+        return int(self._get_value(self._prop_map.RAPID_VENTILATION_REMAINING_DURATION))
 
     @property
     def supply_air_fan_control_signal(self) -> int:
         """Return current supply air fan control signal (in %)."""
-        return int(self._get_value(FAN_SPEED_SUPPLY_AIR))
+        return int(self._get_value(self._prop_map.FAN_SPEED_SUPPLY_AIR))
 
     @property
     def supply_air_fan_rpm(self) -> int:
         """Return current supply air fan RPM."""
-        return int(self._get_value(TACHO_SUPPLY_FAN))
+        return int(self._get_value(self._prop_map.TACHO_SUPPLY_FAN))
 
     @property
     def exhaust_air_fan_control_signal(self) -> int:
         """Return current exhaust air fan control signal (in %)."""
-        return int(self._get_value(FAN_SPEED_EXHAUST_AIR))
+        return int(self._get_value(self._prop_map.FAN_SPEED_EXHAUST_AIR))
 
     @property
     def exhaust_air_fan_rpm(self) -> int:
         """Return current exhaust air fan RPM."""
-        return int(self._get_value(TACHO_EXHAUST_FAN))
+        return int(self._get_value(self._prop_map.TACHO_EXHAUST_FAN))
 
     @property
     def electric_heater(self) -> bool:
         """Return True if electric heater is enabled."""
-        return bool(self._get_value(ELECTRICAL_HEATER) == ELECTRICAL_HEATER_ACTIVE)
+        return bool(self._get_value(self._prop_map.ELECTRICAL_HEATER) == self._prop_map.ELECTRICAL_HEATER_ACTIVE)
 
     async def enable_electric_heater(self) -> None:
         """Enables electric air heater."""
-        await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER_ACTIVE)
-
+        await self._set_value(self._prop_map.ELECTRICAL_HEATER, self._prop_map.ELECTRICAL_HEATER_ACTIVE)
     async def disable_electric_heater(self) -> None:
         """Disables electric air heater."""
-        await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER_INACTIVE)
+        await self._set_value(self._prop_map.ELECTRICAL_HEATER, self._prop_map.ELECTRICAL_HEATER_INACTIVE)
 
     @property
     def electric_heater_nominal_power(self) -> float:
         """Return nominal heater power in kilowatts."""
-        return float(self._get_value(ELECTRIC_HEATER_NOM_POWER))
+        return float(self._get_value(self._prop_map.ELECTRIC_HEATER_NOM_POWER))
 
     @property
     def electric_heater_power(self) -> float:
         """Return heater power consumption in kilowatts."""
-        return float(self._get_value(HEATING_COIL_ELECTRIC_POWER))
+        return float(self._get_value(self._prop_map.HEATING_COIL_ELECTRIC_POWER))
 
     @property
     def cooker_hood_status(self) -> bool:
         """Cooker hood ventilation state, True if active."""
-        return self._get_value(COOKER_HOOD) == COOKER_HOOD_ACTIVE
+        return self._get_value(self._prop_map.COOKER_HOOD) == self._prop_map.COOKER_HOOD_ACTIVE
 
     async def activate_cooker_hood(self) -> None:
         """Activates cooker hood mode."""
-        await self._set_value(COOKER_HOOD, COOKER_HOOD_ACTIVE)
-
+        await self._set_value(self._prop_map.COOKER_HOOD, self._prop_map.COOKER_HOOD_ACTIVE)
     async def deactivate_cooker_hood(self) -> None:
         """Deactivates cooker hood mode."""
-        await self._set_value(COOKER_HOOD, COOKER_HOOD_INACTIVE)
+        await self._set_value(self._prop_map.COOKER_HOOD, self._prop_map.COOKER_HOOD_INACTIVE)
 
     @property
     def fan_setpoint_supply_air_home(self) -> int:
         """Return fan setpoint for supply air HOME in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_HOME))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HOME))
 
     async def set_fan_setpoint_supply_air_home(self, percent: int) -> None:
         """Set fan setpoint for supply air HOME in percent."""
-        await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HOME, percent)
-
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HOME, percent)
     @property
     def fan_setpoint_extract_air_home(self) -> int:
         """Return fan setpoint for extract air HOME in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_HOME))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HOME))
 
     async def set_fan_setpoint_extract_air_home(self, percent: int) -> None:
         """Set fan setpoint for extract air HOME in percent."""
-        await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HOME, percent)
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HOME, percent)
 
     @property
     def fan_setpoint_supply_air_high(self) -> int:
         """Return fan setpoint for supply air HIGH in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_HIGH))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HIGH))
 
     async def set_fan_setpoint_supply_air_high(self, percent: int) -> None:
         """Set fan setpoint for supply air HIGH in percent."""
-        await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HIGH, percent)
-
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HIGH, percent)
     @property
     def fan_setpoint_extract_air_high(self) -> int:
         """Return fan setpoint for extract air HIGH in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_HIGH))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HIGH))
 
     async def set_fan_setpoint_extract_air_high(self, percent: int) -> None:
         """Set fan setpoint for extract air HIGH in percent."""
-        await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HIGH, percent)
-
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HIGH, percent)
     @property
     def fan_setpoint_supply_air_away(self) -> int:
         """Return fan setpoint for supply air AWAY in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_AWAY))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_AWAY))
 
     async def set_fan_setpoint_supply_air_away(self, percent: int) -> None:
         """Set fan setpoint for supply air AWAY in percent."""
-        await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_AWAY, percent)
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_AWAY, percent)
 
     @property
     def fan_setpoint_extract_air_away(self) -> int:
         """Return fan setpoint for extract air AWAY in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_AWAY))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_AWAY))
 
     async def set_fan_setpoint_extract_air_away(self, percent: int) -> None:
         """Set fan setpoint for extract air AWAY in percent."""
-        await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_AWAY, percent)
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_AWAY, percent)
 
     @property
     def fan_setpoint_supply_air_cooker(self) -> int:
         """Return fan setpoint for supply air COOKER in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_COOKER))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_COOKER))
 
     async def set_fan_setpoint_supply_air_cooker(self, percent: int) -> None:
         """Set fan setpoint for supply air COOKER in percent."""
-        await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_COOKER, percent)
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_COOKER, percent)
 
     @property
     def fan_setpoint_extract_air_cooker(self) -> int:
         """Return fan setpoint for extract air COOKER in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_COOKER))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_COOKER))
 
     async def set_fan_setpoint_extract_air_cooker(self, percent: int) -> None:
         """Set fan setpoint for extract air COOKER in percent."""
-        await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_COOKER, percent)
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_COOKER, percent)
 
     @property
     def fan_setpoint_supply_air_fire(self) -> int:
         """Return fan setpoint for supply air FIRE in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_FIRE))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_FIRE))
 
     async def set_fan_setpoint_supply_air_fire(self, percent: int):
         """Set fan setpoint for supply air FIRE in percent."""
-        await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_FIRE, percent)
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_FIRE, percent)
 
     @property
     def fan_setpoint_extract_air_fire(self) -> int:
         """Return fan setpoint for extract air FIRE in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_FIRE))
+        return int(self._get_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_FIRE))
 
     async def set_fan_setpoint_extract_air_fire(self, percent: int) -> None:
         """Set fan setpoint for extract air FIRE in percent."""
-        await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_FIRE, percent)
+        await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_FIRE, percent)
 
     @property
     def air_filter_operating_time(self) -> float:
         """Return air filter operating time in hours."""
-        return float(self._get_value(AIR_FILTER_OPERATING_TIME))
+        return float(self._get_value(self._prop_map.AIR_FILTER_OPERATING_TIME))
 
     @property
     def air_filter_exchange_interval(self) -> float:
-        return float(self._get_value(AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE))
+        """Return air filter exchange interval in hours."""
+        return float(self._get_value(self._prop_map.AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE))
 
     @property
     def heat_exchanger_efficiency(self) -> int:
         """Returns heat exchanger efficiency in percent."""
-        return int(round(self._get_value(ROTATING_HEAT_EXCHANGER_EFFICIENCY)))
+        return int(round(self._get_value(self._prop_map.ROTATING_HEAT_EXCHANGER_EFFICIENCY)))
 
     @property
     def heat_exchanger_speed(self) -> int:
         """Returns heat exchanger speed in percent."""
-        return int(round(self._get_value(ROTATING_HEAT_EXCHANGER_SPEED)))
+        return int(round(self._get_value(self._prop_map.ROTATING_HEAT_EXCHANGER_SPEED)))
 
     @property
     def air_filter_polluted(self) -> bool:
         """Returns True if filter is polluted."""
-        return bool(self._get_value(AIR_FILTER_POLLUTED) == AIR_FILTER_POLLUTED_ACTIVE)
+        return bool(self._get_value(self._prop_map.AIR_FILTER_POLLUTED) == self._prop_map.AIR_FILTER_POLLUTED_ACTIVE)
 
     async def reset_air_filter_timer(self) -> None:
         """Resets air filter replace timer."""
         await self._set_value(
-            AIR_FILTER_REPLACE_TIMER_RESET, AIR_FILTER_REPLACE_TIMER_RESET_TRIGGER
+            self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET, self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET_TRIGGER
         )
+
+    @property
+    def dhw_operation_mode(self) -> int:
+        """Returns current Domestic Hot Water (DHW) operation mode."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW operation mode is only available on EcoNordic models") 
+
+        return self._get_value(econordic.DHW_OPERATION_MODE)
+    
+    async def set_dhw_operation_mode(self, mode: int) -> None:
+        """Set Domestic Hot Water (DHW) operation mode.
+
+        mode -- one of the supported values:
+        1 - Comfort (DHW_OPERATION_MODE_COMFORT)
+        2 - Economy (DHW_OPERATION_MODE_ECONOMY)
+        """
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW operation mode is only available on EcoNordic models")
+
+        await self._set_value(econordic.DHW_OPERATION_MODE, mode)
+
+    async def dhw_temporary_boost_start(self) -> None:
+        """Activate Domestic Hot Water (DHW) temporary boost mode."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW temporary boost is only available on EcoNordic models")
+
+        await self._set_value(econordic.DHW_TEMPORARY_BOOST, econordic.DHW_TEMPORARY_BOOST_START)
+
+    async def dhw_temporary_boost_stop(self) -> None:
+        """Deactivate Domestic Hot Water (DHW) temporary boost mode."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW temporary boost is only available on EcoNordic models")
+
+        await self._set_value(econordic.DHW_TEMPORARY_BOOST, econordic.DHW_TEMPORARY_BOOST_STOP)
+
+    async def dhw_forced_charge_start(self) -> None:
+        """Start a forced charge of the Domestic Hot Water (DHW) tank.
+
+        The heat pump charges the tank up to the tank setpoint regardless of
+        the DHW operation mode. There is no stop command: the charge runs
+        until the unit's own stop condition is met. Check `dhw_state ==
+        DHW_STATE_FORCED_CHARGE` to see whether a forced charge is running.
+        """
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW forced charge is only available on EcoNordic models")
+
+        await self._set_value(econordic.DHW_FORCED_CHARGE, econordic.DHW_FORCED_CHARGE_START)
+
+    @property
+    def dhw_state(self) -> int:
+        """Return current Domestic Hot Water (DHW) state (one of econordic.DHW_STATE_*)."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW state is only available on EcoNordic models")
+
+        return int(self._get_value(econordic.DHW_STATE))
+
+    @property
+    def dhw_temperature_setpoint_comfort(self) -> float:
+        """Return Domestic Hot Water (DHW) temperature setpoint for Comfort mode."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW temperature setpoint is only available on EcoNordic models")
+
+        return float(self._get_value(econordic.DHW_TEMPERATURE_SETPOINT_COMFORT))
+
+    async def set_dhw_temperature_setpoint_comfort(self, temperature: float) -> None:
+        """Set Domestic Hot Water (DHW) temperature setpoint for Comfort mode.
+
+        temperature -- temperature in degrees Celsius
+        """
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW temperature setpoint is only available on EcoNordic models")
+
+        await self._set_value(econordic.DHW_TEMPERATURE_SETPOINT_COMFORT, temperature)
+
+    @property
+    def dhw_temperature_setpoint_economy(self) -> float:
+        """Return Domestic Hot Water (DHW) temperature setpoint for Economy mode."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW temperature setpoint is only available on EcoNordic models")
+
+        return float(self._get_value(econordic.DHW_TEMPERATURE_SETPOINT_ECONOMY))
+
+    async def set_dhw_temperature_setpoint_economy(self, temperature: float) -> None:
+        """Set Domestic Hot Water (DHW) temperature setpoint for Economy mode.
+
+        temperature -- temperature in degrees Celsius
+        """
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW temperature setpoint is only available on EcoNordic models")
+
+        await self._set_value(econordic.DHW_TEMPERATURE_SETPOINT_ECONOMY, temperature)
+
+    @property
+    def dhw_tank_temperature_top(self) -> float:
+        """Return Domestic Hot Water (DHW) tank top temperature."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW tank temperature is only available on EcoNordic models")
+
+        return float(self._get_value(econordic.DHW_TANK_TEMPERATURE_TOP))
+
+    @property
+    def dhw_tank_temperature_middle(self) -> float:
+        """Return Domestic Hot Water (DHW) tank middle temperature."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW tank temperature is only available on EcoNordic models")
+
+        return float(self._get_value(econordic.DHW_TANK_TEMPERATURE_MIDDLE))
+
+    @property
+    def dhw_tank_temperature_bottom(self) -> float:
+        """Return Domestic Hot Water (DHW) tank bottom temperature."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW tank temperature is only available on EcoNordic models")
+
+        return float(self._get_value(econordic.DHW_TANK_TEMPERATURE_BOTTOM))
+
+    @property
+    def dhw_electric_heater_status(self) -> int:
+        """Return Domestic Hot Water (DHW) electric heater status (0 - 100%)."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("DHW electric heater status is only available on EcoNordic models")
+
+        return int(self._get_value(econordic.DHW_ELECTRIC_HEATER_STATUS))
+
+    @property
+    def space_heating_setpoint(self) -> float:
+        """Return room temperature setpoint for heating circuit 1."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("Space heating setpoint is only available on EcoNordic models")
+
+        return float(self._get_value(econordic.HEATING_CIRCUIT_1_ROOM_TEMPERATURE_SETPOINT))
+
+    async def set_space_heating_setpoint(self, temperature: float) -> None:
+        """Set room temperature setpoint for heating circuit 1.
+
+        temperature -- temperature in degrees Celsius
+        """
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("Space heating setpoint is only available on EcoNordic models")
+
+        await self._set_value(econordic.HEATING_CIRCUIT_1_ROOM_TEMPERATURE_SETPOINT, temperature)
+
+    @property
+    def heat_pump_state(self) -> int:
+        """Return heat pump state."""
+
+        if self.product_line != econordic.PRODUCT_LINE:
+            raise Exception("Heat pump state is only available on EcoNordic models")
+
+        return int(self._get_value(econordic.HEAT_PUMP_STATE))
+
+    # Free cooling - see the "Free cooling" section in nordic.py / econordic.py
+    # and README.md for how the function works and which settings make it run.
+
+    @property
+    def plant_state(self) -> int:
+        """Return plant state (one of PLANT_STATE_*) - what the ventilation plant is doing right now."""
+        return int(self._get_value(self._prop_map.PLANT_STATE))
+
+    @property
+    def free_cooling_active(self) -> bool:
+        """Return true if free cooling is running right now.
+
+        This is what explains a unit that is suddenly running in HIGH with cold
+        supply air. Flexit GO does not show it; the plant state does.
+        """
+        return self.plant_state == self._prop_map.PLANT_STATE_FREE_COOLING
+
+    @property
+    def free_cooling_enabled(self) -> bool:
+        """Return true if the free cooling function is enabled (allowed to run).
+
+        This is the on/off an end user sees in Flexit GO. Whether it is running
+        right now is `free_cooling_active`.
+        """
+        return self._get_value(self._prop_map.FREE_COOLING_ENABLED) == self._prop_map.FREE_COOLING_ENABLED_ACTIVE
+
+    async def enable_free_cooling(self) -> None:
+        """Enable the free cooling function (installer-level setting in Flexit GO)."""
+        await self._set_value(self._prop_map.FREE_COOLING_ENABLED, self._prop_map.FREE_COOLING_ENABLED_ACTIVE)
+
+    async def disable_free_cooling(self) -> None:
+        """Disable the free cooling function (installer-level setting in Flexit GO)."""
+        await self._set_value(self._prop_map.FREE_COOLING_ENABLED, self._prop_map.FREE_COOLING_ENABLED_INACTIVE)
+
+    @property
+    def free_cooling_extract_temp_setpoint(self) -> float:
+        """Return the extract air temperature above which free cooling may start, in degrees Celsius."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_EXTRACT_TEMP_SETPOINT))
+
+    async def set_free_cooling_extract_temp_setpoint(self, temperature: float) -> None:
+        """Set the extract air temperature above which free cooling may start.
+
+        temperature -- degrees Celsius, 10 - 30 (Flexit GO default 22). This is
+                       effectively the room temperature you want free cooling to
+                       keep the house below; free cooling also stops when the
+                       extract air falls below it. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_EXTRACT_TEMP_SETPOINT, temperature)
+
+    @property
+    def free_cooling_outside_temp_limit(self) -> float:
+        """Return the outdoor temperature below which free cooling is not used, in degrees Celsius."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_OUTSIDE_TEMP_LIMIT))
+
+    async def set_free_cooling_outside_temp_limit(self, temperature: float) -> None:
+        """Set the outdoor temperature below which free cooling is not used.
+
+        temperature -- degrees Celsius, 10 - 30 (Flexit GO default 18). With the
+                       default, free cooling only runs on warm nights; the lower
+                       end of the range (10) lets it run on most summer nights in
+                       a Nordic climate. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_OUTSIDE_TEMP_LIMIT, temperature)
+
+    @property
+    def free_cooling_dt_enable_start(self) -> float:
+        """Return how much colder (K) the outdoor air must be than the extract air for free cooling to start."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_DT_ENABLE_START))
+
+    async def set_free_cooling_dt_enable_start(self, delta: float) -> None:
+        """Set how much colder the outdoor air must be than the extract air for free cooling to start.
+
+        delta -- K, 0 - 10 (Flexit GO default 4). Must be larger than
+                 `free_cooling_dt_disable`. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_DT_ENABLE_START, delta)
+
+    @property
+    def free_cooling_dt_disable(self) -> float:
+        """Return the extract/outdoor air temperature difference (K) below which free cooling stops."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_DT_DISABLE))
+
+    async def set_free_cooling_dt_disable(self, delta: float) -> None:
+        """Set the extract/outdoor air temperature difference below which free cooling stops.
+
+        delta -- K, 0 - 10 (Flexit GO default 1). Must be smaller than
+                 `free_cooling_dt_enable_start`. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_DT_DISABLE, delta)
