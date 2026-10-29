@@ -172,6 +172,152 @@ class FlexitBACnet:
         return float(round(self._get_value(self._prop_map.ROOM_3_HUMIDITY), 1))
 
     @property
+    def humidity_setpoint_present(self) -> float:
+        """Present humidity setpoint in %, e.g. 70.0."""
+        return float(round(self._get_value(HUMIDITY_SETPOINT_PRESENT), 1))
+
+    @property
+    def humidity_setpoint_home(self) -> float:
+        """Humidity setpoint for Home mode in %, e.g. 70.0."""
+        return float(round(self._get_value(HUMIDITY_SETPOINT_HOME), 1))
+
+    async def set_humidity_setpoint_home(self, percent: float) -> None:
+        """Set humidity setpoint for Home mode.
+
+        percent -- relative humidity in % (0 - 100)
+        """
+        await self._set_humidity_setpoint(HUMIDITY_SETPOINT_HOME, percent)
+
+    @property
+    def humidity_setpoint_away(self) -> float:
+        """Humidity setpoint for Away mode in %, e.g. 80.0."""
+        return float(round(self._get_value(HUMIDITY_SETPOINT_AWAY), 1))
+
+    async def set_humidity_setpoint_away(self, percent: float) -> None:
+        """Set humidity setpoint for Away mode.
+
+        percent -- relative humidity in % (0 - 100)
+        """
+        await self._set_humidity_setpoint(HUMIDITY_SETPOINT_AWAY, percent)
+
+    @property
+    def humidity_setpoint_high(self) -> float:
+        """Humidity setpoint for High mode in %, e.g. 100.0."""
+        return float(round(self._get_value(HUMIDITY_SETPOINT_HIGH), 1))
+
+    async def set_humidity_setpoint_high(self, percent: float) -> None:
+        """Set humidity setpoint for High mode.
+
+        percent -- relative humidity in % (0 - 100)
+        """
+        await self._set_humidity_setpoint(HUMIDITY_SETPOINT_HIGH, percent)
+
+    async def _set_humidity_setpoint(self, device_property: DeviceProperty, percent: float) -> None:
+        # chained comparison also rejects NaN
+        if not 0 <= percent <= 100:
+            raise ValueError("humidity setpoint must be between 0 and 100 %")
+
+        await self._set_value(device_property, float(percent))
+
+    @property
+    def dehumidification_fan_control(self) -> float:
+        """Fan speed request caused by humidity control in %, e.g. 0.0."""
+        return float(round(self._get_value(DEHUMIDIFICATION_FAN_CONTROL), 1))
+
+    @property
+    def dehumidification_pid_control(self) -> bool:
+        """True if setpoint based (PID) humidity control is enabled."""
+        return self._get_value(DEHUMIDIFICATION_PID_CONTROL) == DEHUMIDIFICATION_PID_CONTROL_ACTIVE
+
+    async def enable_dehumidification_pid_control(self) -> None:
+        """Enable setpoint based (PID) humidity control."""
+        await self._set_value(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_ACTIVE)
+
+    async def disable_dehumidification_pid_control(self) -> None:
+        """Disable setpoint based (PID) humidity control."""
+        await self._set_value(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_INACTIVE)
+
+    @property
+    def dehumidification_slope_control(self) -> int:
+        """Slope (rapid humidity rise, e.g. shower) control mode:
+        1 - Disabled (DEHUMIDIFICATION_SLOPE_CONTROL_DISABLED)
+        2 - Extract air humidity (DEHUMIDIFICATION_SLOPE_CONTROL_EXTRACT_AIR)
+        3 - Max room humidity (DEHUMIDIFICATION_SLOPE_CONTROL_ROOM_MAX)
+        """
+        return int(self._get_value(DEHUMIDIFICATION_SLOPE_CONTROL))
+
+    async def set_dehumidification_slope_control(self, mode: int) -> None:
+        """Set slope control mode to one of the values of dehumidification_slope_control."""
+        if mode not in (
+            DEHUMIDIFICATION_SLOPE_CONTROL_DISABLED,
+            DEHUMIDIFICATION_SLOPE_CONTROL_EXTRACT_AIR,
+            DEHUMIDIFICATION_SLOPE_CONTROL_ROOM_MAX,
+        ):
+            raise ValueError(f"unsupported slope control mode: {mode}")
+
+        await self._set_value(DEHUMIDIFICATION_SLOPE_CONTROL, mode)
+
+    @property
+    def dehumidification_slope_switch_on(self) -> float:
+        """Humidity slope above which humidity control is switched on, e.g. 1.0."""
+        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE_SWITCH_ON), 2))
+
+    async def set_dehumidification_slope_switch_on(self, value: float) -> None:
+        """Set humidity slope above which humidity control is switched on."""
+        await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_ON, float(value))
+
+    @property
+    def dehumidification_slope_switch_off(self) -> float:
+        """Humidity slope below which humidity control is switched off, e.g. -0.3."""
+        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE_SWITCH_OFF), 2))
+
+    async def set_dehumidification_slope_switch_off(self, value: float) -> None:
+        """Set humidity slope below which humidity control is switched off."""
+        await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_OFF, float(value))
+
+    @property
+    def dehumidification_slope(self) -> float:
+        """Current calculated humidity slope, e.g. 0.0."""
+        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE), 2))
+
+    @property
+    def dehumidification_by_slope(self) -> bool:
+        """True if the current humidity control request is caused by the slope."""
+        return self._get_value(DEHUMIDIFICATION_BY_SLOPE) == DEHUMIDIFICATION_BY_SLOPE_ACTIVE
+
+    @property
+    def dehumidification_slope_resolution(self) -> int:
+        """Time base of the humidity slope calculation in minutes, e.g. 5."""
+        return int(self._get_value(DEHUMIDIFICATION_SLOPE_RESOLUTION))
+
+    @property
+    def dehumidification_slope_on_delay(self) -> int:
+        """On delay of the slope control in seconds, e.g. 600."""
+        return int(self._get_value(DEHUMIDIFICATION_SLOPE_ON_DELAY))
+
+    async def set_dehumidification_slope_on_delay(self, seconds: int) -> None:
+        """Set on delay of the slope control in seconds."""
+        await self._set_value(DEHUMIDIFICATION_SLOPE_ON_DELAY, seconds)
+
+    @property
+    def dehumidification_switch_off_delay(self) -> int:
+        """Humidity control switch-off delay in minutes, e.g. 30."""
+        return int(self._get_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY))
+
+    async def set_dehumidification_switch_off_delay(self, minutes: int) -> None:
+        """Set humidity control switch-off delay in minutes."""
+        await self._set_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY, minutes)
+
+    @property
+    def dehumidification_max_runtime(self) -> int:
+        """Maximum runtime of humidity control in minutes, e.g. 120."""
+        return int(self._get_value(DEHUMIDIFICATION_MAX_RUNTIME))
+
+    async def set_dehumidification_max_runtime(self, minutes: int) -> None:
+        """Set maximum runtime of humidity control in minutes."""
+        await self._set_value(DEHUMIDIFICATION_MAX_RUNTIME, minutes)
+
+    @property
     def comfort_button(self) -> bool:
         """Comfort button state, True if active."""
         return self._get_value(self._prop_map.COMFORT_BUTTON) == self._prop_map.COMFORT_BUTTON_ACTIVE
