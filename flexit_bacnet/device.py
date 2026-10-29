@@ -1,3 +1,4 @@
+from types import ModuleType
 from typing import Any, Optional
 
 from flexit_bacnet import bacnet
@@ -21,8 +22,22 @@ class FlexitBACnet:
         self.device_id = device_id
         self._state: Optional[bacnet.DeviceState] = None
 
-        # property mapping for the specific product line (nordic/econordic)
-        self._prop_map: Optional[Any] = None
+        # property mapping for the specific product line (nordic/econordic),
+        # resolved by the first call to update()
+        self._prop_map_module: Optional[ModuleType] = None
+
+    @property
+    def _prop_map(self) -> ModuleType:
+        """Return property mapping module (nordic/econordic) for this device.
+
+        The product line is detected from the serial number, so the mapping is
+        only known after the first update(). Reading or writing before that
+        would guess the object identifiers, which differ between product lines.
+        """
+        if self._prop_map_module is None:
+            raise Exception("must run 'update()' method first")
+
+        return self._prop_map_module
 
     @property
     def _device_property(self) -> bacnet.DeviceProperty:
@@ -32,7 +47,7 @@ class FlexitBACnet:
             read_values=[bacnet.ReadValue.OBJECT_NAME, bacnet.ReadValue.DESCRIPTION],
         )
 
-    async def _get_property_mapping(self) -> Any:
+    async def _get_property_mapping(self) -> ModuleType:
         """Return property mapping module based on product line."""
         self._state = await self.bacnet.read_multiple([self._device_property])
 
@@ -42,9 +57,14 @@ class FlexitBACnet:
         return nordic
 
     async def update(self) -> None:
-        """Refresh local device state."""
-        if self._prop_map is None:
-            self._prop_map = await self._get_property_mapping()
+        """Refresh local device state.
+
+        Must be called before any other property or method is used: the first
+        call detects the product line (Nordic/EcoNordic) and selects the
+        matching property mapping.
+        """
+        if self._prop_map_module is None:
+            self._prop_map_module = await self._get_property_mapping()
 
         device_properties = self._prop_map.DEVICE_PROPERTIES + [self._device_property]
 

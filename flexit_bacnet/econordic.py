@@ -280,6 +280,62 @@ PLANT_STATE_SMOKE_EXTRACT_EXHAUST = 16
 PLANT_STATE_SMOKE_EXTRACT_SUPPLY = 17
 PLANT_STATE_EMERGENCY_OFF = 18
 
+# Humidity (dehumidification) control - increases fan speed on high or rapidly rising humidity.
+# Same object identifiers as Nordic (verified there on an S7, application HvacFnct21y_A
+# v2.438); not yet verified on an EcoNordic unit. EcoNordic exposes the dehumidification
+# PLANT_STATE values, so the function is present. Objects missing on a unit read as 0.
+
+# Humidity, present setpoint (e.g. 70.0 percent)
+HUMIDITY_SETPOINT_PRESENT = DeviceProperty(ObjectType.ANALOG_VALUE, 60)
+
+# Humidity, setpoint HIGH (e.g. 100.0 percent)
+HUMIDITY_SETPOINT_HIGH = DeviceProperty(ObjectType.ANALOG_VALUE, 61)
+
+# Humidity, setpoint HOME (e.g. 70.0 percent)
+HUMIDITY_SETPOINT_HOME = DeviceProperty(ObjectType.ANALOG_VALUE, 62)
+
+# Humidity, setpoint AWAY (e.g. 80.0 percent)
+HUMIDITY_SETPOINT_AWAY = DeviceProperty(ObjectType.ANALOG_VALUE, 63)
+
+# Humidity, present fan control - fan speed request caused by humidity (e.g. 0.0 percent)
+DEHUMIDIFICATION_FAN_CONTROL = DeviceProperty(ObjectType.ANALOG_VALUE, 1870)
+
+# Dehumidification enable PID control (setpoint based) (e.g. active)
+DEHUMIDIFICATION_PID_CONTROL = DeviceProperty(ObjectType.BINARY_VALUE, 591)
+DEHUMIDIFICATION_PID_CONTROL_ACTIVE = 1
+DEHUMIDIFICATION_PID_CONTROL_INACTIVE = 0
+
+# Dehumidification enable slope control - reacts to rapidly rising humidity, e.g. a shower (e.g. 2)
+DEHUMIDIFICATION_SLOPE_CONTROL = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 620)
+DEHUMIDIFICATION_SLOPE_CONTROL_DISABLED = 1
+DEHUMIDIFICATION_SLOPE_CONTROL_EXTRACT_AIR = 2
+DEHUMIDIFICATION_SLOPE_CONTROL_ROOM_MAX = 3
+
+# Dehumidification slope switch-on point (e.g. 1.0)
+DEHUMIDIFICATION_SLOPE_SWITCH_ON = DeviceProperty(ObjectType.ANALOG_VALUE, 2295)
+
+# Dehumidification slope switch-off point (e.g. -0.3)
+DEHUMIDIFICATION_SLOPE_SWITCH_OFF = DeviceProperty(ObjectType.ANALOG_VALUE, 2292)
+
+# Dehumidification calculated slope (e.g. 0.0)
+DEHUMIDIFICATION_SLOPE = DeviceProperty(ObjectType.ANALOG_VALUE, 2308)
+
+# Dehumidification request is caused by slope (e.g. inactive)
+DEHUMIDIFICATION_BY_SLOPE = DeviceProperty(ObjectType.BINARY_VALUE, 653)
+DEHUMIDIFICATION_BY_SLOPE_ACTIVE = 1
+
+# Dehumidification slope resolution (e.g. 5 minutes)
+DEHUMIDIFICATION_SLOPE_RESOLUTION = DeviceProperty(ObjectType.POSITIVE_INTEGER_VALUE, 261)
+
+# On delay for slope control (e.g. 600 seconds)
+DEHUMIDIFICATION_SLOPE_ON_DELAY = DeviceProperty(ObjectType.POSITIVE_INTEGER_VALUE, 1229)
+
+# Dehumidification switch-off delay (e.g. 30 minutes)
+DEHUMIDIFICATION_SWITCH_OFF_DELAY = DeviceProperty(ObjectType.POSITIVE_INTEGER_VALUE, 262)
+
+# Dehumidification maximum runtime (e.g. 120 minutes)
+DEHUMIDIFICATION_MAX_RUNTIME = DeviceProperty(ObjectType.POSITIVE_INTEGER_VALUE, 263)
+
 # List of all DeviceProperties defined in this file
 DEVICE_PROPERTIES = [
     item for _, item in globals().items() if isinstance(item, DeviceProperty)

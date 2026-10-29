@@ -1,10 +1,12 @@
 import asyncio
 import math
+import re
+from pathlib import Path
 
 import pytest
 
-from flexit_bacnet import FlexitBACnet
-from flexit_bacnet.bacnet import DeviceProperty, ObjectType
+from flexit_bacnet import FlexitBACnet, econordic, nordic
+from flexit_bacnet.bacnet import DeviceProperty, ObjectType, ReadValue
 from flexit_bacnet.nordic import HUMIDITY_SETPOINT_HOME
 
 UNSIGNED = DeviceProperty(ObjectType.POSITIVE_INTEGER_VALUE, 1229)
@@ -44,17 +46,63 @@ def test_unsigned_int_integral_float_accepted():
 
 
 class _WriteRecorder:
+    """Fake BACnet client: answers reads as a Nordic S3 and records writes."""
+
     def __init__(self):
         self.writes = []
+
+    async def read_multiple(self, device_properties):
+        return {
+            (ObjectType.DEVICE, 2): [
+                (ReadValue.OBJECT_NAME, "HvacFnct21y_A"),
+                (ReadValue.DESCRIPTION, "800121-000001"),
+            ]
+        }
 
     async def write(self, device_property, value):
         self.writes.append((device_property, value))
 
 
-@pytest.mark.parametrize("percent", [-0.1, 100.1, math.nan])
-def test_humidity_setpoint_rejected(percent):
+def _nordic_device(recorder=None):
+    device = FlexitBACnet("127.0.0.1", 2)
+    device.bacnet = recorder or _WriteRecorder()
+    asyncio.run(device.update())
+
+    return device
+
+
+def test_setter_requires_update_first():
     device = FlexitBACnet("127.0.0.1", 2)
     device.bacnet = _WriteRecorder()
+
+    with pytest.raises(Exception, match="update"):
+        asyncio.run(device.set_humidity_setpoint_home(65))
+
+    assert device.bacnet.writes == []
+
+
+def test_getter_requires_update_first():
+    device = FlexitBACnet("127.0.0.1", 2)
+
+    with pytest.raises(Exception, match="update"):
+        device.humidity_setpoint_home
+
+
+def test_property_mapping_complete():
+    """Every constant device.py looks up on the mapping exists in both product lines."""
+    source = (Path(__file__).parent.parent / "flexit_bacnet" / "device.py").read_text()
+    names = set(re.findall(r"self\._prop_map\.([A-Z][A-Z0-9_]*)", source))
+
+    assert names
+
+    for module in (nordic, econordic):
+        missing = sorted(name for name in names if not hasattr(module, name))
+        assert missing == [], f"{module.__name__} lacks {missing}"
+
+
+@pytest.mark.parametrize("percent", [-0.1, 100.1, math.nan])
+def test_humidity_setpoint_rejected(percent):
+    device = _nordic_device()
 
     with pytest.raises(ValueError):
         asyncio.run(device.set_humidity_setpoint_home(percent))
@@ -63,8 +111,7 @@ def test_humidity_setpoint_rejected(percent):
 
 
 def test_humidity_setpoint_accepted():
-    device = FlexitBACnet("127.0.0.1", 2)
-    device.bacnet = _WriteRecorder()
+    device = _nordic_device()
 
     async def no_update():
         pass
@@ -90,8 +137,7 @@ class _EncodingWriteRecorder(_WriteRecorder):
     ],
 )
 def test_unsigned_setter_fractional_rejected(setter):
-    device = FlexitBACnet("127.0.0.1", 2)
-    device.bacnet = _EncodingWriteRecorder()
+    device = _nordic_device(_EncodingWriteRecorder())
 
     with pytest.raises(ValueError):
         asyncio.run(getattr(device, setter)(1.5))
