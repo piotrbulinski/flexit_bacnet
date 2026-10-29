@@ -653,3 +653,93 @@ class FlexitBACnet:
             raise Exception("Heat pump state is only available on EcoNordic models")
 
         return int(self._get_value(econordic.HEAT_PUMP_STATE))
+
+    # Free cooling - see the "Free cooling" section in nordic.py / econordic.py
+    # and README.md for how the function works and which settings make it run.
+
+    @property
+    def plant_state(self) -> int:
+        """Return plant state (one of PLANT_STATE_*) - what the ventilation plant is doing right now."""
+        return int(self._get_value(self._prop_map.PLANT_STATE))
+
+    @property
+    def free_cooling_active(self) -> bool:
+        """Return true if free cooling is running right now.
+
+        This is what explains a unit that is suddenly running in HIGH with cold
+        supply air. Flexit GO does not show it; the plant state does.
+        """
+        return self.plant_state == self._prop_map.PLANT_STATE_FREE_COOLING
+
+    @property
+    def free_cooling_enabled(self) -> bool:
+        """Return true if the free cooling function is enabled (allowed to run).
+
+        This is the on/off an end user sees in Flexit GO. Whether it is running
+        right now is `free_cooling_active`.
+        """
+        return self._get_value(self._prop_map.FREE_COOLING_ENABLED) == self._prop_map.FREE_COOLING_ENABLED_ACTIVE
+
+    async def enable_free_cooling(self) -> None:
+        """Enable the free cooling function (installer-level setting in Flexit GO)."""
+        await self._set_value(self._prop_map.FREE_COOLING_ENABLED, self._prop_map.FREE_COOLING_ENABLED_ACTIVE)
+
+    async def disable_free_cooling(self) -> None:
+        """Disable the free cooling function (installer-level setting in Flexit GO)."""
+        await self._set_value(self._prop_map.FREE_COOLING_ENABLED, self._prop_map.FREE_COOLING_ENABLED_INACTIVE)
+
+    @property
+    def free_cooling_extract_temp_setpoint(self) -> float:
+        """Return the extract air temperature above which free cooling may start, in degrees Celsius."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_EXTRACT_TEMP_SETPOINT))
+
+    async def set_free_cooling_extract_temp_setpoint(self, temperature: float) -> None:
+        """Set the extract air temperature above which free cooling may start.
+
+        temperature -- degrees Celsius, 10 - 30 (Flexit GO default 22). This is
+                       effectively the room temperature you want free cooling to
+                       keep the house below; free cooling also stops when the
+                       extract air falls below it. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_EXTRACT_TEMP_SETPOINT, temperature)
+
+    @property
+    def free_cooling_outside_temp_limit(self) -> float:
+        """Return the outdoor temperature below which free cooling is not used, in degrees Celsius."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_OUTSIDE_TEMP_LIMIT))
+
+    async def set_free_cooling_outside_temp_limit(self, temperature: float) -> None:
+        """Set the outdoor temperature below which free cooling is not used.
+
+        temperature -- degrees Celsius, 10 - 30 (Flexit GO default 18). With the
+                       default, free cooling only runs on warm nights; the lower
+                       end of the range (10) lets it run on most summer nights in
+                       a Nordic climate. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_OUTSIDE_TEMP_LIMIT, temperature)
+
+    @property
+    def free_cooling_dt_enable_start(self) -> float:
+        """Return how much colder (K) the outdoor air must be than the extract air for free cooling to start."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_DT_ENABLE_START))
+
+    async def set_free_cooling_dt_enable_start(self, delta: float) -> None:
+        """Set how much colder the outdoor air must be than the extract air for free cooling to start.
+
+        delta -- K, 0 - 10 (Flexit GO default 4). Must be larger than
+                 `free_cooling_dt_disable`. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_DT_ENABLE_START, delta)
+
+    @property
+    def free_cooling_dt_disable(self) -> float:
+        """Return the extract/outdoor air temperature difference (K) below which free cooling stops."""
+        return float(self._get_value(self._prop_map.FREE_COOLING_DT_DISABLE))
+
+    async def set_free_cooling_dt_disable(self, delta: float) -> None:
+        """Set the extract/outdoor air temperature difference below which free cooling stops.
+
+        delta -- K, 0 - 10 (Flexit GO default 1). Must be smaller than
+                 `free_cooling_dt_enable_start`. Installer-level in Flexit GO.
+        """
+        await self._set_value(self._prop_map.FREE_COOLING_DT_DISABLE, delta)
