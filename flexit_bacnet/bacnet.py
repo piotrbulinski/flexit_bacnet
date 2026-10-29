@@ -15,6 +15,9 @@ class APDUType(IntEnum):
     UNCONFIRMED_REQ = 1
     SIMPLE_ACK = 2
     COMPLEX_ACK = 3
+    ERROR = 5
+    REJECT = 6
+    ABORT = 7
 
 
 class PDUFlags(IntEnum):
@@ -28,6 +31,11 @@ MAX_RESPONSE_SEGMENTS = 4
 
 # max 1024 octets
 MAX_APDU_SIZE = 4
+
+# Max number of properties per readPropertyMultiple request. The unit answers
+# in a single APDU of at most MAX_APDU_SIZE octets; a longer answer is segmented,
+# which this client does not reassemble. 57 EcoNordic properties fit, 65 did not.
+READ_MULTIPLE_MAX_PROPERTIES = 50
 
 # use static invoke ID
 INVOKE_ID = 1
@@ -123,6 +131,121 @@ class DecodingError(Exception):
     pass
 
 
+class BACnetError(DecodingError):
+    """The unit answered a request with an Error, Reject or Abort PDU.
+
+    `kind` is "error", "reject" or "abort"; `reason` is the decoded text, e.g.
+    "property / write-access-denied" or "out-of-resources".
+    """
+
+    def __init__(self, kind: str, reason: str):
+        super().__init__(f"{kind} from unit: {reason}")
+        self.kind = kind
+        self.reason = reason
+
+
+# BACnet-Error error-class (clause 18)
+ERROR_CLASSES = {
+    0: "device",
+    1: "object",
+    2: "property",
+    3: "resources",
+    4: "security",
+    5: "services",
+    6: "vt",
+    7: "communication",
+}
+
+# BACnet-Error error-code (clause 18) - the ones a client can run into
+ERROR_CODES = {
+    0: "other",
+    2: "configuration-in-progress",
+    3: "device-busy",
+    7: "inconsistent-parameters",
+    9: "invalid-data-type",
+    13: "invalid-parameter-data-type",
+    16: "missing-required-parameter",
+    25: "operational-problem",
+    26: "password-failure",
+    27: "read-access-denied",
+    29: "service-request-denied",
+    30: "timeout",
+    31: "unknown-object",
+    32: "unknown-property",
+    36: "unsupported-object-type",
+    37: "value-out-of-range",
+    40: "write-access-denied",
+    42: "invalid-array-index",
+    45: "optional-functionality-not-supported",
+    47: "datatype-not-supported",
+}
+
+# BACnet-Reject-Reason (clause 18)
+REJECT_REASONS = {
+    0: "other",
+    1: "buffer-overflow",
+    2: "inconsistent-parameters",
+    3: "invalid-parameter-data-type",
+    4: "invalid-tag",
+    5: "missing-required-parameter",
+    6: "parameter-out-of-range",
+    7: "too-many-arguments",
+    8: "undefined-enumeration",
+    9: "unrecognized-service",
+}
+
+# BACnet-Abort-Reason (clause 18)
+ABORT_REASONS = {
+    0: "other",
+    1: "buffer-overflow",
+    2: "invalid-apdu-in-this-state",
+    3: "preempted-by-higher-priority-task",
+    4: "segmentation-not-supported",
+    5: "security-error",
+    6: "insufficient-security",
+    7: "window-size-out-of-range",
+    8: "application-exceeded-reply-time",
+    9: "out-of-resources",
+    10: "tsm-timeout",
+    11: "apdu-too-long",
+}
+
+
+def _raise_if_error_pdu(apdu: bytes) -> None:
+    """Raise BACnetError if the APDU is an Error, Reject or Abort PDU.
+
+    Error-PDU:  0x50 invoke-id service-choice error-class error-code
+                (class and code as application-tagged ENUMERATED)
+    Reject-PDU: 0x60 invoke-id reject-reason
+    Abort-PDU:  0x70|0x71 invoke-id abort-reason (bit 0 = sent by server)
+    """
+    apdu_type = apdu[0] >> 4
+
+    if apdu_type == APDUType.ABORT:
+        reason = apdu[2] if len(apdu) > 2 else None
+        raise BACnetError("abort", ABORT_REASONS.get(reason, f"reason {reason}"))
+
+    if apdu_type == APDUType.REJECT:
+        reason = apdu[2] if len(apdu) > 2 else None
+        raise BACnetError("reject", REJECT_REASONS.get(reason, f"reason {reason}"))
+
+    if apdu_type == APDUType.ERROR:
+        try:
+            decoder = BACnetDecoder(apdu, 3)
+            _, length = decoder.read_application_tag()
+            error_class = decoder.parse_unsinged_int(length)
+            _, length = decoder.read_application_tag()
+            error_code = decoder.parse_unsinged_int(length)
+        except DecodingError:
+            raise BACnetError("error", f"undecodable error PDU {apdu.hex()}")
+
+        raise BACnetError(
+            "error",
+            f"{ERROR_CLASSES.get(error_class, f'class {error_class}')} / "
+            f"{ERROR_CODES.get(error_code, f'code {error_code}')}",
+        )
+
+
 class DeviceProperty:
     def __init__(
         self,
@@ -214,10 +337,17 @@ def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
     apdu_start_index = BVLC_LENGTH + len(NPDU)
     apdu = response[apdu_start_index:]
 
+    _raise_if_error_pdu(apdu)
+
     apdu_type = apdu[0] >> 4
 
     if apdu_type != APDUType.COMPLEX_ACK:
         raise DecodingError(f"unsupported response type: {apdu_type}")
+
+    if apdu[0] & PDUFlags.SEGMENTED_REQUEST:
+        raise DecodingError(
+            "segmented response is not supported - read fewer properties per request"
+        )
 
     invoke_id = apdu[1]
     if invoke_id != INVOKE_ID:
@@ -413,6 +543,8 @@ def _parse_write_property_response(response: bytes):
 
     apdu = response[BVLC_LENGTH + len(NPDU) :]
 
+    _raise_if_error_pdu(apdu)
+
     apdu_type = apdu[0] >> 4
 
     if apdu_type != APDUType.SIMPLE_ACK:
@@ -493,6 +625,22 @@ class BACnetClient:
     async def read_multiple(
         self, device_properties: List[DeviceProperty]
     ) -> DeviceState:
+        """Read the present value of many properties.
+
+        The list is read in chunks of READ_MULTIPLE_MAX_PROPERTIES so that
+        each answer fits in one APDU (see the constant).
+        """
+        device_state: DeviceState = {}
+
+        for start in range(0, len(device_properties), READ_MULTIPLE_MAX_PROPERTIES):
+            chunk = device_properties[start:start + READ_MULTIPLE_MAX_PROPERTIES]
+            device_state.update(await self._read_multiple_chunk(chunk))
+
+        return device_state
+
+    async def _read_multiple_chunk(
+        self, device_properties: List[DeviceProperty]
+    ) -> DeviceState:
         request = _read_property_multiple(device_properties)
 
         if DEBUG:
@@ -505,6 +653,8 @@ class BACnetClient:
 
         try:
             return _parse_read_property_multiple_response(response)
+        except BACnetError:
+            raise
         except DecodingError as exc:
             raise DecodingError(
                 f"response decoding failed: {exc}\n{response.hex()}"
@@ -517,6 +667,8 @@ class BACnetClient:
 
         try:
             return _parse_write_property_response(response)
+        except BACnetError:
+            raise
         except DecodingError as exc:
             raise DecodingError(
                 f"response decoding failed: {exc}\n{response.hex()}"
