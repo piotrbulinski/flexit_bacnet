@@ -199,6 +199,8 @@ FREE_COOLING_DT_DISABLE = DeviceProperty(ObjectType.ANALOG_VALUE, 1937)
 # Plant state (read-only) - what the ventilation plant is doing right now.
 # PLANT_STATE_FREE_COOLING is the only way to see that free cooling is running;
 # FREE_COOLING_ENABLED only says that it is allowed to.
+# Not present on every unit: a Nordic S4 and a CL4 (HvacFnct21y_A v2.425) answer
+# unknown-object, so plant_state/free_cooling_active read as None there.
 PLANT_STATE = DeviceProperty(ObjectType.MULTI_STATE_VALUE, 623)
 PLANT_STATE_NORMAL_OPERATION = 1
 PLANT_STATE_DEICING_EXHAUST_TEMPERATURE = 2
