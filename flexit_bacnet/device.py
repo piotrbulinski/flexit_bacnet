@@ -11,8 +11,15 @@ class FlexitBACnet:
         device_address: str,
         device_id: int,
         port: int = bacnet.DEFAULT_BACNET_PORT,
+        timeout: float = bacnet.DEFAULT_TIMEOUT,
+        read_retries: int = bacnet.DEFAULT_READ_RETRIES,
     ) -> None:
-        self.bacnet = bacnet.BACnetClient(device_address, port)
+        """Flexit unit at device_address with BACnet device_id (2 by default on the units).
+
+        timeout -- seconds to wait for each answer from the unit
+        read_retries -- extra attempts for update() after a timeout (writes are never retried)
+        """
+        self.bacnet = bacnet.BACnetClient(device_address, port, timeout=timeout, read_retries=read_retries)
         self.device_id = device_id
         self._state: Optional[bacnet.DeviceState] = None
 
@@ -56,12 +63,14 @@ class FlexitBACnet:
         if value_name is None:
             value_name = bacnet.ReadValue.PRESENT_VALUE
 
-        value = dict(self._state[device_property.object_identifier])[value_name]
+        # an object or property the answer does not contain at all (e.g. a
+        # trimmed answer from an older firmware) is unknown, like a PropertyError
+        value = dict(self._state.get(device_property.object_identifier, ())).get(value_name)
 
         # the unit does not have this object/property (e.g. EXTRACT_AIR_HUMIDITY
         # on units without the sensor): report it as unknown rather than as a
         # reading of 0
-        if isinstance(value, bacnet.PropertyError):
+        if value is None or isinstance(value, bacnet.PropertyError):
             return None
 
         return value
@@ -529,13 +538,13 @@ class FlexitBACnet:
     @reading("Electric heater nominal power", Unit.KILOWATT)
     def electric_heater_nominal_power(self) -> Optional[float]:
         """Return nominal heater power in kilowatts."""
-        return self._get_float(ELECTRIC_HEATER_NOM_POWER)
+        return self._get_float(ELECTRIC_HEATER_NOM_POWER, 3)
 
     @property
     @reading("Electric heater power", Unit.KILOWATT)
     def electric_heater_power(self) -> Optional[float]:
         """Return heater power consumption in kilowatts."""
-        return self._get_float(HEATING_COIL_ELECTRIC_POWER)
+        return self._get_float(HEATING_COIL_ELECTRIC_POWER, 3)
 
     @property
     @reading("Cooker hood")

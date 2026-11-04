@@ -1,0 +1,9 @@
+{
+ "unit": "Flexit Nordic CL4 RER, POS3.67, FW 03.39.03.30, HvacFnct21y_A v2.425",
+ "captured": "2026-11-04",
+ "note": "readProperty (not readPropertyMultiple) of missing AI 96: answered with an Error PDU object/unknown-object",
+ "request": "810a001101040004010c0c000000601955",
+ "responses": [
+  "810a000d010050010c9101911f"
+ ]
+}

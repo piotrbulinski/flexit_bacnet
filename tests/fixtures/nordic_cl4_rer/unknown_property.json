@@ -1,0 +1,9 @@
+{
+ "unit": "Flexit Nordic CL4 RER, POS3.67, FW 03.39.03.30, HvacFnct21y_A v2.425",
+ "captured": "2026-11-04",
+ "note": "AV 1985 present-value plus an unknown property id",
+ "request": "810a001601040244010e0c008007c11e09550a02a01f",
+ "responses": [
+  "810a0022010030010e0c008007c11e29554e44418000004f2a02a05e910291205f1f"
+ ]
+}
