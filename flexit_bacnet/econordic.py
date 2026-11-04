@@ -7,7 +7,9 @@ from .bacnet import DeviceProperty, ObjectType
 
 PRODUCT_LINE = "EcoNordic"
 # Serial number prefixes of the EcoNordic product line (see models.py).
-# 80048x: WH4 (older article number, e.g. 800481-xxxxxx), 80050x: WH4 / W4 / WH4 XL
+# 80048x: older article number, e.g. 800481-xxxxxx - per the installation manual
+# (116926EN-11 §5.5) this is the ventilation module, shared by W4 and WH4, so it
+# identifies the product line but not the exact model. 80050x: WH4 / W4 / WH4 XL
 SERIAL_PREFIX = ("80048", "80050")
 
 # Comfort button [RW]

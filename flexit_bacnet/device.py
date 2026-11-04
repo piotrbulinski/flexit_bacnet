@@ -454,7 +454,13 @@ class FlexitBACnet:
 
     @property
     def fireplace_ventilation_remaining_duration(self) -> int:
-        """Return remaining duration (in minutes) of fireplace ventilation mode."""
+        """Return remaining duration (in minutes) of fireplace ventilation mode.
+
+        On some units (e.g. EcoNordic WH4) this holds the full configured
+        duration while the mode is idle and only counts down while it runs, so a
+        non-zero value does not mean the mode is active - use
+        fireplace_ventilation_status for that.
+        """
         return int(self._get_value(self._prop_map.FIREPLACE_VENTILATION_REMAINING_DURATION))
 
     async def start_rapid_ventilation(self, minutes: int) -> None:
@@ -479,7 +485,12 @@ class FlexitBACnet:
 
     @property
     def rapid_ventilation_remaining_duration(self) -> int:
-        """Return remaining duration (in minutes) of fireplace ventilation mode."""
+        """Return remaining duration (in minutes) of rapid ventilation mode.
+
+        On some units (e.g. EcoNordic WH4) this holds the full configured
+        duration while the mode is idle and only counts down while it runs, so a
+        non-zero value does not mean the mode is active.
+        """
         return int(self._get_value(self._prop_map.RAPID_VENTILATION_REMAINING_DURATION))
 
     @property

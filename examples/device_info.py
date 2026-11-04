@@ -55,7 +55,7 @@ async def main():
         f"Fireplace duration remaining: {device.fireplace_ventilation_remaining_duration} minutes"
     )
     print(
-        f"Rapid ventilation duration remaining: {device.fireplace_ventilation_remaining_duration} minutes"
+        f"Rapid ventilation duration remaining: {device.rapid_ventilation_remaining_duration} minutes"
     )
     print(f"Supply air fan control signal: {device.supply_air_fan_control_signal}%")
     print(f"Supply air fan RPM: {device.supply_air_fan_rpm}")
