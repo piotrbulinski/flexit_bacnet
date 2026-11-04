@@ -41,7 +41,42 @@ class FlexitBACnet:
         if value_name is None:
             value_name = bacnet.ReadValue.PRESENT_VALUE
 
-        return dict(self._state[device_property.object_identifier])[value_name]
+        value = dict(self._state[device_property.object_identifier])[value_name]
+
+        # the unit does not have this object/property (e.g. EXTRACT_AIR_HUMIDITY
+        # on units without the sensor): report it as unknown rather than as a
+        # reading of 0
+        if isinstance(value, bacnet.PropertyError):
+            return None
+
+        return value
+
+    def _get_float(self, device_property: DeviceProperty, ndigits: Optional[int] = None) -> Optional[float]:
+        """Return the present value as float (optionally rounded), None if the unit lacks the object."""
+        value = self._get_value(device_property)
+        if value is None:
+            return None
+
+        if ndigits is not None:
+            value = round(value, ndigits)
+
+        return float(value)
+
+    def _get_int(self, device_property: DeviceProperty, rounded: bool = False) -> Optional[int]:
+        """Return the present value as int (optionally rounded), None if the unit lacks the object."""
+        value = self._get_value(device_property)
+        if value is None:
+            return None
+
+        return int(round(value)) if rounded else int(value)
+
+    def _get_flag(self, device_property: DeviceProperty, active_value: Any) -> Optional[bool]:
+        """Return True if the present value equals active_value, None if the unit lacks the object."""
+        value = self._get_value(device_property)
+        if value is None:
+            return None
+
+        return value == active_value
 
     async def _set_value(self, device_property: DeviceProperty, value: Any) -> None:
         await self.bacnet.write(device_property, value)
@@ -79,78 +114,80 @@ class FlexitBACnet:
         return NORDIC_MODELS.get(model_id, '')
 
     @property
-    def outside_air_temperature(self) -> float:
+    def outside_air_temperature(self) -> Optional[float]:
         """Outside air temperature in degrees Celsius, e.g. 14.3."""
-        return float(round(self._get_value(OUTSIDE_AIR_TEMPERATURE), 1))
+        return self._get_float(OUTSIDE_AIR_TEMPERATURE, 1)
 
     @property
-    def supply_air_temperature(self) -> float:
+    def supply_air_temperature(self) -> Optional[float]:
         """Supply air temperature in degrees Celsius, e.g. 18.9."""
-        return float(round(self._get_value(SUPPLY_AIR_TEMPERATURE), 1))
+        return self._get_float(SUPPLY_AIR_TEMPERATURE, 1)
 
     @property
-    def exhaust_air_temperature(self) -> float:
+    def exhaust_air_temperature(self) -> Optional[float]:
         """Exhaust air temperature in degrees Celsius, e.g. 14.5."""
-        return float(round(self._get_value(EXHAUST_AIR_TEMPERATURE), 1))
+        return self._get_float(EXHAUST_AIR_TEMPERATURE, 1)
 
     @property
-    def extract_air_temperature(self) -> float:
+    def extract_air_temperature(self) -> Optional[float]:
         """Extract air temperature in degrees Celsius, e.g. 14.3."""
-        value = float(round(self._get_value(EXTRACT_AIR_TEMPERATURE), 1))
+        value = self._get_float(EXTRACT_AIR_TEMPERATURE, 1)
 
         # as some models use different object identifier for extract air temperature
-        # we need to check if the value is 0.0 and try to read the alternative value
-        if value == 0.0:
-            value = float(round(self._get_value(EXTRACT_AIR_TEMPERATURE_ALT), 1))
+        # we need to check if the value is 0.0 (or missing) and try to read the alternative value
+        if value is None or value == 0.0:
+            alt_value = self._get_float(EXTRACT_AIR_TEMPERATURE_ALT, 1)
+            if alt_value is not None:
+                value = alt_value
 
         return value
 
     @property
-    def extract_air_humidity(self) -> float:
+    def extract_air_humidity(self) -> Optional[float]:
         """Extract air relative humidity in %, e.g. 40.3."""
-        return float(round(self._get_value(EXTRACT_AIR_HUMIDITY), 1))
+        return self._get_float(EXTRACT_AIR_HUMIDITY, 1)
 
     @property
-    def room_temperature(self) -> float:
+    def room_temperature(self) -> Optional[float]:
         """Room temperature in degrees Celsius, e.g. 14.3.
 
         Temperature is read from the temperature sensor on a CI70 panel.
         """
-        return float(round(self._get_value(ROOM_TEMPERATURE), 1))
+        return self._get_float(ROOM_TEMPERATURE, 1)
 
     @property
-    def room_1_humidity(self) -> float:
+    def room_1_humidity(self) -> Optional[float]:
         """Room 1 relative humidity in %, e.g. 40.3.
 
         RH value from CI77 - RH sensor 1.
         """
-        return float(round(self._get_value(ROOM_1_HUMIDITY), 1))
+        return self._get_float(ROOM_1_HUMIDITY, 1)
 
     @property
-    def room_2_humidity(self) -> float:
+    def room_2_humidity(self) -> Optional[float]:
         """Room 2 relative humidity in %, e.g. 40.3.
 
         RH value from CI77 - RH sensor 2.
         """
-        return float(round(self._get_value(ROOM_2_HUMIDITY), 1))
+        return self._get_float(ROOM_2_HUMIDITY, 1)
 
     @property
-    def room_3_humidity(self) -> float:
+    def room_3_humidity(self) -> Optional[float]:
         """Room 3 relative humidity in %, e.g. 40.3.
 
         RH value from CI77 - RH sensor 3.
         """
-        return float(round(self._get_value(ROOM_3_HUMIDITY), 1))
+        return self._get_float(ROOM_3_HUMIDITY, 1)
 
     @property
-    def humidity_setpoint_present(self) -> float:
+    def humidity_setpoint_present(self) -> Optional[float]:
         """Present humidity setpoint in %, e.g. 70.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_PRESENT), 1))
+        return self._get_float(HUMIDITY_SETPOINT_PRESENT, 1)
 
     @property
-    def humidity_setpoint_home(self) -> float:
+    def humidity_setpoint_home(self) -> Optional[float]:
         """Humidity setpoint for Home mode in %, e.g. 70.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_HOME), 1))
+        return self._get_float(HUMIDITY_SETPOINT_HOME, 1)
 
     async def set_humidity_setpoint_home(self, percent: float) -> None:
         """Set humidity setpoint for Home mode.
@@ -160,9 +197,9 @@ class FlexitBACnet:
         await self._set_humidity_setpoint(HUMIDITY_SETPOINT_HOME, percent)
 
     @property
-    def humidity_setpoint_away(self) -> float:
+    def humidity_setpoint_away(self) -> Optional[float]:
         """Humidity setpoint for Away mode in %, e.g. 80.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_AWAY), 1))
+        return self._get_float(HUMIDITY_SETPOINT_AWAY, 1)
 
     async def set_humidity_setpoint_away(self, percent: float) -> None:
         """Set humidity setpoint for Away mode.
@@ -172,9 +209,9 @@ class FlexitBACnet:
         await self._set_humidity_setpoint(HUMIDITY_SETPOINT_AWAY, percent)
 
     @property
-    def humidity_setpoint_high(self) -> float:
+    def humidity_setpoint_high(self) -> Optional[float]:
         """Humidity setpoint for High mode in %, e.g. 100.0."""
-        return float(round(self._get_value(HUMIDITY_SETPOINT_HIGH), 1))
+        return self._get_float(HUMIDITY_SETPOINT_HIGH, 1)
 
     async def set_humidity_setpoint_high(self, percent: float) -> None:
         """Set humidity setpoint for High mode.
@@ -191,14 +228,14 @@ class FlexitBACnet:
         await self._set_value(device_property, float(percent))
 
     @property
-    def dehumidification_fan_control(self) -> float:
+    def dehumidification_fan_control(self) -> Optional[float]:
         """Fan speed request caused by humidity control in %, e.g. 0.0."""
-        return float(round(self._get_value(DEHUMIDIFICATION_FAN_CONTROL), 1))
+        return self._get_float(DEHUMIDIFICATION_FAN_CONTROL, 1)
 
     @property
-    def dehumidification_pid_control(self) -> bool:
+    def dehumidification_pid_control(self) -> Optional[bool]:
         """True if setpoint based (PID) humidity control is enabled."""
-        return self._get_value(DEHUMIDIFICATION_PID_CONTROL) == DEHUMIDIFICATION_PID_CONTROL_ACTIVE
+        return self._get_flag(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_ACTIVE)
 
     async def enable_dehumidification_pid_control(self) -> None:
         """Enable setpoint based (PID) humidity control."""
@@ -209,13 +246,13 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_INACTIVE)
 
     @property
-    def dehumidification_slope_control(self) -> int:
+    def dehumidification_slope_control(self) -> Optional[int]:
         """Slope (rapid humidity rise, e.g. shower) control mode:
         1 - Disabled (DEHUMIDIFICATION_SLOPE_CONTROL_DISABLED)
         2 - Extract air humidity (DEHUMIDIFICATION_SLOPE_CONTROL_EXTRACT_AIR)
         3 - Max room humidity (DEHUMIDIFICATION_SLOPE_CONTROL_ROOM_MAX)
         """
-        return int(self._get_value(DEHUMIDIFICATION_SLOPE_CONTROL))
+        return self._get_int(DEHUMIDIFICATION_SLOPE_CONTROL)
 
     async def set_dehumidification_slope_control(self, mode: int) -> None:
         """Set slope control mode to one of the values of dehumidification_slope_control."""
@@ -229,69 +266,69 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_SLOPE_CONTROL, mode)
 
     @property
-    def dehumidification_slope_switch_on(self) -> float:
+    def dehumidification_slope_switch_on(self) -> Optional[float]:
         """Humidity slope above which humidity control is switched on, e.g. 1.0."""
-        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE_SWITCH_ON), 2))
+        return self._get_float(DEHUMIDIFICATION_SLOPE_SWITCH_ON, 2)
 
     async def set_dehumidification_slope_switch_on(self, value: float) -> None:
         """Set humidity slope above which humidity control is switched on."""
         await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_ON, float(value))
 
     @property
-    def dehumidification_slope_switch_off(self) -> float:
+    def dehumidification_slope_switch_off(self) -> Optional[float]:
         """Humidity slope below which humidity control is switched off, e.g. -0.3."""
-        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE_SWITCH_OFF), 2))
+        return self._get_float(DEHUMIDIFICATION_SLOPE_SWITCH_OFF, 2)
 
     async def set_dehumidification_slope_switch_off(self, value: float) -> None:
         """Set humidity slope below which humidity control is switched off."""
         await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_OFF, float(value))
 
     @property
-    def dehumidification_slope(self) -> float:
+    def dehumidification_slope(self) -> Optional[float]:
         """Current calculated humidity slope, e.g. 0.0."""
-        return float(round(self._get_value(DEHUMIDIFICATION_SLOPE), 2))
+        return self._get_float(DEHUMIDIFICATION_SLOPE, 2)
 
     @property
-    def dehumidification_by_slope(self) -> bool:
+    def dehumidification_by_slope(self) -> Optional[bool]:
         """True if the current humidity control request is caused by the slope."""
-        return self._get_value(DEHUMIDIFICATION_BY_SLOPE) == DEHUMIDIFICATION_BY_SLOPE_ACTIVE
+        return self._get_flag(DEHUMIDIFICATION_BY_SLOPE, DEHUMIDIFICATION_BY_SLOPE_ACTIVE)
 
     @property
-    def dehumidification_slope_resolution(self) -> int:
+    def dehumidification_slope_resolution(self) -> Optional[int]:
         """Time base of the humidity slope calculation in minutes, e.g. 5."""
-        return int(self._get_value(DEHUMIDIFICATION_SLOPE_RESOLUTION))
+        return self._get_int(DEHUMIDIFICATION_SLOPE_RESOLUTION)
 
     @property
-    def dehumidification_slope_on_delay(self) -> int:
+    def dehumidification_slope_on_delay(self) -> Optional[int]:
         """On delay of the slope control in seconds, e.g. 600."""
-        return int(self._get_value(DEHUMIDIFICATION_SLOPE_ON_DELAY))
+        return self._get_int(DEHUMIDIFICATION_SLOPE_ON_DELAY)
 
     async def set_dehumidification_slope_on_delay(self, seconds: int) -> None:
         """Set on delay of the slope control in seconds."""
         await self._set_value(DEHUMIDIFICATION_SLOPE_ON_DELAY, seconds)
 
     @property
-    def dehumidification_switch_off_delay(self) -> int:
+    def dehumidification_switch_off_delay(self) -> Optional[int]:
         """Humidity control switch-off delay in minutes, e.g. 30."""
-        return int(self._get_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY))
+        return self._get_int(DEHUMIDIFICATION_SWITCH_OFF_DELAY)
 
     async def set_dehumidification_switch_off_delay(self, minutes: int) -> None:
         """Set humidity control switch-off delay in minutes."""
         await self._set_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY, minutes)
 
     @property
-    def dehumidification_max_runtime(self) -> int:
+    def dehumidification_max_runtime(self) -> Optional[int]:
         """Maximum runtime of humidity control in minutes, e.g. 120."""
-        return int(self._get_value(DEHUMIDIFICATION_MAX_RUNTIME))
+        return self._get_int(DEHUMIDIFICATION_MAX_RUNTIME)
 
     async def set_dehumidification_max_runtime(self, minutes: int) -> None:
         """Set maximum runtime of humidity control in minutes."""
         await self._set_value(DEHUMIDIFICATION_MAX_RUNTIME, minutes)
 
     @property
-    def comfort_button(self) -> bool:
+    def comfort_button(self) -> Optional[bool]:
         """Comfort button state, True if active."""
-        return self._get_value(COMFORT_BUTTON) == COMFORT_BUTTON_ACTIVE
+        return self._get_flag(COMFORT_BUTTON, COMFORT_BUTTON_ACTIVE)
 
     async def activate_comfort_button(self) -> None:
         """Activate comfort button."""
@@ -306,12 +343,12 @@ class FlexitBACnet:
         await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON_INACTIVE)
 
     @property
-    def operation_mode(self) -> int:
+    def operation_mode(self) -> Optional[int]:
         """Returns current heat exchanger operation mode, e.g. Home."""
         return self._get_value(OPERATION_MODE)
 
     @property
-    def ventilation_mode(self) -> int:
+    def ventilation_mode(self) -> Optional[int]:
         """Returns current ventilation mode, e.g. Home.
 
         This setting only works when comfort_button is active.
@@ -329,9 +366,9 @@ class FlexitBACnet:
         await self._set_value(VENTILATION_MODE, mode)
 
     @property
-    def air_temp_setpoint_away(self) -> float:
+    def air_temp_setpoint_away(self) -> Optional[float]:
         """Return temperature setpoint for Away mode."""
-        return float(self._get_value(AIR_TEMP_SETPOINT_AWAY))
+        return self._get_float(AIR_TEMP_SETPOINT_AWAY)
 
     async def set_air_temp_setpoint_away(self, temperature: float):
         """Set temperature setpoint for Away mode.
@@ -341,9 +378,9 @@ class FlexitBACnet:
         await self._set_value(AIR_TEMP_SETPOINT_AWAY, temperature)
 
     @property
-    def air_temp_setpoint_home(self) -> float:
+    def air_temp_setpoint_home(self) -> Optional[float]:
         """Return temperature setpoint for Home mode."""
-        return float(self._get_value(AIR_TEMP_SETPOINT_HOME))
+        return self._get_float(AIR_TEMP_SETPOINT_HOME)
 
     async def set_air_temp_setpoint_home(self, temperature: float) -> None:
         """Set temperature setpoint for Home mode.
@@ -368,7 +405,7 @@ class FlexitBACnet:
         await self._set_value(FIREPLACE_VENTILATION_RUNTIME, minutes)
 
     @property
-    def fireplace_mode_runtime(self) -> int:
+    def fireplace_mode_runtime(self) -> Optional[int]:
         """Returns currently set runtime for the fireplace mode (in minutes)."""
         return self._get_value(FIREPLACE_VENTILATION_RUNTIME)
 
@@ -377,14 +414,14 @@ class FlexitBACnet:
         await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION_TRIGGER)
 
     @property
-    def fireplace_ventilation_status(self) -> bool:
+    def fireplace_ventilation_status(self) -> Optional[bool]:
         """Return true if fireplace mode is active."""
-        return self._get_value(FIREPLACE_STATE) == FIREPLACE_STATE_ACTIVE
+        return self._get_flag(FIREPLACE_STATE, FIREPLACE_STATE_ACTIVE)
 
     @property
-    def fireplace_ventilation_remaining_duration(self) -> int:
+    def fireplace_ventilation_remaining_duration(self) -> Optional[int]:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
-        return int(self._get_value(FIREPLACE_VENTILATION_REMAINING_DURATION))
+        return self._get_int(FIREPLACE_VENTILATION_REMAINING_DURATION)
 
     async def start_rapid_ventilation(self, minutes: int) -> None:
         """Trigger temporary rapid ventilation mode.
@@ -395,34 +432,34 @@ class FlexitBACnet:
         await self._set_value(RAPID_VENTILATION, RAPID_VENTILATION_TRIGGER)
 
     @property
-    def rapid_ventilation_remaining_duration(self) -> int:
+    def rapid_ventilation_remaining_duration(self) -> Optional[int]:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
-        return int(self._get_value(RAPID_VENTILATION_REMAINING_DURATION))
+        return self._get_int(RAPID_VENTILATION_REMAINING_DURATION)
 
     @property
-    def supply_air_fan_control_signal(self) -> int:
+    def supply_air_fan_control_signal(self) -> Optional[int]:
         """Return current supply air fan control signal (in %)."""
-        return int(self._get_value(FAN_SPEED_SUPPLY_AIR))
+        return self._get_int(FAN_SPEED_SUPPLY_AIR)
 
     @property
-    def supply_air_fan_rpm(self) -> int:
+    def supply_air_fan_rpm(self) -> Optional[int]:
         """Return current supply air fan RPM."""
-        return int(self._get_value(TACHO_SUPPLY_FAN))
+        return self._get_int(TACHO_SUPPLY_FAN)
 
     @property
-    def exhaust_air_fan_control_signal(self) -> int:
+    def exhaust_air_fan_control_signal(self) -> Optional[int]:
         """Return current exhaust air fan control signal (in %)."""
-        return int(self._get_value(FAN_SPEED_EXHAUST_AIR))
+        return self._get_int(FAN_SPEED_EXHAUST_AIR)
 
     @property
-    def exhaust_air_fan_rpm(self) -> int:
+    def exhaust_air_fan_rpm(self) -> Optional[int]:
         """Return current exhaust air fan RPM."""
-        return int(self._get_value(TACHO_EXHAUST_FAN))
+        return self._get_int(TACHO_EXHAUST_FAN)
 
     @property
-    def electric_heater(self) -> bool:
+    def electric_heater(self) -> Optional[bool]:
         """Return True if electric heater is enabled."""
-        return bool(self._get_value(ELECTRICAL_HEATER) == ELECTRICAL_HEATER_ACTIVE)
+        return self._get_flag(ELECTRICAL_HEATER, ELECTRICAL_HEATER_ACTIVE)
 
     async def enable_electric_heater(self) -> None:
         """Enables electric air heater."""
@@ -433,19 +470,19 @@ class FlexitBACnet:
         await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER_INACTIVE)
 
     @property
-    def electric_heater_nominal_power(self) -> float:
+    def electric_heater_nominal_power(self) -> Optional[float]:
         """Return nominal heater power in kilowatts."""
-        return float(self._get_value(ELECTRIC_HEATER_NOM_POWER))
+        return self._get_float(ELECTRIC_HEATER_NOM_POWER)
 
     @property
-    def electric_heater_power(self) -> float:
+    def electric_heater_power(self) -> Optional[float]:
         """Return heater power consumption in kilowatts."""
-        return float(self._get_value(HEATING_COIL_ELECTRIC_POWER))
+        return self._get_float(HEATING_COIL_ELECTRIC_POWER)
 
     @property
-    def cooker_hood_status(self) -> bool:
+    def cooker_hood_status(self) -> Optional[bool]:
         """Cooker hood ventilation state, True if active."""
-        return self._get_value(COOKER_HOOD) == COOKER_HOOD_ACTIVE
+        return self._get_flag(COOKER_HOOD, COOKER_HOOD_ACTIVE)
 
     async def activate_cooker_hood(self) -> None:
         """Activates cooker hood mode."""
@@ -456,118 +493,118 @@ class FlexitBACnet:
         await self._set_value(COOKER_HOOD, COOKER_HOOD_INACTIVE)
 
     @property
-    def fan_setpoint_supply_air_home(self) -> int:
+    def fan_setpoint_supply_air_home(self) -> Optional[int]:
         """Return fan setpoint for supply air HOME in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_HOME))
+        return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_HOME)
 
     async def set_fan_setpoint_supply_air_home(self, percent: int) -> None:
         """Set fan setpoint for supply air HOME in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HOME, percent)
 
     @property
-    def fan_setpoint_extract_air_home(self) -> int:
+    def fan_setpoint_extract_air_home(self) -> Optional[int]:
         """Return fan setpoint for extract air HOME in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_HOME))
+        return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_HOME)
 
     async def set_fan_setpoint_extract_air_home(self, percent: int) -> None:
         """Set fan setpoint for extract air HOME in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HOME, percent)
 
     @property
-    def fan_setpoint_supply_air_high(self) -> int:
+    def fan_setpoint_supply_air_high(self) -> Optional[int]:
         """Return fan setpoint for supply air HIGH in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_HIGH))
+        return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_HIGH)
 
     async def set_fan_setpoint_supply_air_high(self, percent: int) -> None:
         """Set fan setpoint for supply air HIGH in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HIGH, percent)
 
     @property
-    def fan_setpoint_extract_air_high(self) -> int:
+    def fan_setpoint_extract_air_high(self) -> Optional[int]:
         """Return fan setpoint for extract air HIGH in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_HIGH))
+        return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_HIGH)
 
     async def set_fan_setpoint_extract_air_high(self, percent: int) -> None:
         """Set fan setpoint for extract air HIGH in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HIGH, percent)
 
     @property
-    def fan_setpoint_supply_air_away(self) -> int:
+    def fan_setpoint_supply_air_away(self) -> Optional[int]:
         """Return fan setpoint for supply air AWAY in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_AWAY))
+        return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_AWAY)
 
     async def set_fan_setpoint_supply_air_away(self, percent: int) -> None:
         """Set fan setpoint for supply air AWAY in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_AWAY, percent)
 
     @property
-    def fan_setpoint_extract_air_away(self) -> int:
+    def fan_setpoint_extract_air_away(self) -> Optional[int]:
         """Return fan setpoint for extract air AWAY in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_AWAY))
+        return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_AWAY)
 
     async def set_fan_setpoint_extract_air_away(self, percent: int) -> None:
         """Set fan setpoint for extract air AWAY in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_AWAY, percent)
 
     @property
-    def fan_setpoint_supply_air_cooker(self) -> int:
+    def fan_setpoint_supply_air_cooker(self) -> Optional[int]:
         """Return fan setpoint for supply air COOKER in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_COOKER))
+        return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_COOKER)
 
     async def set_fan_setpoint_supply_air_cooker(self, percent: int) -> None:
         """Set fan setpoint for supply air COOKER in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_COOKER, percent)
 
     @property
-    def fan_setpoint_extract_air_cooker(self) -> int:
+    def fan_setpoint_extract_air_cooker(self) -> Optional[int]:
         """Return fan setpoint for extract air COOKER in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_COOKER))
+        return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_COOKER)
 
     async def set_fan_setpoint_extract_air_cooker(self, percent: int) -> None:
         """Set fan setpoint for extract air COOKER in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_COOKER, percent)
 
     @property
-    def fan_setpoint_supply_air_fire(self) -> int:
+    def fan_setpoint_supply_air_fire(self) -> Optional[int]:
         """Return fan setpoint for supply air FIRE in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_SUPPLY_AIR_FIRE))
+        return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_FIRE)
 
     async def set_fan_setpoint_supply_air_fire(self, percent: int):
         """Set fan setpoint for supply air FIRE in percent."""
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_FIRE, percent)
 
     @property
-    def fan_setpoint_extract_air_fire(self) -> int:
+    def fan_setpoint_extract_air_fire(self) -> Optional[int]:
         """Return fan setpoint for extract air FIRE in percent."""
-        return int(self._get_value(LINEAR_SETPOINT_EXHAUST_AIR_FIRE))
+        return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_FIRE)
 
     async def set_fan_setpoint_extract_air_fire(self, percent: int) -> None:
         """Set fan setpoint for extract air FIRE in percent."""
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_FIRE, percent)
 
     @property
-    def air_filter_operating_time(self) -> float:
+    def air_filter_operating_time(self) -> Optional[float]:
         """Return air filter operating time in hours."""
-        return float(self._get_value(AIR_FILTER_OPERATING_TIME))
+        return self._get_float(AIR_FILTER_OPERATING_TIME)
 
     @property
-    def air_filter_exchange_interval(self) -> float:
-        return float(self._get_value(AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE))
+    def air_filter_exchange_interval(self) -> Optional[float]:
+        return self._get_float(AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE)
 
     @property
-    def heat_exchanger_efficiency(self) -> int:
+    def heat_exchanger_efficiency(self) -> Optional[int]:
         """Returns heat exchanger efficiency in percent."""
-        return int(round(self._get_value(ROTATING_HEAT_EXCHANGER_EFFICIENCY)))
+        return self._get_int(ROTATING_HEAT_EXCHANGER_EFFICIENCY, rounded=True)
 
     @property
-    def heat_exchanger_speed(self) -> int:
+    def heat_exchanger_speed(self) -> Optional[int]:
         """Returns heat exchanger speed in percent."""
-        return int(round(self._get_value(ROTATING_HEAT_EXCHANGER_SPEED)))
+        return self._get_int(ROTATING_HEAT_EXCHANGER_SPEED, rounded=True)
 
     @property
-    def air_filter_polluted(self) -> bool:
+    def air_filter_polluted(self) -> Optional[bool]:
         """Returns True if filter is polluted."""
-        return bool(self._get_value(AIR_FILTER_POLLUTED) == AIR_FILTER_POLLUTED_ACTIVE)
+        return self._get_flag(AIR_FILTER_POLLUTED, AIR_FILTER_POLLUTED_ACTIVE)
 
     async def reset_air_filter_timer(self) -> None:
         """Resets air filter replace timer."""
