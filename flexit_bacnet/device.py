@@ -273,6 +273,21 @@ class FlexitBACnet:
         return self._get_float(self._prop_map.ROOM_3_HUMIDITY, 1)
 
     @property
+    @reading("Room humidity", Unit.PERCENT)
+    def room_humidity(self) -> Optional[float]:
+        """Highest relative humidity in % over the wireless room sensors, e.g. 62.0.
+
+        This is the humidity Flexit GO shows on its home screen. None if no
+        wireless humidity sensor is connected (the unit then reports 0) or
+        the unit lacks the object.
+        """
+        value = self._get_float(self._prop_map.ROOM_HUMIDITY_MAX, 1)
+        if not value:
+            return None
+
+        return value
+
+    @property
     @reading("Humidity setpoint (present)", Unit.PERCENT)
     def humidity_setpoint_present(self) -> Optional[float]:
         """Present humidity setpoint in %, e.g. 70.0."""

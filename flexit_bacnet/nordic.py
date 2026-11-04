@@ -168,6 +168,10 @@ ROOM_1_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2093)
 ROOM_2_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2094)
 ROOM_3_HUMIDITY = DeviceProperty(ObjectType.ANALOG_VALUE, 2095)
 
+# Maximum room air humidity over the wireless (RF) room sensors - the humidity
+# Flexit GO shows on its home screen (e.g. 62.0 percent, 0.0 without RF sensors)
+ROOM_HUMIDITY_MAX = DeviceProperty(ObjectType.ANALOG_INPUT, 81)
+
 # Free cooling
 #
 # Cools an overheated house by replacing warm indoor air with cooler outdoor air when the
