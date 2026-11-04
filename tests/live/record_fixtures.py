@@ -19,7 +19,7 @@ import os
 import sys
 from pathlib import Path
 
-from flexit_bacnet import bacnet, nordic
+from flexit_bacnet import bacnet, econordic, nordic
 from flexit_bacnet.bacnet import BACnetRequest, DeviceProperty, ObjectType, ReadValue
 
 OUT = Path(__file__).parent.parent / "fixtures"
@@ -65,11 +65,17 @@ async def main(address, name, device_id):
     scrubbed = serial[:6] + "".join("0" if c.isdigit() else c for c in serial[6:])
     unit = f"{props[ReadValue.OBJECT_NAME]} serial {serial[:6]}, {props[70]}, {props[44]}, {props[12]}"
 
+    # the objects FlexitBACnet.update() reads on this product line
+    prop_map = econordic if serial.startswith(econordic.SERIAL_PREFIX) else nordic
+
     scenarios = {
-        "update": ("FlexitBACnet.update() request", nordic.DEVICE_PROPERTIES + [device]),
+        "update": (
+            f"present value of every {prop_map.PRODUCT_LINE} object FlexitBACnet.update() reads, in one request",
+            prop_map.DEVICE_PROPERTIES + [device],
+        ),
         "segmented_present_value_and_name": (
-            "present-value + object-name of every nordic object (segmented answer)",
-            [DeviceProperty(p.object_type, p.instance_id, read_values=[85, 77]) for p in nordic.DEVICE_PROPERTIES],
+            f"present-value + object-name of every {prop_map.PRODUCT_LINE} object (segmented answer)",
+            [DeviceProperty(p.object_type, p.instance_id, read_values=[85, 77]) for p in prop_map.DEVICE_PROPERTIES],
         ),
         "device_object": ("device object properties", [info]),
     }

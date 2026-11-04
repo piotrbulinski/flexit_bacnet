@@ -31,6 +31,9 @@ def run_async(test):
 SEGMENTED = load_recorded("nordic_cl4_rer", "segmented_present_value_and_name")
 UPDATE = load_recorded("nordic_cl4_rer", "update")
 
+# few enough properties for one request (read_multiple splits longer lists)
+ONE_REQUEST = nordic.DEVICE_PROPERTIES[: bacnet.READ_MULTIPLE_MAX_PROPERTIES]
+
 
 class _FakeTransport:
     def __init__(self, protocol):
@@ -94,7 +97,7 @@ async def test_recorded_segments_are_acked_and_reassembled():
     assert transport.closed
 
     state = _parse_read_property_multiple_response(request.response)
-    assert len(state) == len(nordic.DEVICE_PROPERTIES)
+    assert set(state) == SEGMENTED.requested_objects()
 
 
 @run_async
@@ -238,7 +241,7 @@ async def test_client_reads_segmented_answer():
     unit, port = await start_fake_unit(segments=SEGMENTED.responses)
     client = BACnetClient("127.0.0.1", port)
 
-    state = await client.read_multiple(nordic.DEVICE_PROPERTIES)
+    state = await client.read_multiple(ONE_REQUEST)
 
     assert dict(state[nordic.SUPPLY_AIR_TEMPERATURE.object_identifier])[ReadValue.OBJECT_NAME] == "R(1)'TSu"
 
@@ -248,10 +251,10 @@ async def test_client_retries_read_after_lost_answer():
     unit, port = await start_fake_unit(drop_first=1)
     client = BACnetClient("127.0.0.1", port, timeout=0.2)
 
-    state = await client.read_multiple(nordic.DEVICE_PROPERTIES)
+    state = await client.read_multiple(ONE_REQUEST)
 
     assert len(unit.requests) == 2
-    assert len(state) == len(nordic.DEVICE_PROPERTIES) + 1
+    assert set(state) == UPDATE.requested_objects()
 
 
 @run_async
@@ -260,7 +263,7 @@ async def test_client_gives_up_after_retries():
     client = BACnetClient("127.0.0.1", port, timeout=0.1, read_retries=2)
 
     with pytest.raises(asyncio.TimeoutError):
-        await client.read_multiple(nordic.DEVICE_PROPERTIES)
+        await client.read_multiple(ONE_REQUEST)
 
     assert len(unit.requests) == 3
 
@@ -273,7 +276,7 @@ async def test_concurrent_reads_are_sent_one_at_a_time():
     client = BACnetClient("127.0.0.1", port, timeout=0.5)
 
     started = time.perf_counter()
-    results = await asyncio.gather(*(client.read_multiple(nordic.DEVICE_PROPERTIES) for _ in range(5)))
+    results = await asyncio.gather(*(client.read_multiple(ONE_REQUEST) for _ in range(5)))
 
     assert unit.max_in_flight == 1
     assert len(results) == 5

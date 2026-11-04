@@ -54,7 +54,7 @@ def test_update_answer_decodes(cl4):
     state = _parse_read_property_multiple_response(recorded.response)
 
     # every requested object is in the answer
-    assert len(state) == len(nordic.DEVICE_PROPERTIES) + 1
+    assert set(state) == recorded.requested_objects()
 
     errors = {
         oid for oid, props in state.items()
@@ -126,7 +126,7 @@ def test_segmented_answer_reassembles_to_every_object(cl4):
 
     state = _parse_read_property_multiple_response(complete)
 
-    assert len(state) == len(nordic.DEVICE_PROPERTIES)
+    assert set(state) == recorded.requested_objects()
     assert dict(state[nordic.OUTSIDE_AIR_TEMPERATURE.object_identifier])[ReadValue.OBJECT_NAME] == "R(1)'TOa"
     assert dict(state[nordic.DEHUMIDIFICATION_MAX_RUNTIME.object_identifier])[ReadValue.OBJECT_NAME] == (
         "R(1)'RHvacCoo'DhuCtl'DhuMaxRunTi"

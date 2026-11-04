@@ -4,3 +4,4 @@ __pycache__
 flexit_bacnet.egg-info
 dist
 .DS_Store
+ASHRAE-D-86445.pdf

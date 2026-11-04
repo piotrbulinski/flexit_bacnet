@@ -87,7 +87,7 @@ def test_every_getter_handles_missing_objects():
     client.values = {p.object_identifier: MISSING for p in nordic.DEVICE_PROPERTIES}
     asyncio.run(device.update())
 
-    identity = {"device_name", "serial_number", "model"}
+    identity = {"device_name", "serial_number", "model", "product_line"}
     getters = [
         name for name, value in vars(FlexitBACnet).items()
         if isinstance(value, property) and not name.startswith("_") and name not in identity

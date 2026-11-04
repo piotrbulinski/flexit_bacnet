@@ -11,7 +11,7 @@ import re
 
 import pytest
 
-from flexit_bacnet import FlexitBACnet, bacnet
+from flexit_bacnet import FlexitBACnet
 from flexit_bacnet.bacnet import ObjectType, ReadValue, _parse_read_property_multiple_response
 
 from conftest import FIXTURES, Recorded
@@ -35,7 +35,7 @@ class _ReplayClient:
 
 
 def _device(unit: str) -> FlexitBACnet:
-    response = _recorded(unit, "update").response
+    response = _recorded(unit, "update").reassembled()
     device_id = next(
         instance for object_type, instance in _parse_read_property_multiple_response(response)
         if object_type == ObjectType.DEVICE
@@ -54,7 +54,10 @@ def test_fixtures_found():
 
 @pytest.mark.parametrize("unit", UNITS)
 def test_update_answer_decodes(unit):
-    state = _parse_read_property_multiple_response(_recorded(unit, "update").response)
+    recorded = _recorded(unit, "update")
+    state = _parse_read_property_multiple_response(recorded.reassembled())
+
+    assert set(state) == recorded.requested_objects()
 
     assert any(object_type == ObjectType.DEVICE for object_type, _ in state)
 
@@ -82,16 +85,10 @@ def test_serial_number_is_scrubbed(unit):
 def test_segmented_answer_reassembles(unit):
     recorded = _recorded(unit, "segmented_present_value_and_name")
 
-    assembler = bacnet._SegmentAssembler()
-    complete = None
-    for datagram in recorded.responses:
-        _, complete = assembler.add(datagram, bacnet._apdu_from_response(datagram))
+    # a unit with a bigger max-APDU may answer in one piece
+    state = _parse_read_property_multiple_response(recorded.reassembled())
 
-    if len(recorded.responses) == 1:
-        # the unit answered in one piece (bigger max-APDU): parse it directly
-        complete = recorded.response
-
-    state = _parse_read_property_multiple_response(complete)
+    assert set(state) == recorded.requested_objects()
 
     names = [dict(props).get(ReadValue.OBJECT_NAME) for props in state.values()]
     assert any(isinstance(name, str) for name in names)
