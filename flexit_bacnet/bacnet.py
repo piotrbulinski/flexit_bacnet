@@ -86,6 +86,7 @@ NPDU = pack("!BB", NPDU_VERSION, NPDU_EXPECT_REPLY)
 
 class ReadValue(IntEnum):
     DESCRIPTION = 28
+    OBJECT_LIST = 76
     OBJECT_NAME = 77
     PRESENT_VALUE = 85
 
@@ -329,12 +330,39 @@ class DeviceProperty:
         read_values: Optional[List[ReadValue]] = None,
         priority: Optional[int] = None,
         write_type: Optional[WriteType] = None,
+        object_name: Optional[str] = None,
     ):
+        """One BACnet object of the unit.
+
+        object_name -- the object's name on the unit, e.g. "R(1)'TOa". Object
+        numbers differ between units and firmware versions while the names do
+        not, so FlexitBACnet checks the name on the first update() and, if the
+        object is not at instance_id, looks it up by name (see device.py).
+        """
         self.object_type = object_type
         self.instance_id = instance_id
         self.read_values = read_values or [ReadValue.PRESENT_VALUE]
         self.priority = priority
         self.write_type = write_type
+        self.object_name = object_name
+
+    def __repr__(self) -> str:
+        return f"DeviceProperty({getattr(self.object_type, 'name', self.object_type)}, {self.instance_id})"
+
+    def moved_to(self, object_type: Any, instance_id: int) -> "DeviceProperty":
+        """Return a copy of this property at another object identifier."""
+        return DeviceProperty(
+            object_type,
+            instance_id,
+            read_values=list(self.read_values),
+            priority=self.priority,
+            write_type=self.write_type,
+            object_name=self.object_name,
+        )
+
+    def reading(self, read_value: "ReadValue") -> "DeviceProperty":
+        """Return a property reading read_value (e.g. OBJECT_NAME) of the same object."""
+        return DeviceProperty(self.object_type, self.instance_id, read_values=[read_value])
 
     @property
     def object_identifier(self) -> ObjectIdentifier:

@@ -83,6 +83,21 @@ ventilation mode (before): 3
 ventilation mode (after): 2
 ```
 
+## Object numbers differ between units
+
+The BACnet object numbers are not the same on every unit, even within one product line:
+the air filter reset is multiStateValue 613 on a Nordic S4 and CL4 but 609 on a Nordic S3.
+The object names (e.g. `R(1)'HVAC'AlmBdl'FilRpcRst`) are the same everywhere, so the
+numbers in [nordic.py](./flexit_bacnet/nordic.py) and [econordic.py](./flexit_bacnet/econordic.py)
+are only where an object is expected; each mapped object also has its `object_name`.
+
+The first `update()` checks the name of every mapped object. If an object is missing or
+something else is in its place, it reads the unit's object list and the names of the objects of
+that type, and uses the object wherever its name is. This costs a few more requests, once
+(about 2 seconds on a Nordic CL4); later updates are not affected. An object that is not found
+by name keeps its number, so an object the unit does not have still reads as `None`.
+`device.relocated_objects()` tells which objects were found elsewhere on your unit.
+
 
 ## Free cooling
 

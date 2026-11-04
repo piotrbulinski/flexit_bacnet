@@ -47,16 +47,25 @@ def test_identify_and_every_reading():
 def test_repeated_updates_are_stable():
     async def run():
         device = _device()
+
+        # the first update() also finds moved objects by name (a few more
+        # requests, once); only the updates after it are the steady state
+        started = time.perf_counter()
+        await device.update()
+        first = time.perf_counter() - started
+
         durations = []
         for _ in range(20):
             started = time.perf_counter()
             await device.update()
             durations.append(time.perf_counter() - started)
-        return durations
+        return first, durations
 
-    durations = asyncio.run(run())
+    first, durations = asyncio.run(run())
 
-    print(f"\nupdate(): median {sorted(durations)[10] * 1000:.0f} ms, max {max(durations) * 1000:.0f} ms")
+    print(f"\nfirst update(): {first * 1000:.0f} ms")
+    print(f"update(): median {sorted(durations)[10] * 1000:.0f} ms, max {max(durations) * 1000:.0f} ms")
+    assert first < 10
     assert max(durations) < bacnet.DEFAULT_TIMEOUT
 
 
@@ -111,3 +120,28 @@ def test_room_humidity_is_maximum_of_room_sensors():
     else:
         # the sensors update independently of AI 81, so allow a small drift
         assert device.room_humidity == pytest.approx(max(rooms), abs=2)
+
+
+def test_every_named_object_resolves_to_its_name():
+    """After the first update(), each named object is either at an object with that name or missing."""
+    async def run():
+        device = _device()
+        await device.update()
+
+        named = [
+            (constant, p) for constant, p in vars(device._prop_map).items()
+            if isinstance(p, DeviceProperty) and p.object_name
+        ]
+        state = await device.bacnet.read_multiple([p.reading(ReadValue.OBJECT_NAME) for _, p in named])
+        return named, state, device.relocated_objects()
+
+    named, state, relocated = asyncio.run(run())
+    print("relocated:", relocated)
+
+    wrong = {}
+    for constant, p in named:
+        actual = dict(state[p.object_identifier])[ReadValue.OBJECT_NAME]
+        if not isinstance(actual, PropertyError) and actual != p.object_name:
+            wrong[constant] = (p.object_identifier, actual)
+
+    assert wrong == {}
