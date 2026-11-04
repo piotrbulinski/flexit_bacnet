@@ -24,3 +24,7 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/piotrbulinski/flexit_bacnet"
 "Bug Tracker" = "https://github.com/piotrbulinski/flexit_bacnet/issues"
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# tests/live needs a real Flexit unit on the network
+addopts = "--ignore=tests/live"
