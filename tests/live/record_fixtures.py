@@ -2,14 +2,20 @@
 
     python tests/live/record_fixtures.py <unit-ip> <fixture-dir-name> [device-id]
 
-Sends only readPropertyMultiple requests and writes tests/fixtures/<dir>/*.json
-with the request and every datagram the unit answered (segments kept as sent,
-so reassembly can be replayed). The serial number is replaced by zeros.
+e.g. python tests/live/record_fixtures.py 192.168.0.18 nordic_s3_rer
+
+Sends only readPropertyMultiple requests (nothing is written to the unit) and
+writes tests/fixtures/<dir>/*.json with the request and every datagram the
+unit answered (segments kept as sent, so reassembly can be replayed). The
+serial number is replaced by zeros after the six digit model prefix.
+
+Set FLEXIT_PORT to use another UDP port than 47808.
 """
 
 import asyncio
 import datetime
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -48,11 +54,14 @@ async def _record(address, port, request):
 async def main(address, name, device_id):
     device = DeviceProperty(ObjectType.DEVICE, device_id, read_values=[ReadValue.OBJECT_NAME, ReadValue.DESCRIPTION])
     info = DeviceProperty(ObjectType.DEVICE, device_id, read_values=[77, 28, 70, 44, 12, 62, 107, 11])
-    port = bacnet.DEFAULT_BACNET_PORT
+    port = int(os.getenv("FLEXIT_PORT", bacnet.DEFAULT_BACNET_PORT))
 
-    identity = bacnet._parse_read_property_multiple_response((await _record(address, port, bacnet._read_property_multiple([info])))[0])
+    answer = await _record(address, port, bacnet._read_property_multiple([info]))
+    identity = bacnet._parse_read_property_multiple_response(answer[0])
     props = dict(identity[(ObjectType.DEVICE, device_id)])
     serial = props[ReadValue.DESCRIPTION]
+    if not isinstance(serial, str):
+        sys.exit(f"device {device_id} did not report a serial number ({serial}); check the device ID")
     scrubbed = serial[:6] + "".join("0" if c.isdigit() else c for c in serial[6:])
     unit = f"{props[ReadValue.OBJECT_NAME]} serial {serial[:6]}, {props[70]}, {props[44]}, {props[12]}"
 
@@ -79,6 +88,8 @@ async def main(address, name, device_id):
             "responses": [d.hex() for d in datagrams],
         }, indent=1) + "\n")
         print(f"{path}: {len(datagrams)} datagram(s)")
+
+    print(f"\nRecorded {unit}.\nNext: python -m pytest tests/test_recorded_models.py")
 
 
 if __name__ == "__main__":
