@@ -4,7 +4,7 @@ import socket
 
 from enum import IntEnum
 from struct import pack, unpack
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Type
 
 
 DEBUG = os.getenv("DEBUG") is not None
@@ -15,6 +15,7 @@ class APDUType(IntEnum):
     UNCONFIRMED_REQ = 1
     SIMPLE_ACK = 2
     COMPLEX_ACK = 3
+    SEGMENT_ACK = 4
 
 
 class PDUFlags(IntEnum):
@@ -28,6 +29,15 @@ MAX_RESPONSE_SEGMENTS = 4
 
 # max 1024 octets
 MAX_APDU_SIZE = 4
+
+# Window size accepted for a segmented answer (clause 5.4.4.3: at most the
+# window the unit proposes; a Nordic CL4 proposes 4).
+MAX_SEGMENT_WINDOW = 16
+
+# Default seconds to wait for each answer, and how many times a read is
+# retried after a timeout. Writes are never retried.
+DEFAULT_TIMEOUT = 1.0
+DEFAULT_READ_RETRIES = 1
 
 # use static invoke ID
 INVOKE_ID = 1
@@ -54,10 +64,14 @@ class UnconfirmedServiceChoice(IntEnum):
 BVLC_TYPE = 0x81
 BVLC_FUNCTION_UNICAST = 0x0A
 BVLC_FUNCTION_BROADCAST = 0x0B
+BVLC_FUNCTION_FORWARDED_NPDU = 0x04
 BVLC_LENGTH = 4
 
 NPDU_VERSION = 1
 NPDU_EXPECT_REPLY = 4
+NPDU_NETWORK_LAYER_MESSAGE = 0x80
+NPDU_DESTINATION_SPECIFIER = 0x20
+NPDU_SOURCE_SPECIFIER = 0x08
 NPDU = pack("!BB", NPDU_VERSION, NPDU_EXPECT_REPLY)
 
 
@@ -119,6 +133,67 @@ class WriteType(IntEnum):
 
 class DecodingError(Exception):
     pass
+
+
+def _enum_or_int(enum: Type[IntEnum], value: int) -> int:
+    """Return enum(value), or the plain int for a value the enum does not define.
+
+    The units have object types (e.g. schedule, structured view, proprietary
+    264) and properties the library has no name for; those must not abort
+    decoding of the whole answer.
+    """
+    try:
+        return enum(value)
+    except ValueError:
+        return value
+
+
+def _apdu_from_response(response: bytes) -> bytes:
+    """Strip BVLC and NPDU headers and return the APDU.
+
+    Also handles Forwarded-NPDU (BBMD) frames and NPDUs carrying source or
+    destination network addresses (answers routed through a BACnet router).
+    """
+    if len(response) < BVLC_LENGTH + 2:
+        raise DecodingError(f"response too short: {len(response)} octets")
+
+    bvlc_type, bvlc_function, bvlc_length = unpack("!BBH", response[0:4])
+    if bvlc_type != BVLC_TYPE or bvlc_function not in (BVLC_FUNCTION_UNICAST, BVLC_FUNCTION_FORWARDED_NPDU):
+        raise DecodingError("unexpected response")
+
+    if bvlc_length != len(response):
+        raise DecodingError(f"BVLC length {bvlc_length} does not match datagram length {len(response)}")
+
+    i = BVLC_LENGTH
+    if bvlc_function == BVLC_FUNCTION_FORWARDED_NPDU:
+        i += 6  # original source B/IP address: 4 octets IP + 2 octets port
+
+    try:
+        version, control = response[i], response[i + 1]
+        i += 2
+
+        if version != NPDU_VERSION:
+            raise DecodingError(f"unsupported NPDU version: {version}")
+
+        if control & NPDU_NETWORK_LAYER_MESSAGE:
+            raise DecodingError("network layer message, not an APDU")
+
+        if control & NPDU_DESTINATION_SPECIFIER:
+            i += 3 + response[i + 2]  # DNET, DLEN, DADR
+
+        if control & NPDU_SOURCE_SPECIFIER:
+            i += 3 + response[i + 2]  # SNET, SLEN, SADR
+
+        if control & NPDU_DESTINATION_SPECIFIER:
+            i += 1  # hop count
+    except IndexError:
+        raise DecodingError("truncated NPDU")
+
+    apdu = response[i:]
+    if not apdu:
+        raise DecodingError("empty APDU")
+
+    return apdu
 
 
 class DeviceProperty:
@@ -220,17 +295,20 @@ def _read_property_multiple(device_properties: List[DeviceProperty]) -> bytes:
 
 # _parse_read_property_multiple_response and return DeviceState
 def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
-    bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
-    if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION_UNICAST:
-        raise DecodingError("unexpected response")
+    apdu = _apdu_from_response(response)
 
-    apdu_start_index = BVLC_LENGTH + len(NPDU)
-    apdu = response[apdu_start_index:]
+    if len(apdu) < 3:
+        raise DecodingError(f"truncated APDU: {apdu.hex()}")
 
     apdu_type = apdu[0] >> 4
 
     if apdu_type != APDUType.COMPLEX_ACK:
         raise DecodingError(f"unsupported response type: {apdu_type}")
+
+    if apdu[0] & PDUFlags.SEGMENTED_REQUEST:
+        # BACnetRequest reassembles segments before the answer is parsed;
+        # a single segment cannot be decoded on its own
+        raise DecodingError("segmented response must be reassembled before parsing")
 
     invoke_id = apdu[1]
     if invoke_id != INVOKE_ID:
@@ -265,6 +343,12 @@ class PropertyError(NamedTuple):
     error_code: int
 
 
+class BitString(NamedTuple):
+    """A decoded BACnet bit string, e.g. status-flags: bits[0] = in-alarm, [1] = fault, ..."""
+
+    bits: Tuple[bool, ...]
+
+
 class BACnetDecoder:
     def __init__(self, data: bytes, offset: int = 0):
         self.data = data
@@ -293,9 +377,17 @@ class BACnetDecoder:
 
         return byte
 
+    def peek_tag(self) -> Tuple[int, int, int]:
+        """Return the next tag like read_tag() without consuming it."""
+        i = self.i
+        try:
+            return self.read_tag()
+        finally:
+            self.i = i
+
     # read_tag returns tag number, class and type/length.
-    # class=0 -> context specific tag
-    # class=1 -> application tag
+    # class=0 -> application tag
+    # class=1 -> context specific tag
     def read_tag(self) -> Tuple[int, int, int]:
         byte = self.read_byte()
 
@@ -303,8 +395,18 @@ class BACnetDecoder:
         tag_class = byte >> 3 & 1
         tag_type_length = byte & 7
 
+        # extended tag number (clause 20.2.1.2)
+        if tag_number == 15:
+            tag_number = self.read_byte()
+
+        # 5 means extended length (clause 20.2.1.3.1): one octet,
+        # or 254 + two octets, or 255 + four octets
         if tag_type_length == 5:
             tag_type_length = self.read_byte()
+            if tag_type_length == 254:
+                tag_type_length = self.parse_unsinged_int(2)
+            elif tag_type_length == 255:
+                tag_type_length = self.parse_unsinged_int(4)
 
         return tag_number, tag_class, tag_type_length
 
@@ -327,13 +429,22 @@ class BACnetDecoder:
     def parse_object_identifier(self) -> Tuple[ObjectType, int]:
         tag_number, tag_length = self.read_context_tag()
 
-        if tag_number != 0:
-            raise DecodingError("unexpected tag")
+        if tag_number != 0 or tag_length != 4:
+            raise DecodingError(f"expected object identifier, got tag {tag_number} of length {tag_length}")
 
-        data = unpack("!I", self.read_bytes(tag_length))[0]
+        return self._object_identifier(self.read_bytes(4))
 
-        object_type = ObjectType(data >> TAG_OBJECT_TYPE_SHIFT)
-        instance_number = data & 0x3FFFFF
+    @staticmethod
+    def _object_identifier(data: bytes) -> Tuple[ObjectType, int]:
+        if len(data) != 4:
+            raise DecodingError(f"object identifier of {len(data)} octets")
+
+        value = unpack("!I", data)[0]
+
+        # unknown object types (e.g. schedule, structured view or the
+        # proprietary type 264 on Siemens controllers) are kept as int
+        object_type = _enum_or_int(ObjectType, value >> TAG_OBJECT_TYPE_SHIFT)
+        instance_number = value & TAG_INSTANCE_ID_MASK
 
         return object_type, instance_number
 
@@ -352,9 +463,14 @@ class BACnetDecoder:
             if tag_number != 2:
                 raise DecodingError("unexpected tag")
 
-            data = self.read_byte()
+            # property identifiers above 255 take more than one octet
+            read_value = _enum_or_int(ReadValue, self.parse_unsinged_int(tag_type))
 
-            read_value = ReadValue(data)
+            # optional property array index, context tag 3
+            tag_number, tag_class, tag_type = self.peek_tag()
+            if tag_class == 1 and tag_number == 3 and tag_type not in (TAG_OPEN, TAG_CLOSE):
+                self.read_tag()
+                self.parse_unsinged_int(tag_type)
 
             value = self.read_value()
 
@@ -371,14 +487,7 @@ class BACnetDecoder:
         value: Any
 
         if opening_tag_number == TAG_NO_PROPERTY_VALUE:
-            tag_number, tag_length = self.read_application_tag()
-
-            value = {
-                2: self.parse_unsinged_int,
-                4: self.parse_float,
-                7: self.parse_string,
-                9: self.parse_enumarated_value,
-            }[tag_number](tag_length)
+            value = self._read_values_until_close(opening_tag_number)
         elif opening_tag_number == TAG_NO_PROPERTY_ACCESS_ERROR:
             # error class and error code, both enumerated
             _, length = self.read_application_tag()
@@ -386,18 +495,78 @@ class BACnetDecoder:
             _, length = self.read_application_tag()
             error_code = self.parse_unsinged_int(length)
             value = PropertyError(error_class, error_code)
+
+            # check the closing tag
+            tag_number, tag_type = self.read_context_tag()
+            if tag_number != opening_tag_number or tag_type != TAG_CLOSE:
+                raise DecodingError("expected closing tag")
         else:
             raise DecodingError(f"unexpected tag {opening_tag_number} in read access result")
 
-        # check the closing tag
-        tag_number, tag_type = self.read_context_tag()
-        if tag_number != opening_tag_number or tag_type != TAG_CLOSE:
-            raise DecodingError("expected closing tag")
-
         return value
 
+    def _read_values_until_close(self, closing_tag_number: int) -> Any:
+        """Read values up to the matching closing tag.
+
+        A single value (every present-value) is returned as is; arrays and
+        lists (e.g. object-list) as a list; nested constructed data as nested
+        lists; context tagged primitives inside constructed data as raw bytes.
+        """
+        values = []
+
+        while True:
+            tag_number, tag_class, tag_length = self.read_tag()
+
+            if tag_class == 1:
+                if tag_length == TAG_CLOSE:
+                    if tag_number != closing_tag_number:
+                        raise DecodingError("expected closing tag")
+                    break
+
+                if tag_length == TAG_OPEN:
+                    values.append(self._read_values_until_close(tag_number))
+                else:
+                    values.append(self.read_bytes(tag_length))
+
+                continue
+
+            values.append(self._parse_application_value(tag_number, tag_length))
+
+        if not values:
+            raise DecodingError("empty property value")
+
+        return values[0] if len(values) == 1 else values
+
+    def _parse_application_value(self, tag_number: int, length: int) -> Any:
+        if tag_number == 0:  # null
+            return None
+
+        if tag_number == 1:  # boolean, the value is in the length field
+            return bool(length)
+
+        parser = {
+            2: self.parse_unsinged_int,
+            3: self.parse_signed_int,
+            4: self.parse_float,
+            5: self.parse_double,
+            6: self.read_bytes,  # octet string
+            7: self.parse_string,
+            8: self.parse_bit_string,
+            9: self.parse_enumarated_value,
+            10: self.read_bytes,  # date
+            11: self.read_bytes,  # time
+            12: lambda n: self._object_identifier(self.read_bytes(n)),
+        }.get(tag_number)
+
+        if parser is None:
+            # reserved application tag: skip it but keep the answer decodable
+            return self.read_bytes(length)
+
+        return parser(length)
+
     def parse_enumarated_value(self, length: int) -> int:
-        return self.read_byte()
+        # enumerations above 255 take more than one octet
+        return self.parse_unsinged_int(length)
 
     def parse_unsinged_int(self, length: int) -> int:
         value = 0
@@ -407,19 +576,52 @@ class BACnetDecoder:
 
         return value
 
+    def parse_signed_int(self, length: int) -> int:
+        return int.from_bytes(self.read_bytes(length), "big", signed=True)
+
     def parse_float(self, length: int) -> float:
         if length != 4:
             raise DecodingError(f"unsupported float size: {length}")
 
         return unpack("!f", self.read_bytes(length))[0]
 
-    def parse_string(self, length: int) -> str:
-        encoding = self.read_byte()
+    def parse_double(self, length: int) -> float:
+        if length != 8:
+            raise DecodingError(f"unsupported double size: {length}")
 
-        if encoding != 0:
+        return unpack("!d", self.read_bytes(length))[0]
+
+    def parse_bit_string(self, length: int) -> BitString:
+        if length == 0:
+            return BitString(())
+
+        unused = self.read_byte()
+        data = self.read_bytes(length - 1)
+        bits = [bool(byte >> (7 - i) & 1) for byte in data for i in range(8)]
+
+        return BitString(tuple(bits[: len(bits) - unused] if unused else bits))
+
+    def parse_string(self, length: int) -> str:
+        if length == 0:
+            raise DecodingError("character string without character set")
+
+        encoding = self.read_byte()
+        data = self.read_bytes(length - 1)
+
+        codec = CHARACTER_SETS.get(encoding)
+        if codec is None:
             raise DecodingError(f"unsupported encoding: {encoding}")
 
-        return self.read_bytes(length - 1).decode("utf-8")
+        return data.decode(codec, errors="replace")
+
+
+# BACnet character sets (clause 20.2.9) and the matching Python codecs
+CHARACTER_SETS = {
+    0: "utf-8",
+    3: "utf-32-be",
+    4: "utf-16-be",
+    5: "latin-1",
+}
 
 
 def _write_property(device_property: DeviceProperty, value: Any) -> bytes:
@@ -440,11 +642,10 @@ def _write_property(device_property: DeviceProperty, value: Any) -> bytes:
 
 # _parse_write_property_response and check for errors
 def _parse_write_property_response(response: bytes):
-    bvlc_type, bvlc_function, _ = unpack("!BBH", response[0:4])
-    if bvlc_type != BVLC_TYPE or bvlc_function != BVLC_FUNCTION_UNICAST:
-        raise DecodingError("unexpected response")
+    apdu = _apdu_from_response(response)
 
-    apdu = response[BVLC_LENGTH + len(NPDU) :]
+    if len(apdu) < 3:
+        raise DecodingError(f"truncated APDU: {apdu.hex()}")
 
     apdu_type = apdu[0] >> 4
 
@@ -463,6 +664,101 @@ def _parse_write_property_response(response: bytes):
 DEFAULT_BACNET_PORT = 47808
 
 
+def _segment_ack(invoke_id: int, sequence_number: int, window_size: int, negative: bool = False) -> bytes:
+    """BACnet-SegmentACK-PDU sent by the client (clause 20.1.6)."""
+    apdu = pack(
+        "!BBBB",
+        APDUType.SEGMENT_ACK << 4 | (2 if negative else 0),
+        invoke_id,
+        sequence_number,
+        window_size,
+    )
+    npdu = pack("!BB", NPDU_VERSION, 0)
+
+    return pack("!BBH", BVLC_TYPE, BVLC_FUNCTION_UNICAST, BVLC_LENGTH + len(npdu) + len(apdu)) + npdu + apdu
+
+
+class _SegmentAssembler:
+    """Receiver side of a segmented ComplexACK (clause 5.4.4.3 / 5.4.4.4).
+
+    The unit sends the first segment alone and waits for a SegmentACK that
+    sets the window size, then sends a window of segments at a time and waits
+    for an ACK of the last segment of each window. Without these ACKs it
+    repeats segment 0 every few seconds and the request times out.
+    """
+
+    def __init__(self):
+        self.segments: List[bytes] = []
+        self.header: bytes = b""
+        self.window = 1
+        self.initial_sequence = 0
+        self.last_sequence = -1
+
+    def add(self, response: bytes, apdu: bytes) -> Tuple[Optional[bytes], Optional[bytes]]:
+        """Process one segment; return (ack to send or None, reassembled response or None)."""
+        if len(apdu) < 5:
+            raise DecodingError("truncated segment header")
+
+        flags, invoke_id, sequence, proposed_window = apdu[0], apdu[1], apdu[2], apdu[3]
+        more_follows = bool(flags & PDUFlags.MORE_SEGMENTS)
+
+        if self.last_sequence < 0:
+            if sequence != 0:
+                # not the start of an answer we are waiting for
+                return None, None
+
+            # keep BVLC/NPDU of the first segment, rebuild the APDU header unsegmented
+            self.header = response[: len(response) - len(apdu)]
+            self.service_choice = apdu[4]
+            self.invoke_id = invoke_id
+            self.window = max(1, min(proposed_window, MAX_SEGMENT_WINDOW))
+            self.segments.append(apdu[5:])
+            self.last_sequence = 0
+            self.initial_sequence = 0
+
+            if not more_follows:
+                return _segment_ack(invoke_id, 0, self.window), self._reassemble()
+
+            # the first segment is always acknowledged, which sets the window size
+            return _segment_ack(invoke_id, 0, self.window), None
+
+        expected = (self.last_sequence + 1) % 256
+
+        if sequence != expected:
+            if (self.last_sequence - sequence) % 256 < self.window:
+                # duplicate of a segment we already have: discard
+                return None, None
+
+            # out of order: ask for everything after the last good segment
+            self.initial_sequence = self.last_sequence
+            return _segment_ack(invoke_id, self.last_sequence, self.window, negative=True), None
+
+        self.segments.append(apdu[5:])
+        self.last_sequence = expected
+
+        if len(self.segments) > MAX_SEGMENTS_ACCEPTED:
+            raise DecodingError(f"answer has more than {MAX_SEGMENTS_ACCEPTED} segments")
+
+        if not more_follows:
+            return _segment_ack(invoke_id, sequence, self.window), self._reassemble()
+
+        if sequence == (self.initial_sequence + self.window) % 256:
+            self.initial_sequence = sequence
+            return _segment_ack(invoke_id, sequence, self.window), None
+
+        return None, None
+
+    def _reassemble(self) -> bytes:
+        apdu = pack("!BBB", APDUType.COMPLEX_ACK << 4, self.invoke_id, self.service_choice) + b"".join(self.segments)
+
+        # rewrite the BVLC length for the reassembled message
+        return pack("!BBH", self.header[0], self.header[1], len(self.header) + len(apdu)) + self.header[4:] + apdu
+
+
+# MAX_RESPONSE_SEGMENTS = 4 asks the unit for at most 16 segments
+MAX_SEGMENTS_ACCEPTED = 16
+
+
 class BACnetRequest:
     _transport: asyncio.DatagramTransport
 
@@ -470,10 +766,11 @@ class BACnetRequest:
     response: bytes
 
     # exception is the exception that occurred during the request
-    exception: Exception
+    exception: Optional[Exception] = None
 
     def __init__(self, request: bytes, done: asyncio.Future = None):
         self.request = request
+        self._segments: Optional[_SegmentAssembler] = None
 
         if done is None:
             done = asyncio.get_running_loop().create_future()
@@ -485,27 +782,85 @@ class BACnetRequest:
         self._transport.sendto(self.request)
 
     def datagram_received(self, response: bytes, addr: Tuple[str, int]):
-        self.response = response
-        self._transport.close()
+        try:
+            apdu = _apdu_from_response(response)
+        except DecodingError:
+            apdu = b""
+
+        segmented = (
+            len(apdu) >= 1
+            and apdu[0] >> 4 == APDUType.COMPLEX_ACK
+            and apdu[0] & PDUFlags.SEGMENTED_REQUEST
+        )
+
+        if not segmented:
+            self.response = response
+            self._transport.close()
+            return
+
+        if self._segments is None:
+            self._segments = _SegmentAssembler()
+
+        try:
+            ack, complete = self._segments.add(response, apdu)
+        except DecodingError as exc:
+            self.exception = exc
+            self._transport.close()
+            return
+
+        if ack is not None:
+            self._transport.sendto(ack)
+
+        if complete is not None:
+            self.response = complete
+            self._transport.close()
 
     def error_received(self, exception: Exception):
+        # e.g. ICMP port/host unreachable: fail now with the real cause instead
+        # of letting the caller run into an unexplained timeout
         self.exception = exception
+        self._transport.close()
 
     def connection_lost(self, exception: Exception):
-        self.exception = exception
+        # a clean close (exception None) must not hide an error_received() cause
+        if exception is not None:
+            self.exception = exception
         if not self.done.done():
             self.done.set_result(True)
 
-    def wait(self, timeout: float = 1.0):
+    def wait(self, timeout: float = DEFAULT_TIMEOUT):
         return asyncio.wait_for(self.done, timeout=timeout)
 
 
 class BACnetClient:
-    def __init__(self, address: str, port: int = DEFAULT_BACNET_PORT):
+    def __init__(
+        self,
+        address: str,
+        port: int = DEFAULT_BACNET_PORT,
+        timeout: float = DEFAULT_TIMEOUT,
+        read_retries: int = DEFAULT_READ_RETRIES,
+    ):
+        """BACnet/IP client for one unit.
+
+        timeout -- seconds to wait for each answer
+        read_retries -- extra attempts for a read after a timeout (writes are never retried)
+        """
         self.address = address
         self.port = port
+        self.timeout = timeout
+        self.read_retries = read_retries
+
+        # The units answer one request at a time (~90 ms each on a Nordic
+        # CL4); with ~10 requests in flight the last one exceeds a 1 s timeout
+        # and more make the unit answer Abort out-of-resources. Requests from
+        # one client are therefore sent one after another.
+        self._lock = asyncio.Lock()
 
     async def _send(self, request: bytes) -> bytes:
+        async with self._lock:
+            return await self._send_unlocked(request)
+
+    async def _send_unlocked(self, request: bytes) -> bytes:
         loop = asyncio.get_running_loop()
 
         bacnet_request = BACnetRequest(request)
@@ -515,12 +870,15 @@ class BACnetClient:
         )
 
         try:
-            await bacnet_request.wait(timeout=1.0)
+            await bacnet_request.wait(timeout=self.timeout)
         finally:
             transport.close()
 
+        if isinstance(bacnet_request.exception, DecodingError):
+            raise bacnet_request.exception
+
         if bacnet_request.exception is not None:
-            raise ConnectionError from bacnet_request.exception
+            raise ConnectionError(str(bacnet_request.exception)) from bacnet_request.exception
 
         return bacnet_request.response
 
@@ -532,7 +890,14 @@ class BACnetClient:
         if DEBUG:
             print(f">>> {request.hex()}")
 
-        response = await self._send(request)
+        for attempt in range(self.read_retries + 1):
+            try:
+                response = await self._send(request)
+                break
+            except asyncio.TimeoutError:
+                # a lost datagram is not a reason to fail the whole update
+                if attempt == self.read_retries:
+                    raise
 
         if DEBUG:
             print(f"<<< {response.hex()}")

@@ -1,0 +1,9 @@
+{
+ "unit": "Flexit Nordic CL4 RER, POS3.67, FW 03.39.03.30, HvacFnct21y_A v2.425",
+ "captured": "2026-11-04",
+ "note": "device instance 3 does not exist (unit is device 2)",
+ "request": "810a001301040244010e0c020000031e094d1f",
+ "responses": [
+  "810a0018010030010e0c020000031e294d5e9101911f5f1f"
+ ]
+}
