@@ -94,3 +94,20 @@ def test_device_object():
 
     print(f"\nmodel {props[70]}, firmware {props[44]}, application {props[12]}, max-APDU {props[62]}")
     assert props[62] >= 480
+
+
+def test_room_humidity_is_maximum_of_room_sensors():
+    """room_humidity (AI 81) is the highest of the wireless room sensors that report one."""
+    async def run():
+        device = _device()
+        await device.update()
+        return device
+
+    device = asyncio.run(run())
+
+    rooms = [h for h in (device.room_1_humidity, device.room_2_humidity, device.room_3_humidity) if h]
+    if not rooms:
+        assert device.room_humidity is None
+    else:
+        # the sensors update independently of AI 81, so allow a small drift
+        assert device.room_humidity == pytest.approx(max(rooms), abs=2)
