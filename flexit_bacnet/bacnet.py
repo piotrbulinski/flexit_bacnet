@@ -4,7 +4,7 @@ import socket
 
 from enum import IntEnum
 from struct import pack, unpack
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 
 DEBUG = os.getenv("DEBUG") is not None
@@ -40,7 +40,6 @@ TAG_CLOSE = 7
 TAG_NO_PROPERTY_VALUE = 4
 TAG_NO_PROPERTY_ACCESS_ERROR = 5
 
-PROPERTY_ACCESS_ERROR_SIZE = 4
 
 
 class ServiceChoice(IntEnum):
@@ -253,6 +252,19 @@ def _parse_read_property_multiple_response(response: bytes) -> DeviceState:
     return device_state
 
 
+class PropertyError(NamedTuple):
+    """A per-property access error inside a readPropertyMultiple answer.
+
+    The unit answers this (instead of a value) for an object or property it
+    does not have, e.g. error class object (1) / unknown-object (31). It is
+    kept in the device state so that "missing on this unit" can be told apart
+    from a real reading of 0.
+    """
+
+    error_class: int
+    error_code: int
+
+
 class BACnetDecoder:
     def __init__(self, data: bytes, offset: int = 0):
         self.data = data
@@ -356,7 +368,7 @@ class BACnetDecoder:
         if tag_type != TAG_OPEN:
             raise DecodingError("expected opening tag")
 
-        value: Any = 0
+        value: Any
 
         if opening_tag_number == TAG_NO_PROPERTY_VALUE:
             tag_number, tag_length = self.read_application_tag()
@@ -368,7 +380,14 @@ class BACnetDecoder:
                 9: self.parse_enumarated_value,
             }[tag_number](tag_length)
         elif opening_tag_number == TAG_NO_PROPERTY_ACCESS_ERROR:
-            self.read_bytes(PROPERTY_ACCESS_ERROR_SIZE)
+            # error class and error code, both enumerated
+            _, length = self.read_application_tag()
+            error_class = self.parse_unsinged_int(length)
+            _, length = self.read_application_tag()
+            error_code = self.parse_unsinged_int(length)
+            value = PropertyError(error_class, error_code)
+        else:
+            raise DecodingError(f"unexpected tag {opening_tag_number} in read access result")
 
         # check the closing tag
         tag_number, tag_type = self.read_context_tag()
