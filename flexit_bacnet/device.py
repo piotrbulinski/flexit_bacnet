@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from flexit_bacnet import bacnet
+from flexit_bacnet.readings import Reading, Unit, collect_readings, reading
 from flexit_bacnet.nordic import *
 
 
@@ -22,6 +23,20 @@ class FlexitBACnet:
             self.device_id,
             read_values=[bacnet.ReadValue.OBJECT_NAME, bacnet.ReadValue.DESCRIPTION],
         )
+
+    @classmethod
+    def readings(cls) -> list[Reading]:
+        """Return label and unit of every value property, in definition order."""
+        return collect_readings(cls)
+
+    @classmethod
+    def get_reading(cls, name: str) -> Reading:
+        """Return label and unit of the given property, e.g. get_reading("extract_air_humidity")."""
+        for info in cls.readings():
+            if info.name == name:
+                return info
+
+        raise KeyError(name)
 
     async def update(self) -> None:
         """Refresh local device state."""
@@ -83,6 +98,7 @@ class FlexitBACnet:
         await self.update()
 
     @property
+    @reading("Device name")
     def device_name(self) -> str:
         """Return device name, e.g.: Flexit Nordic"""
         device_name_from_device = self._get_value(self._device_property, bacnet.ReadValue.OBJECT_NAME)
@@ -94,6 +110,7 @@ class FlexitBACnet:
         return device_name
 
     @property
+    @reading("Serial number")
     def serial_number(self) -> str:
         """Return device's serial number, e.g.: 800220-000000."""
         serial_number = self._get_value(self._device_property, bacnet.ReadValue.DESCRIPTION)
@@ -104,6 +121,7 @@ class FlexitBACnet:
         return serial_number
 
     @property
+    @reading("Device model")
     def model(self) -> str:
         """Return device's model, e.g.: S2 REL."""
         try:
@@ -114,21 +132,25 @@ class FlexitBACnet:
         return NORDIC_MODELS.get(model_id, '')
 
     @property
+    @reading("Outside air temperature", Unit.CELSIUS)
     def outside_air_temperature(self) -> Optional[float]:
         """Outside air temperature in degrees Celsius, e.g. 14.3."""
         return self._get_float(OUTSIDE_AIR_TEMPERATURE, 1)
 
     @property
+    @reading("Supply air temperature", Unit.CELSIUS)
     def supply_air_temperature(self) -> Optional[float]:
         """Supply air temperature in degrees Celsius, e.g. 18.9."""
         return self._get_float(SUPPLY_AIR_TEMPERATURE, 1)
 
     @property
+    @reading("Exhaust air temperature", Unit.CELSIUS)
     def exhaust_air_temperature(self) -> Optional[float]:
         """Exhaust air temperature in degrees Celsius, e.g. 14.5."""
         return self._get_float(EXHAUST_AIR_TEMPERATURE, 1)
 
     @property
+    @reading("Extract air temperature", Unit.CELSIUS)
     def extract_air_temperature(self) -> Optional[float]:
         """Extract air temperature in degrees Celsius, e.g. 14.3."""
         value = self._get_float(EXTRACT_AIR_TEMPERATURE, 1)
@@ -143,11 +165,13 @@ class FlexitBACnet:
         return value
 
     @property
+    @reading("Extract air humidity", Unit.PERCENT)
     def extract_air_humidity(self) -> Optional[float]:
         """Extract air relative humidity in %, e.g. 40.3."""
         return self._get_float(EXTRACT_AIR_HUMIDITY, 1)
 
     @property
+    @reading("Room temperature", Unit.CELSIUS)
     def room_temperature(self) -> Optional[float]:
         """Room temperature in degrees Celsius, e.g. 14.3.
 
@@ -156,6 +180,7 @@ class FlexitBACnet:
         return self._get_float(ROOM_TEMPERATURE, 1)
 
     @property
+    @reading("Room 1 humidity", Unit.PERCENT)
     def room_1_humidity(self) -> Optional[float]:
         """Room 1 relative humidity in %, e.g. 40.3.
 
@@ -164,6 +189,7 @@ class FlexitBACnet:
         return self._get_float(ROOM_1_HUMIDITY, 1)
 
     @property
+    @reading("Room 2 humidity", Unit.PERCENT)
     def room_2_humidity(self) -> Optional[float]:
         """Room 2 relative humidity in %, e.g. 40.3.
 
@@ -172,6 +198,7 @@ class FlexitBACnet:
         return self._get_float(ROOM_2_HUMIDITY, 1)
 
     @property
+    @reading("Room 3 humidity", Unit.PERCENT)
     def room_3_humidity(self) -> Optional[float]:
         """Room 3 relative humidity in %, e.g. 40.3.
 
@@ -180,11 +207,13 @@ class FlexitBACnet:
         return self._get_float(ROOM_3_HUMIDITY, 1)
 
     @property
+    @reading("Humidity setpoint (present)", Unit.PERCENT)
     def humidity_setpoint_present(self) -> Optional[float]:
         """Present humidity setpoint in %, e.g. 70.0."""
         return self._get_float(HUMIDITY_SETPOINT_PRESENT, 1)
 
     @property
+    @reading("Humidity setpoint Home", Unit.PERCENT)
     def humidity_setpoint_home(self) -> Optional[float]:
         """Humidity setpoint for Home mode in %, e.g. 70.0."""
         return self._get_float(HUMIDITY_SETPOINT_HOME, 1)
@@ -197,6 +226,7 @@ class FlexitBACnet:
         await self._set_humidity_setpoint(HUMIDITY_SETPOINT_HOME, percent)
 
     @property
+    @reading("Humidity setpoint Away", Unit.PERCENT)
     def humidity_setpoint_away(self) -> Optional[float]:
         """Humidity setpoint for Away mode in %, e.g. 80.0."""
         return self._get_float(HUMIDITY_SETPOINT_AWAY, 1)
@@ -209,6 +239,7 @@ class FlexitBACnet:
         await self._set_humidity_setpoint(HUMIDITY_SETPOINT_AWAY, percent)
 
     @property
+    @reading("Humidity setpoint High", Unit.PERCENT)
     def humidity_setpoint_high(self) -> Optional[float]:
         """Humidity setpoint for High mode in %, e.g. 100.0."""
         return self._get_float(HUMIDITY_SETPOINT_HIGH, 1)
@@ -228,11 +259,13 @@ class FlexitBACnet:
         await self._set_value(device_property, float(percent))
 
     @property
+    @reading("Dehumidification fan control", Unit.PERCENT)
     def dehumidification_fan_control(self) -> Optional[float]:
         """Fan speed request caused by humidity control in %, e.g. 0.0."""
         return self._get_float(DEHUMIDIFICATION_FAN_CONTROL, 1)
 
     @property
+    @reading("Dehumidification PID control")
     def dehumidification_pid_control(self) -> Optional[bool]:
         """True if setpoint based (PID) humidity control is enabled."""
         return self._get_flag(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_ACTIVE)
@@ -246,6 +279,7 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_PID_CONTROL, DEHUMIDIFICATION_PID_CONTROL_INACTIVE)
 
     @property
+    @reading("Dehumidification slope control")
     def dehumidification_slope_control(self) -> Optional[int]:
         """Slope (rapid humidity rise, e.g. shower) control mode:
         1 - Disabled (DEHUMIDIFICATION_SLOPE_CONTROL_DISABLED)
@@ -266,6 +300,7 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_SLOPE_CONTROL, mode)
 
     @property
+    @reading("Dehumidification slope switch-on")
     def dehumidification_slope_switch_on(self) -> Optional[float]:
         """Humidity slope above which humidity control is switched on, e.g. 1.0."""
         return self._get_float(DEHUMIDIFICATION_SLOPE_SWITCH_ON, 2)
@@ -275,6 +310,7 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_ON, float(value))
 
     @property
+    @reading("Dehumidification slope switch-off")
     def dehumidification_slope_switch_off(self) -> Optional[float]:
         """Humidity slope below which humidity control is switched off, e.g. -0.3."""
         return self._get_float(DEHUMIDIFICATION_SLOPE_SWITCH_OFF, 2)
@@ -284,21 +320,25 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_SLOPE_SWITCH_OFF, float(value))
 
     @property
+    @reading("Dehumidification slope")
     def dehumidification_slope(self) -> Optional[float]:
         """Current calculated humidity slope, e.g. 0.0."""
         return self._get_float(DEHUMIDIFICATION_SLOPE, 2)
 
     @property
+    @reading("Dehumidification by slope")
     def dehumidification_by_slope(self) -> Optional[bool]:
         """True if the current humidity control request is caused by the slope."""
         return self._get_flag(DEHUMIDIFICATION_BY_SLOPE, DEHUMIDIFICATION_BY_SLOPE_ACTIVE)
 
     @property
+    @reading("Dehumidification slope resolution", Unit.MINUTES)
     def dehumidification_slope_resolution(self) -> Optional[int]:
         """Time base of the humidity slope calculation in minutes, e.g. 5."""
         return self._get_int(DEHUMIDIFICATION_SLOPE_RESOLUTION)
 
     @property
+    @reading("Dehumidification slope on delay", Unit.SECONDS)
     def dehumidification_slope_on_delay(self) -> Optional[int]:
         """On delay of the slope control in seconds, e.g. 600."""
         return self._get_int(DEHUMIDIFICATION_SLOPE_ON_DELAY)
@@ -308,6 +348,7 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_SLOPE_ON_DELAY, seconds)
 
     @property
+    @reading("Dehumidification switch-off delay", Unit.MINUTES)
     def dehumidification_switch_off_delay(self) -> Optional[int]:
         """Humidity control switch-off delay in minutes, e.g. 30."""
         return self._get_int(DEHUMIDIFICATION_SWITCH_OFF_DELAY)
@@ -317,6 +358,7 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_SWITCH_OFF_DELAY, minutes)
 
     @property
+    @reading("Dehumidification max runtime", Unit.MINUTES)
     def dehumidification_max_runtime(self) -> Optional[int]:
         """Maximum runtime of humidity control in minutes, e.g. 120."""
         return self._get_int(DEHUMIDIFICATION_MAX_RUNTIME)
@@ -326,6 +368,7 @@ class FlexitBACnet:
         await self._set_value(DEHUMIDIFICATION_MAX_RUNTIME, minutes)
 
     @property
+    @reading("Comfort button")
     def comfort_button(self) -> Optional[bool]:
         """Comfort button state, True if active."""
         return self._get_flag(COMFORT_BUTTON, COMFORT_BUTTON_ACTIVE)
@@ -343,11 +386,13 @@ class FlexitBACnet:
         await self._set_value(COMFORT_BUTTON, COMFORT_BUTTON_INACTIVE)
 
     @property
+    @reading("Operation mode")
     def operation_mode(self) -> Optional[int]:
         """Returns current heat exchanger operation mode, e.g. Home."""
         return self._get_value(OPERATION_MODE)
 
     @property
+    @reading("Ventilation mode")
     def ventilation_mode(self) -> Optional[int]:
         """Returns current ventilation mode, e.g. Home.
 
@@ -366,6 +411,7 @@ class FlexitBACnet:
         await self._set_value(VENTILATION_MODE, mode)
 
     @property
+    @reading("Air temperature setpoint Away", Unit.CELSIUS)
     def air_temp_setpoint_away(self) -> Optional[float]:
         """Return temperature setpoint for Away mode."""
         return self._get_float(AIR_TEMP_SETPOINT_AWAY)
@@ -378,6 +424,7 @@ class FlexitBACnet:
         await self._set_value(AIR_TEMP_SETPOINT_AWAY, temperature)
 
     @property
+    @reading("Air temperature setpoint Home", Unit.CELSIUS)
     def air_temp_setpoint_home(self) -> Optional[float]:
         """Return temperature setpoint for Home mode."""
         return self._get_float(AIR_TEMP_SETPOINT_HOME)
@@ -405,6 +452,7 @@ class FlexitBACnet:
         await self._set_value(FIREPLACE_VENTILATION_RUNTIME, minutes)
 
     @property
+    @reading("Fireplace mode runtime", Unit.MINUTES)
     def fireplace_mode_runtime(self) -> Optional[int]:
         """Returns currently set runtime for the fireplace mode (in minutes)."""
         return self._get_value(FIREPLACE_VENTILATION_RUNTIME)
@@ -414,11 +462,13 @@ class FlexitBACnet:
         await self._set_value(FIREPLACE_VENTILATION, FIREPLACE_VENTILATION_TRIGGER)
 
     @property
+    @reading("Fireplace ventilation")
     def fireplace_ventilation_status(self) -> Optional[bool]:
         """Return true if fireplace mode is active."""
         return self._get_flag(FIREPLACE_STATE, FIREPLACE_STATE_ACTIVE)
 
     @property
+    @reading("Fireplace ventilation remaining", Unit.MINUTES)
     def fireplace_ventilation_remaining_duration(self) -> Optional[int]:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
         return self._get_int(FIREPLACE_VENTILATION_REMAINING_DURATION)
@@ -432,31 +482,37 @@ class FlexitBACnet:
         await self._set_value(RAPID_VENTILATION, RAPID_VENTILATION_TRIGGER)
 
     @property
+    @reading("Rapid ventilation remaining", Unit.MINUTES)
     def rapid_ventilation_remaining_duration(self) -> Optional[int]:
         """Return remaining duration (in minutes) of fireplace ventilation mode."""
         return self._get_int(RAPID_VENTILATION_REMAINING_DURATION)
 
     @property
+    @reading("Supply air fan control signal", Unit.PERCENT)
     def supply_air_fan_control_signal(self) -> Optional[int]:
         """Return current supply air fan control signal (in %)."""
         return self._get_int(FAN_SPEED_SUPPLY_AIR)
 
     @property
+    @reading("Supply air fan speed", Unit.RPM)
     def supply_air_fan_rpm(self) -> Optional[int]:
         """Return current supply air fan RPM."""
         return self._get_int(TACHO_SUPPLY_FAN)
 
     @property
+    @reading("Exhaust air fan control signal", Unit.PERCENT)
     def exhaust_air_fan_control_signal(self) -> Optional[int]:
         """Return current exhaust air fan control signal (in %)."""
         return self._get_int(FAN_SPEED_EXHAUST_AIR)
 
     @property
+    @reading("Exhaust air fan speed", Unit.RPM)
     def exhaust_air_fan_rpm(self) -> Optional[int]:
         """Return current exhaust air fan RPM."""
         return self._get_int(TACHO_EXHAUST_FAN)
 
     @property
+    @reading("Electric heater enabled")
     def electric_heater(self) -> Optional[bool]:
         """Return True if electric heater is enabled."""
         return self._get_flag(ELECTRICAL_HEATER, ELECTRICAL_HEATER_ACTIVE)
@@ -470,16 +526,19 @@ class FlexitBACnet:
         await self._set_value(ELECTRICAL_HEATER, ELECTRICAL_HEATER_INACTIVE)
 
     @property
+    @reading("Electric heater nominal power", Unit.KILOWATT)
     def electric_heater_nominal_power(self) -> Optional[float]:
         """Return nominal heater power in kilowatts."""
         return self._get_float(ELECTRIC_HEATER_NOM_POWER)
 
     @property
+    @reading("Electric heater power", Unit.KILOWATT)
     def electric_heater_power(self) -> Optional[float]:
         """Return heater power consumption in kilowatts."""
         return self._get_float(HEATING_COIL_ELECTRIC_POWER)
 
     @property
+    @reading("Cooker hood")
     def cooker_hood_status(self) -> Optional[bool]:
         """Cooker hood ventilation state, True if active."""
         return self._get_flag(COOKER_HOOD, COOKER_HOOD_ACTIVE)
@@ -493,6 +552,7 @@ class FlexitBACnet:
         await self._set_value(COOKER_HOOD, COOKER_HOOD_INACTIVE)
 
     @property
+    @reading("Fan setpoint supply air Home", Unit.PERCENT)
     def fan_setpoint_supply_air_home(self) -> Optional[int]:
         """Return fan setpoint for supply air HOME in percent."""
         return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_HOME)
@@ -502,6 +562,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HOME, percent)
 
     @property
+    @reading("Fan setpoint extract air Home", Unit.PERCENT)
     def fan_setpoint_extract_air_home(self) -> Optional[int]:
         """Return fan setpoint for extract air HOME in percent."""
         return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_HOME)
@@ -511,6 +572,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HOME, percent)
 
     @property
+    @reading("Fan setpoint supply air High", Unit.PERCENT)
     def fan_setpoint_supply_air_high(self) -> Optional[int]:
         """Return fan setpoint for supply air HIGH in percent."""
         return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_HIGH)
@@ -520,6 +582,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_HIGH, percent)
 
     @property
+    @reading("Fan setpoint extract air High", Unit.PERCENT)
     def fan_setpoint_extract_air_high(self) -> Optional[int]:
         """Return fan setpoint for extract air HIGH in percent."""
         return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_HIGH)
@@ -529,6 +592,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_HIGH, percent)
 
     @property
+    @reading("Fan setpoint supply air Away", Unit.PERCENT)
     def fan_setpoint_supply_air_away(self) -> Optional[int]:
         """Return fan setpoint for supply air AWAY in percent."""
         return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_AWAY)
@@ -538,6 +602,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_AWAY, percent)
 
     @property
+    @reading("Fan setpoint extract air Away", Unit.PERCENT)
     def fan_setpoint_extract_air_away(self) -> Optional[int]:
         """Return fan setpoint for extract air AWAY in percent."""
         return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_AWAY)
@@ -547,6 +612,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_AWAY, percent)
 
     @property
+    @reading("Fan setpoint supply air Cooker", Unit.PERCENT)
     def fan_setpoint_supply_air_cooker(self) -> Optional[int]:
         """Return fan setpoint for supply air COOKER in percent."""
         return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_COOKER)
@@ -556,6 +622,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_COOKER, percent)
 
     @property
+    @reading("Fan setpoint extract air Cooker", Unit.PERCENT)
     def fan_setpoint_extract_air_cooker(self) -> Optional[int]:
         """Return fan setpoint for extract air COOKER in percent."""
         return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_COOKER)
@@ -565,6 +632,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_COOKER, percent)
 
     @property
+    @reading("Fan setpoint supply air Fireplace", Unit.PERCENT)
     def fan_setpoint_supply_air_fire(self) -> Optional[int]:
         """Return fan setpoint for supply air FIRE in percent."""
         return self._get_int(LINEAR_SETPOINT_SUPPLY_AIR_FIRE)
@@ -574,6 +642,7 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_SUPPLY_AIR_FIRE, percent)
 
     @property
+    @reading("Fan setpoint extract air Fireplace", Unit.PERCENT)
     def fan_setpoint_extract_air_fire(self) -> Optional[int]:
         """Return fan setpoint for extract air FIRE in percent."""
         return self._get_int(LINEAR_SETPOINT_EXHAUST_AIR_FIRE)
@@ -583,25 +652,30 @@ class FlexitBACnet:
         await self._set_value(LINEAR_SETPOINT_EXHAUST_AIR_FIRE, percent)
 
     @property
+    @reading("Air filter operating time", Unit.HOURS)
     def air_filter_operating_time(self) -> Optional[float]:
         """Return air filter operating time in hours."""
         return self._get_float(AIR_FILTER_OPERATING_TIME)
 
     @property
+    @reading("Air filter exchange interval", Unit.HOURS)
     def air_filter_exchange_interval(self) -> Optional[float]:
         return self._get_float(AIR_FILTER_TIME_PERIOD_FOR_EXCHANGE)
 
     @property
+    @reading("Heat exchanger efficiency", Unit.PERCENT)
     def heat_exchanger_efficiency(self) -> Optional[int]:
         """Returns heat exchanger efficiency in percent."""
         return self._get_int(ROTATING_HEAT_EXCHANGER_EFFICIENCY, rounded=True)
 
     @property
+    @reading("Heat exchanger speed", Unit.PERCENT)
     def heat_exchanger_speed(self) -> Optional[int]:
         """Returns heat exchanger speed in percent."""
         return self._get_int(ROTATING_HEAT_EXCHANGER_SPEED, rounded=True)
 
     @property
+    @reading("Air filter polluted")
     def air_filter_polluted(self) -> Optional[bool]:
         """Returns True if filter is polluted."""
         return self._get_flag(AIR_FILTER_POLLUTED, AIR_FILTER_POLLUTED_ACTIVE)
