@@ -282,10 +282,13 @@ PLANT_STATE_SMOKE_EXTRACT_EXHAUST = 16
 PLANT_STATE_SMOKE_EXTRACT_SUPPLY = 17
 PLANT_STATE_EMERGENCY_OFF = 18
 
+# Present plant operating mode: not verified on EcoNordic (PLANT_STATE is used there).
+PRESENT_PLANT_OPERATING_MODE = None
+
 # Humidity (dehumidification) control - increases fan speed on high or rapidly rising humidity.
 # Same object identifiers as Nordic (verified there on an S7, application HvacFnct21y_A
 # v2.438); not yet verified on an EcoNordic unit. EcoNordic exposes the dehumidification
-# PLANT_STATE values, so the function is present. Objects missing on a unit read as 0.
+# PLANT_STATE values, so the function is present. Objects missing on a unit read as None.
 
 # Humidity, present setpoint (e.g. 70.0 percent)
 HUMIDITY_SETPOINT_PRESENT = DeviceProperty(ObjectType.ANALOG_VALUE, 60)

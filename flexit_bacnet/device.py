@@ -94,12 +94,16 @@ class FlexitBACnet:
 
     def _get_value(
         self,
-        device_property: bacnet.DeviceProperty,
+        device_property: Optional[bacnet.DeviceProperty],
         value_name: Optional[bacnet.ReadValue] = None,
     ) -> Any:
 
         if self._state is None:
             raise Exception("must run 'update()' method first")
+
+        # the product line has no such object at all (e.g. DHW_STATE on Nordic)
+        if device_property is None:
+            return None
 
         if value_name is None:
             value_name = bacnet.ReadValue.PRESENT_VALUE
@@ -116,7 +120,7 @@ class FlexitBACnet:
 
         return value
 
-    def _get_float(self, device_property: bacnet.DeviceProperty, ndigits: Optional[int] = None) -> Optional[float]:
+    def _get_float(self, device_property: Optional[bacnet.DeviceProperty], ndigits: Optional[int] = None) -> Optional[float]:
         """Return the present value as float (optionally rounded), None if the unit lacks the object."""
         value = self._get_value(device_property)
         if value is None:
@@ -127,7 +131,7 @@ class FlexitBACnet:
 
         return float(value)
 
-    def _get_int(self, device_property: bacnet.DeviceProperty, rounded: bool = False) -> Optional[int]:
+    def _get_int(self, device_property: Optional[bacnet.DeviceProperty], rounded: bool = False) -> Optional[int]:
         """Return the present value as int (optionally rounded), None if the unit lacks the object."""
         value = self._get_value(device_property)
         if value is None:
@@ -135,7 +139,7 @@ class FlexitBACnet:
 
         return int(round(value)) if rounded else int(value)
 
-    def _get_flag(self, device_property: bacnet.DeviceProperty, active_value: Any) -> Optional[bool]:
+    def _get_flag(self, device_property: Optional[bacnet.DeviceProperty], active_value: Any) -> Optional[bool]:
         """Return True if the present value equals active_value, None if the unit lacks the object."""
         value = self._get_value(device_property)
         if value is None:
@@ -143,7 +147,10 @@ class FlexitBACnet:
 
         return value == active_value
 
-    async def _set_value(self, device_property: bacnet.DeviceProperty, value: Any) -> None:
+    async def _set_value(self, device_property: Optional[bacnet.DeviceProperty], value: Any) -> None:
+        if device_property is None:
+            raise Exception(f"not available on {self.product_line} models")
+
         await self.bacnet.write(device_property, value)
         await self.update()
 
@@ -790,26 +797,15 @@ class FlexitBACnet:
             self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET, self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET_TRIGGER
         )
 
-    @property
-    def _is_econordic(self) -> bool:
-        return self.product_line == econordic.PRODUCT_LINE
-
-    def _require_econordic(self, feature: str) -> None:
-        if not self._is_econordic:
-            raise Exception(f"{feature} is only available on EcoNordic models")
-
-    # Domestic Hot Water (DHW) and heat pump - EcoNordic only. On other product
-    # lines the getters return None (the unit has no such objects), and the
-    # setters raise.
+    # Domestic Hot Water (DHW), heat pump and space heating - EcoNordic only.
+    # Nordic units have none of these objects: the getters read None and the
+    # setters raise (see the placeholders at the end of nordic.py).
 
     @property
     @reading("DHW operation mode")
     def dhw_operation_mode(self) -> Optional[int]:
-        """Returns current Domestic Hot Water (DHW) operation mode (EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_value(econordic.DHW_OPERATION_MODE)
+        """Returns current Domestic Hot Water (DHW) operation mode, e.g. 1 (Comfort)."""
+        return self._get_value(self._prop_map.DHW_OPERATION_MODE)
 
     async def set_dhw_operation_mode(self, mode: int) -> None:
         """Set Domestic Hot Water (DHW) operation mode.
@@ -818,21 +814,15 @@ class FlexitBACnet:
         1 - Comfort (DHW_OPERATION_MODE_COMFORT)
         2 - Economy (DHW_OPERATION_MODE_ECONOMY)
         """
-        self._require_econordic("DHW operation mode")
-
-        await self._set_value(econordic.DHW_OPERATION_MODE, mode)
+        await self._set_value(self._prop_map.DHW_OPERATION_MODE, mode)
 
     async def dhw_temporary_boost_start(self) -> None:
         """Activate Domestic Hot Water (DHW) temporary boost mode."""
-        self._require_econordic("DHW temporary boost")
-
-        await self._set_value(econordic.DHW_TEMPORARY_BOOST, econordic.DHW_TEMPORARY_BOOST_START)
+        await self._set_value(self._prop_map.DHW_TEMPORARY_BOOST, econordic.DHW_TEMPORARY_BOOST_START)
 
     async def dhw_temporary_boost_stop(self) -> None:
         """Deactivate Domestic Hot Water (DHW) temporary boost mode."""
-        self._require_econordic("DHW temporary boost")
-
-        await self._set_value(econordic.DHW_TEMPORARY_BOOST, econordic.DHW_TEMPORARY_BOOST_STOP)
+        await self._set_value(self._prop_map.DHW_TEMPORARY_BOOST, econordic.DHW_TEMPORARY_BOOST_STOP)
 
     async def dhw_forced_charge_start(self) -> None:
         """Start a forced charge of the Domestic Hot Water (DHW) tank.
@@ -842,117 +832,82 @@ class FlexitBACnet:
         until the unit's own stop condition is met. Check `dhw_state ==
         DHW_STATE_FORCED_CHARGE` to see whether a forced charge is running.
         """
-        self._require_econordic("DHW forced charge")
-
-        await self._set_value(econordic.DHW_FORCED_CHARGE, econordic.DHW_FORCED_CHARGE_START)
+        await self._set_value(self._prop_map.DHW_FORCED_CHARGE, econordic.DHW_FORCED_CHARGE_START)
 
     @property
     @reading("DHW state")
     def dhw_state(self) -> Optional[int]:
-        """Return current Domestic Hot Water (DHW) state (one of econordic.DHW_STATE_*, EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_int(econordic.DHW_STATE)
+        """Return current Domestic Hot Water (DHW) state (one of econordic.DHW_STATE_*)."""
+        return self._get_int(self._prop_map.DHW_STATE)
 
     @property
     @reading("DHW temperature setpoint Comfort", Unit.CELSIUS)
     def dhw_temperature_setpoint_comfort(self) -> Optional[float]:
-        """Return Domestic Hot Water (DHW) temperature setpoint for Comfort mode (EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_float(econordic.DHW_TEMPERATURE_SETPOINT_COMFORT)
+        """Return Domestic Hot Water (DHW) temperature setpoint for Comfort mode, e.g. 55.0."""
+        return self._get_float(self._prop_map.DHW_TEMPERATURE_SETPOINT_COMFORT)
 
     async def set_dhw_temperature_setpoint_comfort(self, temperature: float) -> None:
         """Set Domestic Hot Water (DHW) temperature setpoint for Comfort mode.
 
         temperature -- temperature in degrees Celsius
         """
-        self._require_econordic("DHW temperature setpoint")
-
-        await self._set_value(econordic.DHW_TEMPERATURE_SETPOINT_COMFORT, temperature)
+        await self._set_value(self._prop_map.DHW_TEMPERATURE_SETPOINT_COMFORT, temperature)
 
     @property
     @reading("DHW temperature setpoint Economy", Unit.CELSIUS)
     def dhw_temperature_setpoint_economy(self) -> Optional[float]:
-        """Return Domestic Hot Water (DHW) temperature setpoint for Economy mode (EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_float(econordic.DHW_TEMPERATURE_SETPOINT_ECONOMY)
+        """Return Domestic Hot Water (DHW) temperature setpoint for Economy mode, e.g. 45.0."""
+        return self._get_float(self._prop_map.DHW_TEMPERATURE_SETPOINT_ECONOMY)
 
     async def set_dhw_temperature_setpoint_economy(self, temperature: float) -> None:
         """Set Domestic Hot Water (DHW) temperature setpoint for Economy mode.
 
         temperature -- temperature in degrees Celsius
         """
-        self._require_econordic("DHW temperature setpoint")
-
-        await self._set_value(econordic.DHW_TEMPERATURE_SETPOINT_ECONOMY, temperature)
+        await self._set_value(self._prop_map.DHW_TEMPERATURE_SETPOINT_ECONOMY, temperature)
 
     @property
     @reading("DHW tank temperature top", Unit.CELSIUS)
     def dhw_tank_temperature_top(self) -> Optional[float]:
-        """Return Domestic Hot Water (DHW) tank top temperature (EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_float(econordic.DHW_TANK_TEMPERATURE_TOP)
+        """Domestic Hot Water (DHW) tank top temperature in degrees Celsius, e.g. 52.4."""
+        return self._get_float(self._prop_map.DHW_TANK_TEMPERATURE_TOP, 1)
 
     @property
     @reading("DHW tank temperature middle", Unit.CELSIUS)
     def dhw_tank_temperature_middle(self) -> Optional[float]:
-        """Return Domestic Hot Water (DHW) tank middle temperature (EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_float(econordic.DHW_TANK_TEMPERATURE_MIDDLE)
+        """Domestic Hot Water (DHW) tank middle temperature in degrees Celsius, e.g. 48.1."""
+        return self._get_float(self._prop_map.DHW_TANK_TEMPERATURE_MIDDLE, 1)
 
     @property
     @reading("DHW tank temperature bottom", Unit.CELSIUS)
     def dhw_tank_temperature_bottom(self) -> Optional[float]:
-        """Return Domestic Hot Water (DHW) tank bottom temperature (EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_float(econordic.DHW_TANK_TEMPERATURE_BOTTOM)
+        """Domestic Hot Water (DHW) tank bottom temperature in degrees Celsius, e.g. 35.7."""
+        return self._get_float(self._prop_map.DHW_TANK_TEMPERATURE_BOTTOM, 1)
 
     @property
     @reading("DHW electric heater", Unit.PERCENT)
     def dhw_electric_heater_status(self) -> Optional[int]:
-        """Return Domestic Hot Water (DHW) electric heater status (0 - 100%, EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_int(econordic.DHW_ELECTRIC_HEATER_STATUS)
+        """Return Domestic Hot Water (DHW) electric heater status in % (0 - 100)."""
+        return self._get_int(self._prop_map.DHW_ELECTRIC_HEATER_STATUS)
 
     @property
     @reading("Space heating setpoint", Unit.CELSIUS)
     def space_heating_setpoint(self) -> Optional[float]:
-        """Return room temperature setpoint for heating circuit 1 (EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_float(econordic.HEATING_CIRCUIT_1_ROOM_TEMPERATURE_SETPOINT)
+        """Return room temperature setpoint for heating circuit 1, e.g. 21.0."""
+        return self._get_float(self._prop_map.HEATING_CIRCUIT_1_ROOM_TEMPERATURE_SETPOINT)
 
     async def set_space_heating_setpoint(self, temperature: float) -> None:
         """Set room temperature setpoint for heating circuit 1.
 
         temperature -- temperature in degrees Celsius
         """
-        self._require_econordic("Space heating setpoint")
-
-        await self._set_value(econordic.HEATING_CIRCUIT_1_ROOM_TEMPERATURE_SETPOINT, temperature)
+        await self._set_value(self._prop_map.HEATING_CIRCUIT_1_ROOM_TEMPERATURE_SETPOINT, temperature)
 
     @property
     @reading("Heat pump state")
     def heat_pump_state(self) -> Optional[int]:
-        """Return heat pump state (one of econordic.HEAT_PUMP_STATE_*, EcoNordic only)."""
-        if not self._is_econordic:
-            return None
-
-        return self._get_int(econordic.HEAT_PUMP_STATE)
+        """Return heat pump state (one of econordic.HEAT_PUMP_STATE_*)."""
+        return self._get_int(self._prop_map.HEAT_PUMP_STATE)
 
     # Free cooling - see the "Free cooling" section in nordic.py / econordic.py
     # and README.md for how the function works and which settings make it run.
@@ -967,19 +922,34 @@ class FlexitBACnet:
         return self._get_int(self._prop_map.PLANT_STATE)
 
     @property
+    @reading("Plant operating mode")
+    def plant_operating_mode(self) -> Optional[int]:
+        """Return the present plant operating mode (one of PLANT_OPERATING_MODE_*), e.g. 4 (Pre-Comfort).
+
+        None on units without the object (not verified on EcoNordic).
+        """
+        return self._get_int(self._prop_map.PRESENT_PLANT_OPERATING_MODE)
+
+    @property
     @reading("Free cooling active")
     def free_cooling_active(self) -> Optional[bool]:
         """Return true if free cooling is running right now.
 
         This is what explains a unit that is suddenly running in HIGH with cold
-        supply air. Flexit GO does not show it; the plant state does. None if
-        the unit has no plant state object.
+        supply air. Flexit GO does not show it; the plant state does. Units
+        without the plant state object (e.g. a Nordic CL4 with application
+        v2.425) report it in the present plant operating mode instead. None if
+        the unit has neither.
         """
         plant_state = self.plant_state
-        if plant_state is None:
-            return None
+        if plant_state is not None:
+            return plant_state == self._prop_map.PLANT_STATE_FREE_COOLING
 
-        return plant_state == self._prop_map.PLANT_STATE_FREE_COOLING
+        plant_operating_mode = self.plant_operating_mode
+        if plant_operating_mode is not None:
+            return plant_operating_mode == nordic.PLANT_OPERATING_MODE_FREE_COOLING
+
+        return None
 
     @property
     @reading("Free cooling enabled")

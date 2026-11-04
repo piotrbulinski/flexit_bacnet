@@ -103,7 +103,8 @@ Two flags are easy to confuse: `free_cooling_enabled` is the on/off an end user 
 Flexit GO and only says the function is *allowed* to run; `free_cooling_active` (derived from
 `plant_state`) says it *is* running right now - which is what explains a unit that is suddenly
 in HIGH with cold supply air. Some units have no plant state object (seen on a Nordic S4 and on
-a Nordic CL4 with application v2.425); there `plant_state` and `free_cooling_active` are `None`.
+a Nordic CL4 with application v2.425): there `plant_state` is `None`, and `free_cooling_active`
+is read from the present plant operating mode (`plant_operating_mode`) instead.
 
 The settings are installer-level in Flexit GO (local login required). With the factory
 defaults (setpoint 22 °C, outside limit 18 °C, start 4 K / stop 1 K) the function rarely runs
