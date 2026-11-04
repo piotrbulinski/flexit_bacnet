@@ -11,6 +11,14 @@ DEVICE_NAMES = {
     "HvacFnct21y_A": "Flexit Nordic",
 }
 
+# The air filter replace timer reset object is multiStateValue 609 on some
+# units (Nordic S3, EcoNordic WH4) and 613 on others (Nordic S4, CL4); it does
+# not follow the product line. Its object name is the same everywhere, so the
+# first update() reads the name of every candidate and keeps the one that
+# matches, falling back to the product line's default if none does.
+AIR_FILTER_REPLACE_TIMER_RESET_NAME_SUFFIX = "'FilRpcRst"
+AIR_FILTER_REPLACE_TIMER_RESET_CANDIDATES = (609, 613)
+
 
 class FlexitBACnet:
     def __init__(
@@ -33,6 +41,10 @@ class FlexitBACnet:
         # property mapping for the specific product line (nordic/econordic),
         # resolved by the first call to update()
         self._prop_map_module: Optional[ModuleType] = None
+
+        # air filter reset object found by name on this unit, resolved by the
+        # first call to update(); None means "use the product line's default"
+        self._air_filter_reset_property: Optional[bacnet.DeviceProperty] = None
 
     @property
     def _prop_map(self) -> ModuleType:
@@ -70,13 +82,36 @@ class FlexitBACnet:
         raise KeyError(name)
 
     async def _get_property_mapping(self) -> ModuleType:
-        """Return property mapping module based on product line."""
-        self._state = await self.bacnet.read_multiple([self._device_property])
+        """Return property mapping module based on product line.
+
+        The same request also finds the air filter reset object, whose
+        identifier differs between units of one product line.
+        """
+        filter_reset_candidates = [
+            bacnet.DeviceProperty(
+                bacnet.ObjectType.MULTI_STATE_VALUE, instance_id, read_values=[bacnet.ReadValue.OBJECT_NAME]
+            )
+            for instance_id in AIR_FILTER_REPLACE_TIMER_RESET_CANDIDATES
+        ]
+
+        self._state = await self.bacnet.read_multiple([self._device_property] + filter_reset_candidates)
+        self._air_filter_reset_property = self._find_air_filter_reset_property(filter_reset_candidates)
 
         if self.product_line == econordic.PRODUCT_LINE:
             return econordic
 
         return nordic
+
+    def _find_air_filter_reset_property(
+        self, candidates: list[bacnet.DeviceProperty]
+    ) -> Optional[bacnet.DeviceProperty]:
+        """Return the candidate whose object name is the air filter reset, None if none is."""
+        for candidate in candidates:
+            name = self._get_value(candidate, bacnet.ReadValue.OBJECT_NAME)
+            if isinstance(name, str) and name.endswith(AIR_FILTER_REPLACE_TIMER_RESET_NAME_SUFFIX):
+                return bacnet.DeviceProperty(candidate.object_type, candidate.instance_id)
+
+        return None
 
     async def update(self) -> None:
         """Refresh local device state.
@@ -807,10 +842,14 @@ class FlexitBACnet:
         return self._get_flag(self._prop_map.AIR_FILTER_POLLUTED, self._prop_map.AIR_FILTER_POLLUTED_ACTIVE)
 
     async def reset_air_filter_timer(self) -> None:
-        """Resets air filter replace timer."""
-        await self._set_value(
-            self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET, self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET_TRIGGER
-        )
+        """Resets air filter replace timer.
+
+        Writes to the reset object found by name on this unit (multiStateValue
+        609 or 613, depending on the unit), or to the product line's default
+        if the unit named neither of them.
+        """
+        device_property = self._air_filter_reset_property or self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET
+        await self._set_value(device_property, self._prop_map.AIR_FILTER_REPLACE_TIMER_RESET_TRIGGER)
 
     # Domestic Hot Water (DHW), heat pump and space heating - EcoNordic only.
     # Nordic units have none of these objects: the getters read None and the
