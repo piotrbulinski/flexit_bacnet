@@ -299,3 +299,21 @@ git commit -m "Add recorded answers from a Nordic S3 RER"
 Then fork the repository on GitHub, push the branch to your fork and open a
 pull request. In the description, include the output of
 `examples/device_info.py` and of the live checks from step 4.
+
+## Releasing
+
+Releases are published to [PyPI](https://pypi.org/project/flexit_bacnet/) by
+the [Release workflow](.github/workflows/release.yml), never from a local
+machine. It uses PyPI trusted publishing (no stored API token) and uploads
+[PEP 740](https://peps.python.org/pep-0740/) provenance attestations.
+
+1. Bump `version` in `pyproject.toml` and merge it to `main`.
+2. Publish a GitHub release whose tag equals that version (no `v` prefix):
+
+   ```bash
+   gh release create 2.3.1 --generate-notes
+   ```
+
+The workflow runs the test suite, checks that the tag matches the package
+version, builds the sdist and wheel, and publishes them from the protected
+`pypi` environment.
