@@ -27,6 +27,8 @@ class Unit(StrEnum):
     CELSIUS = "°C"
     KELVIN = "K"
     PERCENT = "%"
+    CUBIC_METERS_PER_HOUR = "m³/h"
+    HERTZ = "Hz"
     KILOWATT = "kW"
     RPM = "rpm"
     HOURS = "h"
