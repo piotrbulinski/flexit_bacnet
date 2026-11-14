@@ -124,34 +124,34 @@ COOKER_HOOD = DeviceProperty(ObjectType.BINARY_VALUE, 2, priority=13)
 COOKER_HOOD_ACTIVE = 1
 COOKER_HOOD_INACTIVE = 0
 
-# Linear, setpoint supply air HIGH (e.g. 100.0 percent)
+# Linear, setpoint supply air HIGH (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_SUPPLY_AIR_HIGH = DeviceProperty(ObjectType.ANALOG_VALUE, 20)
 
-# Linear, setpoint supply air HOME (e.g. 70.0 percent)
+# Linear, setpoint supply air HOME (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_SUPPLY_AIR_HOME = DeviceProperty(ObjectType.ANALOG_VALUE, 19)
 
-# Linear, setpoint supply air AWAY (e.g. 50.0 percent)
+# Linear, setpoint supply air AWAY (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_SUPPLY_AIR_AWAY = DeviceProperty(ObjectType.ANALOG_VALUE, 18)
 
-# Linear, setpoint supply air FIRE (e.g. 90.0 percent)
+# Linear, setpoint supply air FIRE (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_SUPPLY_AIR_FIRE = DeviceProperty(ObjectType.ANALOG_VALUE, 16)
 
-# Linear, setpoint supply air COOKER (e.g. 90.0 percent)
+# Linear, setpoint supply air COOKER (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_SUPPLY_AIR_COOKER = DeviceProperty(ObjectType.ANALOG_VALUE, 15)
 
-# Linear, setpoint exhaust air HIGH (e.g. 100.0 percent)
+# Linear, setpoint exhaust air HIGH (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_EXHAUST_AIR_HIGH = DeviceProperty(ObjectType.ANALOG_VALUE, 14)
 
-# Linear, setpoint exhaust air HOME (e.g. 70.0 percent)
+# Linear, setpoint exhaust air HOME (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_EXHAUST_AIR_HOME = DeviceProperty(ObjectType.ANALOG_VALUE, 13)
 
-# Linear, setpoint exhaust air AWAY (e.g. 50.0 percent)
+# Linear, setpoint exhaust air AWAY (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_EXHAUST_AIR_AWAY = DeviceProperty(ObjectType.ANALOG_VALUE, 12)
 
-# Linear, setpoint exhaust air FIRE (e.g. 50.0 percent)
+# Linear, setpoint exhaust air FIRE (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_EXHAUST_AIR_FIRE = DeviceProperty(ObjectType.ANALOG_VALUE, 11)
 
-# Linear, setpoint exhaust air COOKER (e.g. 50.0 percent)
+# Linear, setpoint exhaust air COOKER (e.g. 286.0 cubicMetersPerHour)
 LINEAR_SETPOINT_EXHAUST_AIR_COOKER = DeviceProperty(ObjectType.ANALOG_VALUE, 10)
 
 # Air filter, operating time (e.g. 0.0 hours)
@@ -234,6 +234,33 @@ HEAT_PUMP_STATE_STANDBY_WHEN_ERROR = 7
 HEAT_PUMP_STATE_MANUAL_OPERATION = 8
 HEAT_PUMP_STATE_FORCED_FAN_OPERATION = 9
 HEAT_PUMP_STATE_FORCED_PUMP_OPERATION = 10
+
+# Air flow - the fans are flow-controlled, so fan setpoints are in m³/h (verified on a WH4)
+
+# Supply air flow, measured (e.g. 285.8 cubicMetersPerHour)
+SUPPLY_AIR_FLOW = DeviceProperty(ObjectType.ANALOG_VALUE, 168)
+
+# Extract air flow, measured (e.g. 301.0 cubicMetersPerHour)
+EXTRACT_AIR_FLOW = DeviceProperty(ObjectType.ANALOG_VALUE, 236)
+
+# Lowest and nominal (highest) air flow of the unit, the range of the fan setpoints
+# (e.g. 80.0 and 400.0 cubicMetersPerHour)
+AIR_FLOW_MIN = DeviceProperty(ObjectType.ANALOG_VALUE, 2123)
+AIR_FLOW_NOMINAL = DeviceProperty(ObjectType.ANALOG_VALUE, 155)
+
+# Heat pump flow and return temperature (e.g. 66.0 and 43.5 degreesCelsius)
+HEAT_PUMP_FLOW_TEMPERATURE = DeviceProperty(ObjectType.ANALOG_INPUT, 14)
+HEAT_PUMP_RETURN_TEMPERATURE = DeviceProperty(ObjectType.ANALOG_INPUT, 13)
+
+# Heat pump compressor speed (e.g. 73.0 hertz)
+HEAT_PUMP_COMPRESSOR_SPEED = DeviceProperty(ObjectType.ANALOG_INPUT, 56)
+
+# Heating circuit 1 (e.g. floor heating) flow and return temperature (e.g. 33.1 and 28.0 degreesCelsius)
+HEATING_CIRCUIT_1_FLOW_TEMPERATURE = DeviceProperty(ObjectType.ANALOG_INPUT, 68)
+HEATING_CIRCUIT_1_RETURN_TEMPERATURE = DeviceProperty(ObjectType.ANALOG_INPUT, 67)
+
+# Heating circuit 1 flow temperature setpoint from the heating curve (e.g. 32.7 degreesCelsius)
+HEATING_CIRCUIT_1_FLOW_TEMPERATURE_SETPOINT = DeviceProperty(ObjectType.ANALOG_VALUE, 258)
 
 # Free cooling
 #

@@ -4,7 +4,7 @@ import asyncio
 
 import pytest
 
-from flexit_bacnet import FlexitBACnet, econordic, nordic
+from flexit_bacnet import FlexitBACnet, Unit, econordic, nordic
 from flexit_bacnet.bacnet import DeviceProperty, ObjectType, PropertyError, ReadValue, _parse_read_property_multiple_response
 
 from conftest import load_recorded
@@ -74,6 +74,16 @@ ECONORDIC_ONLY = [
     "dhw_electric_heater_status",
     "space_heating_setpoint",
     "heat_pump_state",
+    "heat_pump_flow_temperature",
+    "heat_pump_return_temperature",
+    "heat_pump_compressor_speed",
+    "space_heating_flow_temperature",
+    "space_heating_return_temperature",
+    "space_heating_flow_temperature_setpoint",
+    "supply_air_flow",
+    "extract_air_flow",
+    "air_flow_min",
+    "air_flow_nominal",
 ]
 
 
@@ -126,6 +136,40 @@ def test_econordic_values_follow_the_common_conventions():
     assert device.heat_pump_state == econordic.HEAT_PUMP_STATE_NORMAL_OPERATION
     # missing on the unit -> None, like any other getter
     assert device.dhw_tank_temperature_bottom is None
+
+
+def test_fan_setpoint_unit_follows_product_line():
+    assert _nordic().fan_setpoint_unit is Unit.PERCENT
+    assert _econordic().fan_setpoint_unit is Unit.CUBIC_METERS_PER_HOUR
+
+
+def test_econordic_air_flow_and_heat_pump_values():
+    # values read from an EcoNordic WH4 (HvacFnct25y_A v2.425)
+    device = _econordic({
+        econordic.LINEAR_SETPOINT_SUPPLY_AIR_HOME.object_identifier: 286.0,
+        econordic.SUPPLY_AIR_FLOW.object_identifier: 285.7857360839844,
+        econordic.EXTRACT_AIR_FLOW.object_identifier: 300.9924621582031,
+        econordic.AIR_FLOW_MIN.object_identifier: 80.0,
+        econordic.AIR_FLOW_NOMINAL.object_identifier: 400.0,
+        econordic.HEAT_PUMP_FLOW_TEMPERATURE.object_identifier: 66.0,
+        econordic.HEAT_PUMP_RETURN_TEMPERATURE.object_identifier: 43.5,
+        econordic.HEAT_PUMP_COMPRESSOR_SPEED.object_identifier: 73.0,
+        econordic.HEATING_CIRCUIT_1_FLOW_TEMPERATURE.object_identifier: 33.099998474121094,
+        econordic.HEATING_CIRCUIT_1_RETURN_TEMPERATURE.object_identifier: 28.0,
+        econordic.HEATING_CIRCUIT_1_FLOW_TEMPERATURE_SETPOINT.object_identifier: 32.742000579833984,
+    })
+
+    assert device.fan_setpoint_supply_air_home == 286
+    assert device.supply_air_flow == 285.8
+    assert device.extract_air_flow == 301.0
+    assert device.air_flow_min == 80.0
+    assert device.air_flow_nominal == 400.0
+    assert device.heat_pump_flow_temperature == 66.0
+    assert device.heat_pump_return_temperature == 43.5
+    assert device.heat_pump_compressor_speed == 73.0
+    assert device.space_heating_flow_temperature == 33.1
+    assert device.space_heating_return_temperature == 28.0
+    assert device.space_heating_flow_temperature_setpoint == 32.7
 
 
 def test_recorded_plant_operating_mode_states_match_constants():

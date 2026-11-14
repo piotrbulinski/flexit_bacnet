@@ -712,103 +712,112 @@ class FlexitBACnet:
         await self._set_value(self._prop_map.COOKER_HOOD, self._prop_map.COOKER_HOOD_INACTIVE)
 
     @property
-    @reading("Fan setpoint supply air Home", Unit.PERCENT)
+    @reading("Fan setpoint unit")
+    def fan_setpoint_unit(self) -> Unit:
+        """Return the unit of the fan setpoints: percent on Nordic, m³/h on flow-controlled EcoNordic."""
+        if self.product_line == econordic.PRODUCT_LINE:
+            return Unit.CUBIC_METERS_PER_HOUR
+
+        return Unit.PERCENT
+
+    @property
+    @reading("Fan setpoint supply air Home")
     def fan_setpoint_supply_air_home(self) -> Optional[int]:
-        """Return fan setpoint for supply air HOME in percent."""
+        """Return fan setpoint for supply air HOME, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HOME)
 
     async def set_fan_setpoint_supply_air_home(self, percent: int) -> None:
-        """Set fan setpoint for supply air HOME in percent."""
+        """Set fan setpoint for supply air HOME, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HOME, percent)
 
     @property
-    @reading("Fan setpoint extract air Home", Unit.PERCENT)
+    @reading("Fan setpoint extract air Home")
     def fan_setpoint_extract_air_home(self) -> Optional[int]:
-        """Return fan setpoint for extract air HOME in percent."""
+        """Return fan setpoint for extract air HOME, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HOME)
 
     async def set_fan_setpoint_extract_air_home(self, percent: int) -> None:
-        """Set fan setpoint for extract air HOME in percent."""
+        """Set fan setpoint for extract air HOME, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HOME, percent)
 
     @property
-    @reading("Fan setpoint supply air High", Unit.PERCENT)
+    @reading("Fan setpoint supply air High")
     def fan_setpoint_supply_air_high(self) -> Optional[int]:
-        """Return fan setpoint for supply air HIGH in percent."""
+        """Return fan setpoint for supply air HIGH, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HIGH)
 
     async def set_fan_setpoint_supply_air_high(self, percent: int) -> None:
-        """Set fan setpoint for supply air HIGH in percent."""
+        """Set fan setpoint for supply air HIGH, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_HIGH, percent)
 
     @property
-    @reading("Fan setpoint extract air High", Unit.PERCENT)
+    @reading("Fan setpoint extract air High")
     def fan_setpoint_extract_air_high(self) -> Optional[int]:
-        """Return fan setpoint for extract air HIGH in percent."""
+        """Return fan setpoint for extract air HIGH, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HIGH)
 
     async def set_fan_setpoint_extract_air_high(self, percent: int) -> None:
-        """Set fan setpoint for extract air HIGH in percent."""
+        """Set fan setpoint for extract air HIGH, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_HIGH, percent)
 
     @property
-    @reading("Fan setpoint supply air Away", Unit.PERCENT)
+    @reading("Fan setpoint supply air Away")
     def fan_setpoint_supply_air_away(self) -> Optional[int]:
-        """Return fan setpoint for supply air AWAY in percent."""
+        """Return fan setpoint for supply air AWAY, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_AWAY)
 
     async def set_fan_setpoint_supply_air_away(self, percent: int) -> None:
-        """Set fan setpoint for supply air AWAY in percent."""
+        """Set fan setpoint for supply air AWAY, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_AWAY, percent)
 
     @property
-    @reading("Fan setpoint extract air Away", Unit.PERCENT)
+    @reading("Fan setpoint extract air Away")
     def fan_setpoint_extract_air_away(self) -> Optional[int]:
-        """Return fan setpoint for extract air AWAY in percent."""
+        """Return fan setpoint for extract air AWAY, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_AWAY)
 
     async def set_fan_setpoint_extract_air_away(self, percent: int) -> None:
-        """Set fan setpoint for extract air AWAY in percent."""
+        """Set fan setpoint for extract air AWAY, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_AWAY, percent)
 
     @property
-    @reading("Fan setpoint supply air Cooker", Unit.PERCENT)
+    @reading("Fan setpoint supply air Cooker")
     def fan_setpoint_supply_air_cooker(self) -> Optional[int]:
-        """Return fan setpoint for supply air COOKER in percent."""
+        """Return fan setpoint for supply air COOKER, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_COOKER)
 
     async def set_fan_setpoint_supply_air_cooker(self, percent: int) -> None:
-        """Set fan setpoint for supply air COOKER in percent."""
+        """Set fan setpoint for supply air COOKER, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_COOKER, percent)
 
     @property
-    @reading("Fan setpoint extract air Cooker", Unit.PERCENT)
+    @reading("Fan setpoint extract air Cooker")
     def fan_setpoint_extract_air_cooker(self) -> Optional[int]:
-        """Return fan setpoint for extract air COOKER in percent."""
+        """Return fan setpoint for extract air COOKER, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_COOKER)
 
     async def set_fan_setpoint_extract_air_cooker(self, percent: int) -> None:
-        """Set fan setpoint for extract air COOKER in percent."""
+        """Set fan setpoint for extract air COOKER, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_COOKER, percent)
 
     @property
-    @reading("Fan setpoint supply air Fireplace", Unit.PERCENT)
+    @reading("Fan setpoint supply air Fireplace")
     def fan_setpoint_supply_air_fire(self) -> Optional[int]:
-        """Return fan setpoint for supply air FIRE in percent."""
+        """Return fan setpoint for supply air FIRE, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_FIRE)
 
     async def set_fan_setpoint_supply_air_fire(self, percent: int):
-        """Set fan setpoint for supply air FIRE in percent."""
+        """Set fan setpoint for supply air FIRE, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_SUPPLY_AIR_FIRE, percent)
 
     @property
-    @reading("Fan setpoint extract air Fireplace", Unit.PERCENT)
+    @reading("Fan setpoint extract air Fireplace")
     def fan_setpoint_extract_air_fire(self) -> Optional[int]:
-        """Return fan setpoint for extract air FIRE in percent."""
+        """Return fan setpoint for extract air FIRE, see fan_setpoint_unit."""
         return self._get_int(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_FIRE)
 
     async def set_fan_setpoint_extract_air_fire(self, percent: int) -> None:
-        """Set fan setpoint for extract air FIRE in percent."""
+        """Set fan setpoint for extract air FIRE, see fan_setpoint_unit."""
         await self._set_value(self._prop_map.LINEAR_SETPOINT_EXHAUST_AIR_FIRE, percent)
 
     @property
@@ -962,6 +971,66 @@ class FlexitBACnet:
     def heat_pump_state(self) -> Optional[int]:
         """Return heat pump state (one of econordic.HEAT_PUMP_STATE_*)."""
         return self._get_int(self._prop_map.HEAT_PUMP_STATE)
+
+    @property
+    @reading("Heat pump flow temperature", Unit.CELSIUS)
+    def heat_pump_flow_temperature(self) -> Optional[float]:
+        """Return heat pump flow temperature in degrees Celsius, e.g. 66.0."""
+        return self._get_float(self._prop_map.HEAT_PUMP_FLOW_TEMPERATURE, 1)
+
+    @property
+    @reading("Heat pump return temperature", Unit.CELSIUS)
+    def heat_pump_return_temperature(self) -> Optional[float]:
+        """Return heat pump return temperature in degrees Celsius, e.g. 43.5."""
+        return self._get_float(self._prop_map.HEAT_PUMP_RETURN_TEMPERATURE, 1)
+
+    @property
+    @reading("Heat pump compressor speed", Unit.HERTZ)
+    def heat_pump_compressor_speed(self) -> Optional[float]:
+        """Return heat pump compressor speed in hertz, e.g. 73.0 (0 when stopped)."""
+        return self._get_float(self._prop_map.HEAT_PUMP_COMPRESSOR_SPEED, 1)
+
+    @property
+    @reading("Space heating flow temperature", Unit.CELSIUS)
+    def space_heating_flow_temperature(self) -> Optional[float]:
+        """Return flow temperature of heating circuit 1 in degrees Celsius, e.g. 33.1."""
+        return self._get_float(self._prop_map.HEATING_CIRCUIT_1_FLOW_TEMPERATURE, 1)
+
+    @property
+    @reading("Space heating return temperature", Unit.CELSIUS)
+    def space_heating_return_temperature(self) -> Optional[float]:
+        """Return return temperature of heating circuit 1 in degrees Celsius, e.g. 28.0."""
+        return self._get_float(self._prop_map.HEATING_CIRCUIT_1_RETURN_TEMPERATURE, 1)
+
+    @property
+    @reading("Space heating flow temperature setpoint", Unit.CELSIUS)
+    def space_heating_flow_temperature_setpoint(self) -> Optional[float]:
+        """Return flow temperature setpoint of heating circuit 1 from the heating curve, e.g. 32.7."""
+        return self._get_float(self._prop_map.HEATING_CIRCUIT_1_FLOW_TEMPERATURE_SETPOINT, 1)
+
+    @property
+    @reading("Supply air flow", Unit.CUBIC_METERS_PER_HOUR)
+    def supply_air_flow(self) -> Optional[float]:
+        """Return measured supply air flow in m³/h, e.g. 285.8."""
+        return self._get_float(self._prop_map.SUPPLY_AIR_FLOW, 1)
+
+    @property
+    @reading("Extract air flow", Unit.CUBIC_METERS_PER_HOUR)
+    def extract_air_flow(self) -> Optional[float]:
+        """Return measured extract air flow in m³/h, e.g. 301.0."""
+        return self._get_float(self._prop_map.EXTRACT_AIR_FLOW, 1)
+
+    @property
+    @reading("Air flow minimum", Unit.CUBIC_METERS_PER_HOUR)
+    def air_flow_min(self) -> Optional[float]:
+        """Return the lowest air flow the fan setpoints accept in m³/h, e.g. 80.0."""
+        return self._get_float(self._prop_map.AIR_FLOW_MIN)
+
+    @property
+    @reading("Air flow nominal", Unit.CUBIC_METERS_PER_HOUR)
+    def air_flow_nominal(self) -> Optional[float]:
+        """Return the nominal (highest) air flow the fan setpoints accept in m³/h, e.g. 400.0."""
+        return self._get_float(self._prop_map.AIR_FLOW_NOMINAL)
 
     # Free cooling - see the "Free cooling" section in nordic.py / econordic.py
     # and README.md for how the function works and which settings make it run.

@@ -247,7 +247,7 @@ PLANT_OPERATING_MODE_SMOKE_EXTRACTION_POSITIVE_PRESSURE = 15
 PLANT_OPERATING_MODE_SMOKE_EXTRACTION_NEGATIVE_PRESSURE = 16
 PLANT_OPERATING_MODE_PURGE = 17
 
-# EcoNordic-only objects (domestic hot water, heat pump, space heating): Nordic
+# EcoNordic-only objects (domestic hot water, heat pump, space heating, air flow): Nordic
 # units have none of them, so their getters read None and writing raises.
 DHW_OPERATION_MODE = None
 DHW_TEMPORARY_BOOST = None
@@ -261,6 +261,16 @@ DHW_TANK_TEMPERATURE_TOP = None
 DHW_ELECTRIC_HEATER_STATUS = None
 HEATING_CIRCUIT_1_ROOM_TEMPERATURE_SETPOINT = None
 HEAT_PUMP_STATE = None
+SUPPLY_AIR_FLOW = None
+EXTRACT_AIR_FLOW = None
+AIR_FLOW_MIN = None
+AIR_FLOW_NOMINAL = None
+HEAT_PUMP_FLOW_TEMPERATURE = None
+HEAT_PUMP_RETURN_TEMPERATURE = None
+HEAT_PUMP_COMPRESSOR_SPEED = None
+HEATING_CIRCUIT_1_FLOW_TEMPERATURE = None
+HEATING_CIRCUIT_1_RETURN_TEMPERATURE = None
+HEATING_CIRCUIT_1_FLOW_TEMPERATURE_SETPOINT = None
 
 # Humidity (dehumidification) control - increases fan speed on high or rapidly rising humidity.
 # Objects verified on Nordic S7 (POS3.67, application HvacFnct21y_A v2.438).
